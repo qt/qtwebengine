@@ -890,18 +890,11 @@ WebEngineContext::WebEngineContext()
                       == gl::kGLImplementationANGLEName);
     }
 
-    if (usingANGLE && !parsedCommandLine->HasSwitch(switches::kUseANGLE)) {
-        parsedCommandLine->AppendSwitchASCII(switches::kUseANGLE,
-                                             gl::kANGLEImplementationOpenGLEGLName);
-    }
-
 #if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
         if (usingANGLE && !isGbmSupported()) {
             qWarning("GBM is not supported with the current configuration. "
                      "Fallback to Vulkan rendering in Chromium.");
-            parsedCommandLine->AppendSwitchASCII(switches::kUseANGLE,
-                                                 gl::kANGLEImplementationDefaultName);
             parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
                                                  switches::kVulkanImplementationNameNative);
             enableFeatures.push_back(features::kVulkan.name);
