@@ -11,6 +11,7 @@
 #include <EGL/eglext.h>
 
 #undef eglCreateImage
+#undef eglCreateDRMImageMESA
 #undef eglDestroyImage
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
@@ -33,6 +34,7 @@ public:
         EGLFunctions();
 
         PFNEGLCREATEIMAGEPROC eglCreateImage;
+        PFNEGLCREATEDRMIMAGEMESAPROC eglCreateDRMImageMESA;
         PFNEGLDESTROYIMAGEPROC eglDestroyImage;
         PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
         PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
