@@ -13,6 +13,13 @@ machine_type:
 
 instructions:
   Build:
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+      variableValue: " -DFEATURE_webengine_system_libxml=OFF"
+      enable_if:
+        condition: property
+        property: features
+        contains_value: Packaging
     - type: EnvironmentVariable
       variableName: VERIFY_SOURCE_SBOM
       variableValue: "ON"
