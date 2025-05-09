@@ -52,6 +52,7 @@ private Q_SLOTS:
     void objectName();
     void crossTreeParent();
     void tableCellInterface();
+    void tableInterface();
 };
 
 // This will be called before the first test function is executed.
@@ -358,7 +359,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kCode") << QString("<code>a</code>") << 1 << QAccessible::StaticText;
     QTest::newRow("ax::mojom::Role::kColorWell") << QString("<input type='color'>a</input>") << 1 << QAccessible::ColorChooser;
     // QTest::newRow("ax::mojom::Role::kColumn"); // No mapping to ARIA role
-    QTest::newRow("ax::mojom::Role::kColumnHeader") << QString("<table role=table><tr><th>a</th></tr><tr><td>a</td></tr></table>") << 2 << QAccessible::ColumnHeader;
+    QTest::newRow("ax::mojom::Role::kColumnHeader") << QString("<table role=table><tr><th>a</th></tr><tr><td>a</td></tr></table>") << 2 << QAccessible::Cell;
     QTest::newRow("ax::mojom::Role::kComboBoxGrouping") << QString("<div role='combobox'><input></div>") << 0 << QAccessible::ComboBox;
     QTest::newRow("ax::mojom::Role::kComboBoxMenuButton") << QString("<div tabindex=0 role='combobox'>Select</div>") << 0 << QAccessible::ComboBox;
     // QTest::newRow("ax::mojom::Role::kComboBoxSelect"); // No mapping to ARIA role
@@ -562,7 +563,7 @@ void tst_Accessibility::roles_data()
             << QString("<section aria-label='section with name'/>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRow") << QString("<table role=table><tr><td>a</td></tr></table>") << 1 << QAccessible::Row;
     QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
-    QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::RowHeader;
+    QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::Cell;
     QTest::newRow("ax::mojom::Role::kRuby") << QString("<ruby>a</ruby>") << 1 << QAccessible::Grouping;
     //QTest::newRow("ax::mojom::Role::kRubyAnnotation") // No mapping to ARIA role (presents as property on enclosing ruby element)
     QTest::newRow("ax::mojom::Role::kScrollBar") << QString("<div role='scrollbar'>a</a>") << 0 << QAccessible::ScrollBar;
@@ -745,6 +746,57 @@ void tst_Accessibility::tableCellInterface()
         QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, linkCenter);
         QTRY_COMPARE(webView.url().fragment(), QLatin1String("link2"));
     }
+}
+
+void tst_Accessibility::tableInterface()
+{
+    QWebEngineView webView;
+    webView.resize(400, 400);
+    webView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
+
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    webView.setHtml(QLatin1String(
+            "<table>"
+            "  <caption>"
+            "    Table Autotest"
+            "  </caption>"
+            "  <thead>"
+            "    <tr>"
+            "      <th scope='col'>Column Header 1</th>"
+            "      <th scope='col'>Column Header 2</th>"
+            "    </tr>"
+            "  </thead>"
+            "  <tbody>"
+            "    <tr>"
+            "      <th scope='row'>Row Header</th>"
+            "      <td>Cell</td>"
+            "    </tr>"
+            "  </tbody>"
+            "</table>"));
+    QTRY_COMPARE(spyFinished.size(), 1);
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 1, 20000);
+    QAccessibleInterface *document = view->child(0);
+    QAccessibleInterface *table = document->child(0);
+
+    QAccessibleTableInterface *tableInterface = table->tableInterface();
+    QVERIFY(tableInterface);
+
+    // Check the caption
+    QAccessibleInterface *caption = tableInterface->caption();
+    QVERIFY(caption);
+    QAccessibleInterface *captionChild = caption->child(0); // get the StaticText child
+    QVERIFY(captionChild);
+    auto text = captionChild->text(QAccessible::Name);
+    QCOMPARE(text, QLatin1String("Table Autotest"));
+
+    // Check the table cells
+    QCOMPARE(tableInterface->cellAt(0, 0)->child(0)->text(QAccessible::Name), QLatin1String("Column Header 1"));
+    QCOMPARE(tableInterface->cellAt(0, 1)->child(0)->text(QAccessible::Name), QLatin1String("Column Header 2"));
+    QCOMPARE(tableInterface->cellAt(1, 0)->child(0)->text(QAccessible::Name), QLatin1String("Row Header"));
+    QCOMPARE(tableInterface->cellAt(1, 1)->child(0)->text(QAccessible::Name), QLatin1String("Cell"));
 }
 
 static QByteArrayList params = QByteArrayList()
