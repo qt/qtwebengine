@@ -96,7 +96,7 @@ static display::ScreenInfos screenInfosFromQtForUpdate(QScreen *currentScreen)
 {
     display::ScreenInfo screenInfo;
     const auto &screens = qApp->screens();
-    if (screens.isEmpty()) {
+    if (!currentScreen || screens.isEmpty()) {
         screenInfo.device_scale_factor = qGuiApp->devicePixelRatio();
         return display::ScreenInfos(screenInfo);
     }
