@@ -17,9 +17,14 @@ instructions:
       variableName: COMMON_NON_QTBASE_CMAKE_ARGS
       variableValue: " -DFEATURE_webengine_system_libxml=OFF"
       enable_if:
-        condition: runtime
-        env_var: COIN_PLATFORM_ID
-        contains_value: "rhel-8.10"
+        condition: or
+        conditions:
+          - condition: runtime
+            env_var: COIN_PLATFORM_ID
+            contains_value: "rhel-8.10"
+          - condition: property
+            property: features
+            contains_value: Packaging
     - type: EnvironmentVariable
       variableName: VERIFY_SOURCE_SBOM
       variableValue: "ON"
