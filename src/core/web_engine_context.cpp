@@ -447,6 +447,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
 #if BUILDFLAG(IS_OZONE)
         log += "Using GLX: "_L1 + (OzoneUtilQt::usingGLX() ? "yes"_L1 : "no"_L1) + u'\n';
         log += "Using EGL: "_L1 + (OzoneUtilQt::usingEGL() ? "yes"_L1 : "no"_L1) + u'\n';
+        log += "Using GBM: "_L1 + (WebEngineContext::isGbmSupported() ? "yes"_L1 : "no"_L1) + u'\n';
 #endif // BUILDFLAG(IS_OZONE)
         log += "Using Shared GL: "_L1 + (QOpenGLContext::globalShareContext() ? "yes"_L1 : "no"_L1)
                 + u'\n';
