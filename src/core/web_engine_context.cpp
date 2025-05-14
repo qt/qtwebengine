@@ -354,6 +354,22 @@ private:
     QString m_adapterLuid;
 };
 
+static bool isFeatureEnabled(const std::string &feature, const base::CommandLine &commandLine)
+{
+    auto isInFeatureList = [&feature, commandLine](const std::string_view featuresSwitch) -> bool {
+        if (!commandLine.HasSwitch(featuresSwitch))
+            return false;
+
+        std::string featuresString = commandLine.GetSwitchValueASCII(featuresSwitch);
+        std::vector<std::string> features = base::SplitString(
+                featuresString, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        return std::find(features.begin(), features.end(), feature) != features.end();
+    };
+
+    return !isInFeatureList(switches::kDisableFeatures)
+            && isInFeatureList(switches::kEnableFeatures);
+}
+
 static bool usingSupportedSGBackend()
 {
     if (QQuickWindow::graphicsApi() != QSGRendererInterface::OpenGL
@@ -382,37 +398,45 @@ static bool usingSupportedSGBackend()
     return device.isEmpty() || device == "rhi"_L1;
 }
 
-static std::string getGLType(bool disableGpu)
+static std::string getGLType(const base::CommandLine &cmd)
 {
-    if (disableGpu || !usingSupportedSGBackend())
+    if (cmd.HasSwitch(switches::kUseGL))
+        return cmd.GetSwitchValueASCII(switches::kUseGL);
+
+    if (!usingSupportedSGBackend() || cmd.HasSwitch(switches::kDisableGpu))
         return gl::kGLImplementationDisabledName;
 
     return gl::kGLImplementationANGLEName;
 }
 
-static std::string getVulkanType(base::CommandLine *cmd)
+static bool isGLTypeSupported(const std::string &glType)
+{
+    if (glType == gl::kGLImplementationANGLEName || glType == gl::kGLImplementationDisabledName)
+        return true;
+
+    return false;
+}
+
+static std::string getVulkanType(const base::CommandLine &cmd)
 {
 #if QT_CONFIG(webengine_vulkan)
-    if (cmd->HasSwitch(switches::kUseVulkan))
-        return cmd->GetSwitchValueASCII(switches::kUseVulkan);
+    if (isFeatureEnabled(features::kVulkan.name, cmd)) {
+        if (cmd.HasSwitch(switches::kUseVulkan))
+            return cmd.GetSwitchValueASCII(switches::kUseVulkan);
+        return switches::kVulkanImplementationNameNative;
+    }
 #endif
 
     return "disabled";
 }
 
-static std::string getAngleType(const std::string &glType, base::CommandLine *cmd)
+static std::string getANGLEType(const base::CommandLine &cmd)
 {
-    if (glType == gl::kGLImplementationANGLEName) {
-        if (cmd->HasSwitch(switches::kUseANGLE))
-            return cmd->GetSwitchValueASCII(switches::kUseANGLE);
+    if (getGLType(cmd) == gl::kGLImplementationANGLEName) {
+        if (cmd.HasSwitch(switches::kUseANGLE))
+            return cmd.GetSwitchValueASCII(switches::kUseANGLE);
 
-#if defined(Q_OS_WIN)
-        return gl::kANGLEImplementationD3D11Name;
-#elif defined(Q_OS_MACOS)
-        return gl::kANGLEImplementationMetalName;
-#else
         return gl::kANGLEImplementationDefaultName;
-#endif
     }
 
     return "disabled";
@@ -424,14 +448,14 @@ void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 }
 #endif
 
-static void logContext(const std::string &glType, base::CommandLine *cmd)
+static void logContext(const base::CommandLine &cmd)
 {
     if (Q_UNLIKELY(webEngineContextLog().isDebugEnabled())) {
         QString log;
         log += u'\n';
 
-        log += "Chromium GL Backend: "_L1 + QLatin1StringView(glType) + "\n"_L1;
-        log += "Chromium ANGLE Backend: "_L1 + QLatin1StringView(getAngleType(glType, cmd)) + u'\n';
+        log += "Chromium GL Backend: "_L1 + QLatin1StringView(getGLType(cmd)) + u'\n';
+        log += "Chromium ANGLE Backend: "_L1 + QLatin1StringView(getANGLEType(cmd)) + u'\n';
         log += "Chromium Vulkan Backend: "_L1 + QLatin1StringView(getVulkanType(cmd)) + u'\n';
         log += u'\n';
 
@@ -455,7 +479,7 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
 #endif // QT_CONFIG(opengl)
 
         log += "Init Parameters:\n"_L1;
-        const base::CommandLine::SwitchMap switchMap = cmd->GetSwitches();
+        const base::CommandLine::SwitchMap switchMap = cmd.GetSwitches();
         for (const auto &pair : switchMap)
             log += " *  "_L1 + toQt(pair.first) + u' ' + toQt(pair.second) + u'\n';
 
@@ -465,10 +489,10 @@ static void logContext(const std::string &glType, base::CommandLine *cmd)
 
 extern std::unique_ptr<base::MessagePump> messagePumpFactory();
 
-static void setupProxyPac(base::CommandLine *commandLine)
+static void setupProxyPac(base::CommandLine &commandLine)
 {
-    if (commandLine->HasSwitch(switches::kProxyPacUrl)) {
-        QUrl pac_url(toQt(commandLine->GetSwitchValueASCII(switches::kProxyPacUrl)));
+    if (commandLine.HasSwitch(switches::kProxyPacUrl)) {
+        QUrl pac_url(toQt(commandLine.GetSwitchValueASCII(switches::kProxyPacUrl)));
         if (pac_url.isValid()
             && (pac_url.isLocalFile()
                 || !pac_url.scheme().compare("qrc"_L1, Qt::CaseInsensitive))) {
@@ -479,9 +503,12 @@ static void setupProxyPac(base::CommandLine *commandLine)
                 file.setFileName(pac_url.path().prepend(QLatin1Char(':')));
             if (file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 const QByteArray ba = file.readAll();
-                commandLine->RemoveSwitch(switches::kProxyPacUrl);
-                commandLine->AppendSwitchASCII(switches::kProxyPacUrl,
-                        ba.toBase64().prepend("data:application/x-javascript-config;base64,").toStdString());
+                commandLine.RemoveSwitch(switches::kProxyPacUrl);
+                commandLine.AppendSwitchASCII(
+                        switches::kProxyPacUrl,
+                        ba.toBase64()
+                                .prepend("data:application/x-javascript-config;base64,")
+                                .toStdString());
             }
         }
     }
@@ -742,11 +769,14 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
 
-static void initializeFeatureList(base::CommandLine *commandLine, std::vector<std::string> enableFeatures, std::vector<std::string> disableFeatures)
+static void initializeFeatureList(base::CommandLine &commandLine,
+                                  std::vector<std::string> enableFeatures,
+                                  std::vector<std::string> disableFeatures)
 {
     std::string enableFeaturesString = base::JoinString(enableFeatures, ",");
-    if (commandLine->HasSwitch(switches::kEnableFeatures)) {
-        std::string commandLineEnableFeatures = commandLine->GetSwitchValueASCII(switches::kEnableFeatures);
+    if (commandLine.HasSwitch(switches::kEnableFeatures)) {
+        std::string commandLineEnableFeatures =
+                commandLine.GetSwitchValueASCII(switches::kEnableFeatures);
 
         for (const std::string &enableFeature : base::SplitString(commandLineEnableFeatures, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
             auto it = std::find(disableFeatures.begin(), disableFeatures.end(), enableFeature);
@@ -765,8 +795,9 @@ static void initializeFeatureList(base::CommandLine *commandLine, std::vector<st
     }
 
     std::string disableFeaturesString = base::JoinString(disableFeatures, ",");
-    if (commandLine->HasSwitch(switches::kDisableFeatures)) {
-        std::string commandLineDisableFeatures = commandLine->GetSwitchValueASCII(switches::kDisableFeatures);
+    if (commandLine.HasSwitch(switches::kDisableFeatures)) {
+        std::string commandLineDisableFeatures =
+                commandLine.GetSwitchValueASCII(switches::kDisableFeatures);
 
         for (const std::string &disableFeature : base::SplitString(commandLineDisableFeatures, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
             auto it = std::find(enableFeatures.begin(), enableFeatures.end(), disableFeature);
@@ -780,8 +811,8 @@ static void initializeFeatureList(base::CommandLine *commandLine, std::vector<st
         disableFeaturesString = disableFeaturesString + "," + commandLineDisableFeatures;
     }
 
-    commandLine->AppendSwitchASCII(switches::kEnableFeatures, enableFeaturesString);
-    commandLine->AppendSwitchASCII(switches::kDisableFeatures, disableFeaturesString);
+    commandLine.AppendSwitchASCII(switches::kEnableFeatures, enableFeaturesString);
+    commandLine.AppendSwitchASCII(switches::kDisableFeatures, disableFeaturesString);
     base::FeatureList::InitInstance(enableFeaturesString, disableFeaturesString);
 }
 
@@ -815,26 +846,29 @@ WebEngineContext::WebEngineContext()
     content::RenderFrameHost::AllowInjectingJavaScript();
 
     bool useEmbeddedSwitches;
-    base::CommandLine *parsedCommandLine = initCommandLine(&useEmbeddedSwitches);
+    base::CommandLine &parsedCommandLine = *initCommandLine(&useEmbeddedSwitches);
 
     setupProxyPac(parsedCommandLine);
-    parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
+    parsedCommandLine.AppendSwitchPath(switches::kBrowserSubprocessPath,
+                                       WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
-    parsedCommandLine->AppendSwitchASCII(switches::kApplicationName, QCoreApplication::applicationName().toUtf8().toPercentEncoding().toStdString());
+    parsedCommandLine.AppendSwitchASCII(
+            switches::kApplicationName,
+            QCoreApplication::applicationName().toUtf8().toPercentEncoding().toStdString());
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
     bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
     if (!disable_sandbox) {
 #if defined(Q_OS_LINUX)
-        parsedCommandLine->AppendSwitch(sandbox::policy::switches::kDisableSetuidSandbox);
+        parsedCommandLine.AppendSwitch(sandbox::policy::switches::kDisableSetuidSandbox);
 #endif
     } else {
-        parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
+        parsedCommandLine.AppendSwitch(sandbox::policy::switches::kNoSandbox);
         qInfo("Sandboxing disabled by user.");
     }
 
     // Do not advertise a feature we have removed at compile time
-    parsedCommandLine->AppendSwitch(switches::kDisableSpeechAPI);
+    parsedCommandLine.AppendSwitch(switches::kDisableSpeechAPI);
 
     std::vector<std::string> disableFeatures;
     std::vector<std::string> enableFeatures;
@@ -848,19 +882,19 @@ WebEngineContext::WebEngineContext()
 
     // By default the Touch Events API support (presence of 'ontouchstart' in 'window' object)
     // will be determined based on the availability of touch screen devices.
-    if (!parsedCommandLine->HasSwitch(switches::kTouchEventFeatureDetection))
-        parsedCommandLine->AppendSwitchASCII(switches::kTouchEventFeatureDetection,
-                                             switches::kTouchEventFeatureDetectionAuto);
+    if (!parsedCommandLine.HasSwitch(switches::kTouchEventFeatureDetection))
+        parsedCommandLine.AppendSwitchASCII(switches::kTouchEventFeatureDetection,
+                                            switches::kTouchEventFeatureDetectionAuto);
 
     // Not implemented but it overrides the devtools eyedropper
     // Should be sync with kEyeDropper base::Feature
-    parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "EyeDropperAPI");
+    parsedCommandLine.AppendSwitchASCII(switches::kDisableBlinkFeatures, "EyeDropperAPI");
     disableFeatures.push_back(features::kEyeDropper.name);
 
     // Explicitly tell Chromium about default-on features we do not support
     disableFeatures.push_back(features::kBackgroundFetch.name);
     disableFeatures.push_back(features::kInstalledApp.name);
-    parsedCommandLine->AppendSwitchASCII(switches::kDisableBlinkFeatures, "WebOTP");
+    parsedCommandLine.AppendSwitchASCII(switches::kDisableBlinkFeatures, "WebOTP");
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
@@ -872,38 +906,59 @@ WebEngineContext::WebEngineContext()
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
-        parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-        parsedCommandLine->AppendSwitch(input::switches::kValidateInputEventStream);
-        parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
+        parsedCommandLine.AppendSwitch(switches::kEnableViewport);
+        parsedCommandLine.AppendSwitch(input::switches::kValidateInputEventStream);
+        parsedCommandLine.AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     }
 
 #if BUILDFLAG(IS_OZONE)
     if (!isGbmSupported()) {
         disableFeatures.push_back(media::kVaapiVideoDecodeLinux.name);
-        parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+        parsedCommandLine.AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+    }
+#endif
+
+    // Init GPU switches.
+    parsedCommandLine.AppendSwitch(switches::kInProcessGPU);
+
+    std::string glType = getGLType(parsedCommandLine);
+    // Always set --use-gl.
+    if (!parsedCommandLine.HasSwitch(switches::kUseGL))
+        parsedCommandLine.AppendSwitchASCII(switches::kUseGL, glType);
+
+    if (glType == gl::kGLImplementationDisabledName) {
+        // Always set --disable-gpu to avoid unexpected GL contexts, see QTBUG-128784.
+        if (!parsedCommandLine.HasSwitch(switches::kDisableGpu))
+            parsedCommandLine.AppendSwitch(switches::kDisableGpu);
+    } else {
+        // Warn on custom --use-gl if hardware rendering is disabled.
+        if (!usingSupportedSGBackend())
+            qWarning("--use-gl=%s is set with unsupported SceneGraph Backend. Expect troubles!",
+                     glType.c_str());
+
+        if (parsedCommandLine.HasSwitch(switches::kDisableGpu))
+            qWarning("--use-gl=%s is set with --disable-gpu. Expect troubles!", glType.c_str());
     }
 
-    bool usingANGLE = true;
-    // ANGLE is the default but it can be overridden from command line.
-    if (parsedCommandLine->HasSwitch(switches::kUseGL)) {
-        usingANGLE = (parsedCommandLine->GetSwitchValueASCII(switches::kUseGL)
-                      == gl::kGLImplementationANGLEName);
-    }
-
-#if QT_CONFIG(webengine_vulkan)
+#if BUILDFLAG(IS_OZONE) && QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
-        if (usingANGLE && !isGbmSupported()) {
+        const bool disableGpu = parsedCommandLine.HasSwitch(switches::kDisableGpu);
+        const bool usingVulkan = isFeatureEnabled(features::kVulkan.name, parsedCommandLine);
+        if (!disableGpu && !usingVulkan && !isGbmSupported()) {
             qWarning("GBM is not supported with the current configuration. "
                      "Fallback to Vulkan rendering in Chromium.");
-            parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
-                                                 switches::kVulkanImplementationNameNative);
+            parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
+                                                switches::kVulkanImplementationNameNative);
             enableFeatures.push_back(features::kVulkan.name);
         }
     }
 
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan && usingSupportedSGBackend()) {
-        parsedCommandLine->AppendSwitchASCII(switches::kUseVulkan,
-                                             switches::kVulkanImplementationNameNative);
+        // TODO: Try not to force Chromium's Vulkan backend on Linux.
+        //       Currently we force it because OzoneImageBackingFactory does not support to create
+        //       SharedImage in RGBA8888 format under GLX.
+        parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
+                                            switches::kVulkanImplementationNameNative);
         enableFeatures.push_back(features::kVulkan.name);
 
         const char deviceExtensionsVar[] = "QT_VULKAN_DEVICE_EXTENSIONS";
@@ -927,15 +982,14 @@ WebEngineContext::WebEngineContext()
             qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
         }
     }
-#endif // QT_CONFIG(webengine_vulkan)
-#endif // BUILDFLAG(IS_OZONE)
+#endif // BUILDFLAG(IS_OZONE) && QT_CONFIG(webengine_vulkan)
 
 #if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
         || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan) {
         const QString luid = GPUInfo::instance()->getAdapterLuid();
         if (!luid.isEmpty())
-            parsedCommandLine->AppendSwitchASCII(switches::kUseAdapterLuid, luid.toStdString());
+            parsedCommandLine.AppendSwitchASCII(switches::kUseAdapterLuid, luid.toStdString());
     }
 #endif
     // We need the FieldTrialList to make sure Chromium features are provided to child processes
@@ -945,26 +999,11 @@ WebEngineContext::WebEngineContext()
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 
-    const bool disableGpu = parsedCommandLine->HasSwitch(switches::kDisableGpu);
-    std::string glType;
-    if (parsedCommandLine->HasSwitch(switches::kUseGL))
-        glType = parsedCommandLine->GetSwitchValueASCII(switches::kUseGL);
-    else {
-        glType = getGLType(disableGpu);
-        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
-    }
+    logContext(parsedCommandLine);
 
-    parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
-
-    if (glType != gl::kGLImplementationDisabledName) {
-        if (glType != gl::kGLImplementationANGLEName) {
-            qWarning("Only --use-gl=angle is supported on this platform.");
-        }
-    } else if (!disableGpu) {
-        parsedCommandLine->AppendSwitch(switches::kDisableGpu);
-    }
-
-    logContext(glType, parsedCommandLine);
+    // Early error on unsupported --use-gl settings.
+    if (!isGLTypeSupported(glType))
+        qFatal("--use-gl=%s is not supported with the current configuration.", glType.c_str());
 
     registerMainThreadFactories();
 
@@ -1069,7 +1108,7 @@ base::CommandLine *WebEngineContext::initCommandLine(bool *useEmbeddedSwitches)
                "base::CommandLine cannot be properly initialized.");
     }
 
-    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
     int index = appArgs.indexOf(QRegularExpression(u"--webEngineArgs"_s,
                                                    QRegularExpression::CaseInsensitiveOption));
     if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
@@ -1117,9 +1156,9 @@ base::CommandLine *WebEngineContext::initCommandLine(bool *useEmbeddedSwitches)
     for (int i = 0; i < appArgs.size(); ++i)
         argv[i] = appArgs[i].toStdString();
 #endif
-    parsedCommandLine->InitFromArgv(argv);
+    commandLine->InitFromArgv(argv);
 
-    return parsedCommandLine;
+    return commandLine;
 }
 
 bool WebEngineContext::closingDown()
