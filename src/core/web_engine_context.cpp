@@ -409,8 +409,15 @@ static std::string getGLType(const base::CommandLine &cmd)
     return gl::kGLImplementationANGLEName;
 }
 
-static bool isGLTypeSupported(const std::string &glType)
+static bool isGLTypeSupported(const std::string &glType, bool usingVulkan = false)
 {
+#if BUILDFLAG(IS_OZONE)
+    if (glType == gl::kGLImplementationStubName)
+        return usingVulkan;
+#else
+    Q_UNUSED(usingVulkan);
+#endif
+
     if (glType == gl::kGLImplementationANGLEName || glType == gl::kGLImplementationDisabledName)
         return true;
 
@@ -1002,7 +1009,7 @@ WebEngineContext::WebEngineContext()
     logContext(parsedCommandLine);
 
     // Early error on unsupported --use-gl settings.
-    if (!isGLTypeSupported(glType))
+    if (!isGLTypeSupported(glType, isFeatureEnabled(features::kVulkan.name, parsedCommandLine)))
         qFatal("--use-gl=%s is not supported with the current configuration.", glType.c_str());
 
     registerMainThreadFactories();

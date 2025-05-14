@@ -39,6 +39,7 @@ SurfaceFactoryQt::SurfaceFactoryQt()
     m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
                         std::make_unique<ui::GLOzoneANGLEQt>() });
 #endif
+    m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationStubGL), nullptr });
     m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationDisabled), nullptr });
 }
 
