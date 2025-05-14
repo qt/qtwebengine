@@ -80,8 +80,7 @@ public:
     void removeProfileAdapter(ProfileAdapter *profileAdapter);
     bool profileExistOnPath(const QString &dataPath);
     void destroy();
-    static base::CommandLine *initCommandLine(bool &useEmbeddedSwitches,
-                                              bool &enableGLSoftwareRendering);
+    static base::CommandLine *initCommandLine(bool *useEmbeddedSwitches);
 
 private:
     friend class base::RefCounted<WebEngineContext>;

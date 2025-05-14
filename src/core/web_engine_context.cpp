@@ -814,10 +814,8 @@ WebEngineContext::WebEngineContext()
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScript();
 
-    bool useEmbeddedSwitches = false;
-    bool enableGLSoftwareRendering = false;
-    base::CommandLine *parsedCommandLine =
-            initCommandLine(useEmbeddedSwitches, enableGLSoftwareRendering);
+    bool useEmbeddedSwitches;
+    base::CommandLine *parsedCommandLine = initCommandLine(&useEmbeddedSwitches);
 
     setupProxyPac(parsedCommandLine);
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
@@ -947,10 +945,6 @@ WebEngineContext::WebEngineContext()
 
     initializeFeatureList(parsedCommandLine, enableFeatures, disableFeatures);
 
-    // If user requested GL support instead of using Skia rendering to
-    // bitmaps, use software rendering via software OpenGL. This might be less
-    // performant, but at least provides WebGL support.
-    // TODO(miklocek), check if this still works with latest chromium
     const bool disableGpu = parsedCommandLine->HasSwitch(switches::kDisableGpu);
     std::string glType;
     if (parsedCommandLine->HasSwitch(switches::kUseGL))
@@ -963,10 +957,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
     if (glType != gl::kGLImplementationDisabledName) {
-        if (enableGLSoftwareRendering) {
-            parsedCommandLine->AppendSwitch(switches::kDisableGpuRasterization);
-            parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlocklist);
-        }
         if (glType != gl::kGLImplementationANGLEName) {
             qWarning("Only --use-gl=angle is supported on this platform.");
         }
@@ -1068,8 +1058,7 @@ printing::PrintJobManager* WebEngineContext::getPrintJobManager()
 }
 #endif
 
-base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
-                                                     bool &enableGLSoftwareRendering)
+base::CommandLine *WebEngineContext::initCommandLine(bool *useEmbeddedSwitches)
 {
     if (!base::CommandLine::CreateEmpty())
         qFatal("base::CommandLine has been initialized unexpectedly.");
@@ -1096,11 +1085,10 @@ base::CommandLine *WebEngineContext::initCommandLine(bool &useEmbeddedSwitches,
         }
     }
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.contains("--disable-embedded-switches"_L1);
+    *useEmbeddedSwitches = !appArgs.contains("--disable-embedded-switches"_L1);
 #else
-    useEmbeddedSwitches = appArgs.contains("--enable-embedded-switches"_L1);
+    *useEmbeddedSwitches = appArgs.contains("--enable-embedded-switches"_L1);
 #endif
-    enableGLSoftwareRendering = appArgs.removeAll("--enable-webgl-software-rendering"_L1);
     appArgs.removeAll("--disable-embedded-switches"_L1);
     appArgs.removeAll("--enable-embedded-switches"_L1);
 
