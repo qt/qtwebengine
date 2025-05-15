@@ -412,6 +412,9 @@ static std::string getGLType(const base::CommandLine &cmd)
 static bool isGLTypeSupported(const std::string &glType, bool usingVulkan = false)
 {
 #if BUILDFLAG(IS_OZONE)
+    if (glType == gl::kGLImplementationEGLName)
+        return true;
+
     if (glType == gl::kGLImplementationStubName)
         return usingVulkan;
 #else

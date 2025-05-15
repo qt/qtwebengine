@@ -12,7 +12,7 @@
 
 #if BUILDFLAG(IS_OZONE)
 #include "ozone/gl_helper.h"
-#include "ozone/gl_ozone_angle_qt.h"
+#include "ozone/gl_ozone_qt.h"
 #include "ozone/ozone_util_qt.h"
 
 #include "base/posix/eintr_wrapper.h"
@@ -64,8 +64,14 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
 
     SkColorType skColorType = kRGBA_8888_SkColorType;
 #if BUILDFLAG(IS_OZONE)
-    if (ui::GLOzoneANGLEQt::getNativePixmapSupportType() == ui::NativePixmapSupportType::kX11Pixmap)
+    ui::NativePixmapSupportType type = ui::GLOzoneQt::getNativePixmapSupportType();
+    if (type == ui::NativePixmapSupportType::kX11Pixmap)
         skColorType = kBGRA_8888_SkColorType;
+
+    if (type == ui::NativePixmapSupportType::kDMABuf && OzoneUtilQt::usingGLX()
+        && gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+        skColorType = kBGRA_8888_SkColorType;
+    }
 #endif
 
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBA_8888] = skColorType;

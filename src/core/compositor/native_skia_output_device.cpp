@@ -20,7 +20,7 @@
 #include "ui/gl/gl_fence.h"
 
 #if BUILDFLAG(IS_OZONE)
-#include "ozone/gl_ozone_angle_qt.h"
+#include "ozone/gl_ozone_qt.h"
 
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -77,7 +77,7 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
         }
     };
     qCDebug(lcWebEngineCompositor, "Native Pixmap Support Type: %s",
-            typeToString(ui::GLOzoneANGLEQt::getNativePixmapSupportType()));
+            typeToString(ui::GLOzoneQt::getNativePixmapSupportType()));
 #endif
 }
 

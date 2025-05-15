@@ -206,7 +206,7 @@ foreach(arch ${archs})
 
         extend_gn_target(${buildGn} CONDITION LINUX
             SOURCES
-                ozone/gl_ozone_angle_qt.cpp ozone/gl_ozone_angle_qt.h
+                ozone/gl_ozone_qt.cpp ozone/gl_ozone_qt.h
                 ozone/ozone_util_qt.cpp ozone/ozone_util_qt.h
                 ozone/platform_window_qt.cpp ozone/platform_window_qt.h
                 ozone/surface_factory_qt.cpp ozone/surface_factory_qt.h

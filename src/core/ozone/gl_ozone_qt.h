@@ -1,12 +1,11 @@
-// Copyright (C) 2024 The Qt Company Ltd.
+// Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#ifndef GL_OZONE_ANGLE_QT_H
-#define GL_OZONE_ANGLE_QT_H
+#ifndef GL_OZONE_QT_H
+#define GL_OZONE_QT_H
 
 #include "ui/ozone/common/gl_ozone_egl.h"
 
@@ -26,7 +25,7 @@ enum class NativePixmapSupportType {
     kX11Pixmap,
 };
 
-class GLOzoneANGLEQt : public GLOzoneEGL
+class GLOzoneQt : public GLOzoneEGL
 {
 public:
     static NativePixmapSupportType getNativePixmapSupportType();
@@ -53,6 +52,24 @@ protected:
     bool LoadGLES2Bindings(const gl::GLImplementationParts &implementation) override;
 };
 
+class GLOzoneANGLEQt : public GLOzoneQt
+{
+protected:
+    bool LoadGLES2Bindings(const gl::GLImplementationParts &implementation) override;
+};
+
+class GLOzoneEGLQt : public GLOzoneQt
+{
+public:
+    void ShutdownGL(gl::GLDisplay *display) override;
+
+protected:
+    bool LoadGLES2Bindings(const gl::GLImplementationParts &implementation) override;
+
+private:
+    void *m_nativeEGLHandle = nullptr;
+};
+
 } // namespace ui
 
-#endif // GL_OZONE_ANGLE_QT_H
+#endif // GL_OZONE_QT_H

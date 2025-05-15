@@ -4,7 +4,7 @@
 #include "surface_factory_qt.h"
 
 #include "qtwebenginecoreglobal_p.h"
-#include "ozone/gl_ozone_angle_qt.h"
+#include "ozone/gl_ozone_qt.h"
 #include "ozone/ozone_util_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 
@@ -38,6 +38,8 @@ SurfaceFactoryQt::SurfaceFactoryQt()
 #if QT_CONFIG(opengl)
     m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationEGLANGLE),
                         std::make_unique<ui::GLOzoneANGLEQt>() });
+    m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationEGLGLES2),
+                        std::make_unique<ui::GLOzoneEGLQt>() });
 #endif
     m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationStubGL), nullptr });
     m_impls.push_back({ gl::GLImplementationParts(gl::kGLImplementationDisabled), nullptr });

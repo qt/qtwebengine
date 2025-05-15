@@ -5,8 +5,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gl_ozone_angle_qt.h"
+#include "gl_ozone_qt.h"
 #include "surface_factory_qt.h"
+#include "ozone_util_qt.h"
+
+#include <QtCore/private/qconfig_p.h>
+#include <QtGui/qopenglcontext.h>
 
 #include "ui/base/ozone_buildflags.h"
 #include "ui/gl/gl_bindings.h"
@@ -21,6 +25,10 @@
 #include "ui/ozone/platform/x11/native_pixmap_egl_x11_binding.h"
 #endif
 
+#if QT_CONFIG(dlopen)
+#include <dlfcn.h>
+#endif
+
 extern "C" {
 typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 extern __eglMustCastToProperFunctionPointerType EGL_GetProcAddress(const char *procname);
@@ -28,7 +36,7 @@ extern __eglMustCastToProperFunctionPointerType EGL_GetProcAddress(const char *p
 
 namespace ui {
 
-NativePixmapSupportType GLOzoneANGLEQt::getNativePixmapSupportType()
+NativePixmapSupportType GLOzoneQt::getNativePixmapSupportType()
 {
     if (!QtWebEngineCore::SurfaceFactoryQt::SupportsNativePixmaps())
         return NativePixmapSupportType::kNone;
@@ -44,32 +52,31 @@ NativePixmapSupportType GLOzoneANGLEQt::getNativePixmapSupportType()
     return NativePixmapSupportType::kNone;
 }
 
-bool GLOzoneANGLEQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
+bool GLOzoneQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
 {
-    gl::SetGLGetProcAddressProc(&EGL_GetProcAddress);
-    return true;
+    return false;
 }
 
-bool GLOzoneANGLEQt::InitializeStaticGLBindings(const gl::GLImplementationParts &implementation)
+bool GLOzoneQt::InitializeStaticGLBindings(const gl::GLImplementationParts &implementation)
 {
     return GLOzoneEGL::InitializeStaticGLBindings(implementation);
 }
 
-bool GLOzoneANGLEQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display)
+bool GLOzoneQt::InitializeExtensionSettingsOneOffPlatform(gl::GLDisplay *display)
 {
     return GLOzoneEGL::InitializeExtensionSettingsOneOffPlatform(
             static_cast<gl::GLDisplayEGL *>(display));
 }
 
-scoped_refptr<gl::GLSurface> GLOzoneANGLEQt::CreateViewGLSurface(gl::GLDisplay * /*display*/,
-                                                                 gfx::AcceleratedWidget /*window*/)
+scoped_refptr<gl::GLSurface> GLOzoneQt::CreateViewGLSurface(gl::GLDisplay * /*display*/,
+                                                            gfx::AcceleratedWidget /*window*/)
 {
     return nullptr;
 }
 
 // based on GLOzoneEGLX11::CreateOffscreenGLSurface() (x11_surface_factory.cc)
-scoped_refptr<gl::GLSurface> GLOzoneANGLEQt::CreateOffscreenGLSurface(gl::GLDisplay *display,
-                                                                      const gfx::Size &size)
+scoped_refptr<gl::GLSurface> GLOzoneQt::CreateOffscreenGLSurface(gl::GLDisplay *display,
+                                                                 const gfx::Size &size)
 {
     gl::GLDisplayEGL *eglDisplay = display->GetAs<gl::GLDisplayEGL>();
 
@@ -79,7 +86,7 @@ scoped_refptr<gl::GLSurface> GLOzoneANGLEQt::CreateOffscreenGLSurface(gl::GLDisp
     return InitializeGLSurface(new gl::PbufferGLSurfaceEGL(eglDisplay, size));
 }
 
-gl::EGLDisplayPlatform GLOzoneANGLEQt::GetNativeDisplay()
+gl::EGLDisplayPlatform GLOzoneQt::GetNativeDisplay()
 {
 #if BUILDFLAG(IS_OZONE_X11)
     static EGLNativeDisplayType nativeDisplay =
@@ -94,7 +101,7 @@ gl::EGLDisplayPlatform GLOzoneANGLEQt::GetNativeDisplay()
     return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
-bool GLOzoneANGLEQt::CanImportNativePixmap(gfx::BufferFormat format)
+bool GLOzoneQt::CanImportNativePixmap(gfx::BufferFormat format)
 {
     switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
@@ -109,10 +116,10 @@ bool GLOzoneANGLEQt::CanImportNativePixmap(gfx::BufferFormat format)
 }
 
 std::unique_ptr<NativePixmapGLBinding>
-GLOzoneANGLEQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
-                                   gfx::BufferFormat plane_format, gfx::BufferPlane plane,
-                                   gfx::Size plane_size, const gfx::ColorSpace &color_space,
-                                   GLenum target, GLuint texture_id)
+GLOzoneQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
+                              gfx::BufferFormat plane_format, gfx::BufferPlane plane,
+                              gfx::Size plane_size, const gfx::ColorSpace &color_space,
+                              GLenum target, GLuint texture_id)
 {
     switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
@@ -127,6 +134,61 @@ GLOzoneANGLEQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
         NOTREACHED();
         return nullptr;
     }
+}
+
+bool GLOzoneANGLEQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
+{
+    gl::SetGLGetProcAddressProc(&EGL_GetProcAddress);
+    return true;
+}
+
+void GLOzoneEGLQt::ShutdownGL(gl::GLDisplay *display)
+{
+    GLOzoneEGL::ShutdownGL(display);
+#if QT_CONFIG(dlopen)
+    if (m_nativeEGLHandle)
+        dlclose(m_nativeEGLHandle);
+#endif
+}
+
+bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
+{
+    gl::GLGetProcAddressProc getProcAddressPtr = nullptr;
+
+    if (OzoneUtilQt::usingEGL()) {
+        QOpenGLContext *context = OzoneUtilQt::getQOpenGLContext();
+        getProcAddressPtr = reinterpret_cast<gl::GLGetProcAddressProc>(
+                context->getProcAddress("eglGetProcAddress"));
+    }
+
+#if QT_CONFIG(dlopen)
+    if (getProcAddressPtr == nullptr) {
+        const char *eglPath = "libEGL.so.1";
+        m_nativeEGLHandle = dlopen(eglPath, RTLD_NOW);
+        if (!m_nativeEGLHandle) {
+            qWarning("Failed to load EGL library %s: %s", eglPath, dlerror());
+            return false;
+        }
+
+        getProcAddressPtr = reinterpret_cast<gl::GLGetProcAddressProc>(
+                dlsym(m_nativeEGLHandle, "eglGetProcAddress"));
+    }
+#endif // QT_CONFIG(dlopen)
+
+    if (!getProcAddressPtr) {
+        char *error = nullptr;
+#if QT_CONFIG(dlopen)
+        error = dlerror();
+#endif
+        qWarning("Failed to get address of eglGetProcAddress: %s", error ? error : "no error.");
+        return false;
+    }
+
+    gl::SetGLGetProcAddressProc(getProcAddressPtr);
+    // TODO: Log EGL driver information.
+    //       Nvidia fails to make EGL context current if libEGL.so.1 is loaded directly. This could
+    //       be because of loading the wrong driver.
+    return true;
 }
 
 } // namespace ui
