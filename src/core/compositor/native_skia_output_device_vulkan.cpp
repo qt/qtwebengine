@@ -9,6 +9,7 @@
 
 #include <QtGui/qvulkaninstance.h>
 #include <QtGui/qvulkanfunctions.h>
+#include <QtGui/rhi/qrhi.h>
 #include <QtQuick/qquickwindow.h>
 #include <QtQuick/qsgtexture.h>
 
@@ -26,9 +27,28 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "third_party/skia/include/gpu/ganesh/vk/GrVkTypes.h"
 #include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
+
+#include "ozone/gl_ozone_qt.h"
 #endif // BUILDFLAG(IS_OZONE)
 
 namespace QtWebEngineCore {
+
+namespace {
+
+static inline QRhiTexture::Format toRhiTextureFormat(VkFormat format)
+{
+    switch (format) {
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return QRhiTexture::RGBA8;
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        return QRhiTexture::BGRA8;
+    default:
+        qWarning("VULKAN: Unsupported VkFormat: %d. Falling back to QRhiTexture::RGBA8.", format);
+        return QRhiTexture::RGBA8;
+    }
+}
+
+} // namespace
 
 NativeSkiaOutputDeviceVulkan::NativeSkiaOutputDeviceVulkan(
         scoped_refptr<gpu::SharedContextState> contextState, bool requiresAlpha,
@@ -43,6 +63,11 @@ NativeSkiaOutputDeviceVulkan::NativeSkiaOutputDeviceVulkan(
     qCDebug(lcWebEngineCompositor, "Native Skia Output Device: Vulkan");
 
     SkColorType skColorType = kRGBA_8888_SkColorType;
+#if BUILDFLAG(IS_OZONE)
+    if (ui::GLOzoneQt::getNativePixmapSupportType() == ui::NativePixmapSupportType::kX11Pixmap)
+        skColorType = kBGRA_8888_SkColorType;
+#endif
+
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBA_8888] = skColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kRGBX_8888] = skColorType;
     capabilities_.sk_color_type_map[viz::SinglePlaneFormat::kBGRA_8888] = skColorType;
@@ -310,9 +335,19 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
 
     df->vkBindImageMemory(qtVulkanDevice, importedImage, importedImageMemory, 0);
 
-    QQuickWindow::CreateTextureOptions texOpts(textureOptions);
-    QSGTexture *texture = QNativeInterface::QSGVulkanTexture::fromNative(
-            importedImage, importedImageCreateInfo.initialLayout, win, size(), texOpts);
+    QRhiTexture::NativeTexture nativeTexture = {
+        .object = quint64(importedImage),
+        .layout = importedImageCreateInfo.initialLayout,
+    };
+
+    QSGTexture *texture = nullptr;
+    QRhiTexture *rhiTexture =
+            win->rhi()->newTexture(toRhiTextureFormat(importedImageCreateInfo.format), size());
+    if (rhiTexture->createFrom(nativeTexture)) {
+        QQuickWindow::CreateTextureOptions texOpts(textureOptions);
+        texture = win->createTextureFromRhiTexture(rhiTexture, texOpts);
+    } else
+        qWarning("VULKAN: Failed to create QRhiTexture from VkImage.");
 
     m_frontBuffer->textureCleanupCallback = [=]() {
         df->vkDestroyImage(qtVulkanDevice, importedImage, nullptr);

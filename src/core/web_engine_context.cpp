@@ -722,7 +722,9 @@ WebEngineContext::WebEngineContext()
     }
 
 #if BUILDFLAG(IS_OZONE)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
+    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL
+        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan
+        && usingSupportedSGBackend()) {
         const bool disableGpu = parsedCommandLine.HasSwitch(switches::kDisableGpu);
         const bool usingVulkan = isFeatureEnabled(features::kVulkan.name, parsedCommandLine);
         if (!disableGpu && !usingVulkan && !RhiGpuInfo::instance()->isGbmSupported()) {
@@ -744,13 +746,6 @@ WebEngineContext::WebEngineContext()
     }
 #if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan && usingSupportedSGBackend()) {
-        // TODO: Try not to force Chromium's Vulkan backend on Linux.
-        //       Currently we force it because OzoneImageBackingFactory does not support to create
-        //       SharedImage in RGBA8888 format under GLX.
-        parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
-                                            switches::kVulkanImplementationNameNative);
-        enableFeatures.push_back(features::kVulkan.name);
-
         const char deviceExtensionsVar[] = "QT_VULKAN_DEVICE_EXTENSIONS";
         QByteArrayList requiredDeviceExtensions = { "VK_KHR_external_memory_fd",
                                                     "VK_EXT_external_memory_dma_buf",
