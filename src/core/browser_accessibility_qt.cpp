@@ -703,7 +703,7 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
     case ax::mojom::Role::kPane:
         return QAccessible::Pane;
     case ax::mojom::Role::kParagraph:
-        return QAccessible::Paragraph;
+        return QAccessible::Grouping; // QAccessible::Paragraph causes child nodes to be ignored by Windows Narrator
     case ax::mojom::Role::kPdfActionableHighlight:
         return QAccessible::Button;
     case ax::mojom::Role::kPdfRoot:
