@@ -548,7 +548,7 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kNavigation") << QString("<nav>a</nav>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kNote") << QString("<div role='note'>a</div>") << 0 << QAccessible::Note;
     //QTest::newRow("ax::mojom::Role::kPane"); // No mapping to ARIA role
-    QTest::newRow("ax::mojom::Role::kParagraph") << QString("<p>a</p>") << 0 << QAccessible::Paragraph;
+    QTest::newRow("ax::mojom::Role::kParagraph") << QString("<p>a</p>") << 0 << QAccessible::Grouping;
     // QTest::newRow("ax::mojom::Role::kPdfActionableHighlight"); // No mapping to ARIA role
     // QTest::newRow("ax::mojom::Role::kPdfRoot"); // No mapping to ARIA role
     QTest::newRow("ax::mojom::Role::kPluginObject")
@@ -659,7 +659,7 @@ void tst_Accessibility::objectName()
     QAccessibleInterface *p = document->child(0);
     QVERIFY(p);
     QVERIFY(p->object());
-    QCOMPARE(p->role(), QAccessible::Paragraph);
+    QCOMPARE(p->role(), QAccessible::Grouping);
     QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
 }
 
@@ -689,7 +689,7 @@ void tst_Accessibility::crossTreeParent()
     p = p->child(0);
     QVERIFY(p);
     QVERIFY(p->object());
-    QCOMPARE(p->role(), QAccessible::Paragraph);
+    QCOMPARE(p->role(), QAccessible::Grouping);
     QCOMPARE(p->parent(), subdocument);
     QCOMPARE(p->parent()->parent()->parent()->parent(), view->child(0));
     QCOMPARE(p->parent()->parent()->parent()->parent()->parent(), view);
