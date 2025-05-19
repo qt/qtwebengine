@@ -59,6 +59,9 @@ exampledirs += ../../../examples/pdfwidgets \
                ../../../examples/pdf \
                snippets/
 
+# Path to the root of qtwebengine (for automatic linking to source code)
+url.sources.rootdir     = ../../..
+
 # add a generic thumbnail for an example that has no \image in its doc
 manifestmeta.thumbnail.names = "QtPdf/PDF Viewer Example"
 
