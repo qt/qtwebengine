@@ -287,17 +287,9 @@ foreach(target_to_check ${targets_to_check})
 endforeach()
 unset(targets_to_check)
 
-if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR
-         CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" OR
-         CMAKE_CROSSCOMPILING))
-    set(WIN_ARM_64 ON)
-else()
-    set(WIN_ARM_64 OFF)
-endif()
-
 qt_webengine_configure_check("supported-platform"
     MODULES QtWebEngine
-    CONDITION LINUX OR (WIN32 AND NOT (WIN_ARM_64 AND DEFINED ENV{COIN_PLATFORM_ID})) OR MACOS
+    CONDITION LINUX OR WIN32 OR MACOS
     MESSAGE "Build can be done only on Linux, Windows or macOS."
 )
 qt_webengine_configure_check("supported-platform"
