@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.16)
 
 qt_examples_build_begin(EXTERNAL_BUILD)
 
+find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS Pdf PdfWidgets)
+
 if(TARGET Qt::WebEngineCore)
     add_subdirectory(webenginequick)
 endif()
