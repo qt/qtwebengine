@@ -7,7 +7,35 @@ accept_configuration:
 
 machine_type:
   Build:
-    cores: 32
+    # Run Windows cross-compilation on larger VM, due to extreme length.
+    - cores: 32
+      enable_if:
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: Windows
+          - condition: property
+            property: host
+            not_equals_property: target
+          - condition: property
+            property: target.os
+            not_equals_value: Android
+    - cores: 16
+      enable_if:
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: Windows
+          - condition: property
+            property: host.compiler
+            contains_value: MSVC
+          - condition: property
+            property: host.arch
+            equals_value: X86_64
+    - cores: 8
+
   Test:
     cores: 4
 
