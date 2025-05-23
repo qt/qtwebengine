@@ -54,13 +54,6 @@ instructions:
             env_var: COIN_PLATFORM_ID
             contains_value: "windows-11_23h2-arm64-msvc2022"
     - type: AppendToEnvironmentVariable
-      variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
-      variableValue: " -DFEATURE_qtwebengine_build=OFF"
-      enable_if:
-        condition: runtime
-        env_var: COIN_PLATFORM_ID
-        contains_value: "windows-11_24H2-msvc2022-arm64"
-    - type: AppendToEnvironmentVariable
       variableName: COMMON_NON_QTBASE_CMAKE_ARGS
       variableValue: " -DFEATURE_webengine_system_libxml=OFF -DFEATURE_webengine_system_libtiff=OFF"
       enable_if:
