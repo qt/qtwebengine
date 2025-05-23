@@ -33,6 +33,10 @@
 #include <QSysInfo>
 #include <QThread>
 
+#if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_utils.h"
+#endif
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
 #include "media/cdm/clear_key_cdm_common.h"
@@ -585,6 +589,23 @@ void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
     }
 
     qCDebug(lcWebEngineCompositor, "%ls", qUtf16Printable(log));
+
+#if BUILDFLAG(IS_WIN)
+    log = "Windows specific driver information:\n"_L1;
+
+    log += "  Direct Composition: "_L1;
+    if (gpu_info.overlay_info.direct_composition)
+        log += "enabled\n"_L1;
+    else if (gl::GetGlWorkarounds().disable_direct_composition)
+        log += "disabled by workaround\n"_L1;
+    else
+        log += "disabled\n"_L1;
+
+    log += "  Supports Overlays: "_L1
+            + (gpu_info.overlay_info.supports_overlays ? "yes"_L1 : "no"_L1) + u'\n';
+    log += "  Supports D3D Shared Images: "_L1 + (gpu_info.shared_image_d3d ? "yes"_L1 : "no"_L1);
+    qCDebug(lcWebEngineCompositor, "%ls", qUtf16Printable(log));
+#endif
 }
 
 } // namespace QtWebEngineCore
