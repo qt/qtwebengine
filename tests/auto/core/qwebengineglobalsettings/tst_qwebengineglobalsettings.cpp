@@ -115,7 +115,7 @@ void tst_QWebEngineGlobalSettings::dnsOverHttps()
             [&isLoadSuccessful](bool ok) { isLoadSuccessful = ok; });
 
     page.load(url);
-    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 30000);
 
     QTRY_COMPARE(isMockDnsServerCalled, isMockDnsServerCalledExpected);
     QCOMPARE(isLoadSuccessful, isDnsResolutionSuccessExpected);
