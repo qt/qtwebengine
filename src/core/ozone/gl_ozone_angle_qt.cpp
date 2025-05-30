@@ -6,6 +6,7 @@
 // found in the LICENSE file.
 
 #include "gl_ozone_angle_qt.h"
+#include "surface_factory_qt.h"
 
 #include "ui/base/ozone_buildflags.h"
 #include "ui/gl/gl_bindings.h"
@@ -26,23 +27,12 @@ extern __eglMustCastToProperFunctionPointerType EGL_GetProcAddress(const char *p
 }
 
 namespace ui {
-namespace {
-// Based on //ui/ozone/platform/x11/x11_surface_factory.cc
-enum class NativePixmapSupportType {
-    // Importing native pixmaps not supported.
-    kNone,
 
-    // Native pixmaps are imported directly into EGL using the
-    // EGL_EXT_image_dma_buf_import extension.
-    kDMABuf,
-
-    // Native pixmaps are first imported as X11 pixmaps using DRI3 and then into
-    // EGL.
-    kX11Pixmap,
-};
-
-NativePixmapSupportType GetNativePixmapSupportType()
+NativePixmapSupportType GLOzoneANGLEQt::getNativePixmapSupportType()
 {
+    if (!QtWebEngineCore::SurfaceFactoryQt::SupportsNativePixmaps())
+        return NativePixmapSupportType::kNone;
+
     if (gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_EXT_image_dma_buf_import)
         return NativePixmapSupportType::kDMABuf;
 
@@ -53,7 +43,6 @@ NativePixmapSupportType GetNativePixmapSupportType()
 
     return NativePixmapSupportType::kNone;
 }
-} // namespace
 
 bool GLOzoneANGLEQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
 {
@@ -107,7 +96,7 @@ gl::EGLDisplayPlatform GLOzoneANGLEQt::GetNativeDisplay()
 
 bool GLOzoneANGLEQt::CanImportNativePixmap(gfx::BufferFormat format)
 {
-    switch (GetNativePixmapSupportType()) {
+    switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
         return NativePixmapEGLBinding::IsBufferFormatSupported(format);
 #if BUILDFLAG(IS_OZONE_X11)
@@ -125,7 +114,7 @@ GLOzoneANGLEQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
                                    gfx::Size plane_size, const gfx::ColorSpace &color_space,
                                    GLenum target, GLuint texture_id)
 {
-    switch (GetNativePixmapSupportType()) {
+    switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
         return NativePixmapEGLBinding::Create(pixmap, plane_format, plane, plane_size, color_space,
                                               target, texture_id);

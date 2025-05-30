@@ -12,6 +12,7 @@
 
 #if BUILDFLAG(IS_OZONE)
 #include "ozone/gl_helper.h"
+#include "ozone/gl_ozone_angle_qt.h"
 #include "ozone/ozone_util_qt.h"
 
 #include "base/posix/eintr_wrapper.h"
@@ -62,8 +63,8 @@ NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
     qCDebug(lcWebEngineCompositor, "Native Skia Output Device: OpenGL");
 
     SkColorType skColorType = kRGBA_8888_SkColorType;
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
-    if (OzoneUtilQt::usingGLX() && m_contextState->gr_context_type() == gpu::GrContextType::kGL)
+#if BUILDFLAG(IS_OZONE)
+    if (ui::GLOzoneANGLEQt::getNativePixmapSupportType() == ui::NativePixmapSupportType::kX11Pixmap)
         skColorType = kBGRA_8888_SkColorType;
 #endif
 

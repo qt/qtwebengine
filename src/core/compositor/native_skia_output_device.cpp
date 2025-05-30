@@ -20,6 +20,8 @@
 #include "ui/gl/gl_fence.h"
 
 #if BUILDFLAG(IS_OZONE)
+#include "ozone/gl_ozone_angle_qt.h"
+
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -63,6 +65,19 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
                                         .supports_native_pixmaps;
     qCDebug(lcWebEngineCompositor, "Native Buffer Supported: %s",
             m_isNativeBufferSupported ? "yes" : "no");
+
+    auto typeToString = [](ui::NativePixmapSupportType type) -> const char * {
+        switch (type) {
+        case ui::NativePixmapSupportType::kDMABuf:
+            return "DMABuf";
+        case ui::NativePixmapSupportType::kX11Pixmap:
+            return "X11Pixmap";
+        default:
+            return "None";
+        }
+    };
+    qCDebug(lcWebEngineCompositor, "Native Pixmap Support Type: %s",
+            typeToString(ui::GLOzoneANGLEQt::getNativePixmapSupportType()));
 #endif
 }
 
