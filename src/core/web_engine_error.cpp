@@ -62,12 +62,16 @@ WebEngineError::ErrorDomain WebEngineError::toQtErrorDomain(int error_code)
         return WebEngineError::InternalErrorDomain;
 }
 
-QString WebEngineError::toQtErrorDescription(int errorCode)
+QString WebEngineError::toQtErrorDescription(int errorCode, const QUrl &url)
 {
     if (errorCode < 0)
         return toQt(net::ErrorToString(errorCode));
-    else if (errorCode > 0)
-        return toQt(error_page::LocalizedError::GetErrorDetails(
-            error_page::Error::kHttpErrorDomain, errorCode, false, false));
+    else if (errorCode >= 400) {
+        QString localizedError = toQt(error_page::LocalizedError::GetErrorDetails(
+                error_page::Error::kHttpErrorDomain, errorCode, false, false));
+        localizedError.replace("<strong jscontent=\"hostName\"></strong>", url.host());
+        localizedError.replace("<strong jscontent=\"failedUrl\"></strong>", url.toString());
+        return localizedError;
+    }
     return QString();
 }

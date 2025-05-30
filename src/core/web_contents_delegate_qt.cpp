@@ -557,7 +557,8 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     m_loadingInfo.url = toQt(validated_url);
     m_loadingInfo.errorCode = http_statuscode;
     m_loadingInfo.errorDomain = WebEngineError::toQtErrorDomain(http_statuscode);
-    m_loadingInfo.errorDescription = WebEngineError::toQtErrorDescription(http_statuscode);
+    m_loadingInfo.errorDescription =
+            WebEngineError::toQtErrorDescription(http_statuscode, m_loadingInfo.url);
     m_loadingInfo.triggersErrorPage = triggersErrorPage;
 }
 

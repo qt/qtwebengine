@@ -16,6 +16,7 @@
 #define WEB_ENGINE_ERROR_H
 
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+#include <QUrl>
 
 class Q_WEBENGINECORE_EXPORT WebEngineError
 {
@@ -35,7 +36,7 @@ public:
     static const int UserAbortedError;
 
     static ErrorDomain toQtErrorDomain(int error_code);
-    static QString toQtErrorDescription(int errorCode);
+    static QString toQtErrorDescription(int errorCode, const QUrl &url = QUrl());
 };
 
 #endif // WEB_ENGINE_ERROR_H

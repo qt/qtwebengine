@@ -87,6 +87,55 @@ private Q_SLOTS:
         QTRY_VERIFY(spy.count() > 0);
         QVERIFY(httpServer.stop());
     }
+
+    void errorStrings_data()
+    {
+        QTest::addColumn<int>("responseCode");
+
+        QTest::newRow("HTTP 200") << 200;
+        QTest::newRow("HTTP 500") << 500;
+        QTest::newRow("HTTP 403") << 403;
+        QTest::newRow("HTTP 404") << 404;
+        QTest::newRow("HTTP 410") << 410;
+        QTest::newRow("HTTP 500") << 500;
+        QTest::newRow("HTTP 504") << 504;
+    }
+
+    void errorStrings()
+    {
+        QFETCH(int, responseCode);
+
+        HttpServer httpServer;
+        QObject::connect(&httpServer, &HttpServer::newRequest, this,
+                         [&](HttpReqRep *rr) { rr->sendResponse(responseCode); });
+        QVERIFY(httpServer.start());
+
+        QWebEngineProfile profile;
+        QWebEnginePage page(&profile);
+        page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+        QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+        QObject::connect(
+                &page, &QWebEnginePage::loadingChanged, this,
+                [&](QWebEngineLoadingInfo loadingInfo) {
+                    if (loadingInfo.status() == QWebEngineLoadingInfo::LoadStartedStatus) {
+                        QVERIFY(loadingInfo.errorString().isEmpty());
+                        return;
+                    }
+                    QCOMPARE(loadingInfo.status() == QWebEngineLoadingInfo::LoadSucceededStatus,
+                             loadingInfo.errorString().isEmpty());
+                    QCOMPARE(loadingInfo.status() == QWebEngineLoadingInfo::LoadFailedStatus,
+                             !loadingInfo.errorString().isEmpty());
+                    // The errorString shouldn't contain placeholder HTML tags
+                    QVERIFY(!loadingInfo.errorString().contains("jscontent"));
+                    QVERIFY(!loadingInfo.errorString().contains("hostName"));
+                    QVERIFY(!loadingInfo.errorString().contains("failedUrl"));
+                });
+
+        QWebEngineHttpRequest request(httpServer.url("/somepage.html"));
+        page.load(request);
+        QTRY_VERIFY(spy.count() > 0);
+        QVERIFY(httpServer.stop());
+    }
 };
 
 QTEST_MAIN(tst_QWebEngineLoadingInfo)
