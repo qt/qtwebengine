@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "qtwebengine/browser/extensions/webui/extensions_ui_qt.mojom.h"
+#include "api/qwebengineextensioninfo.h"
 
 class ExtensionsUIPageHandlerQt : public qtwebengine::mojom::PageHandler
 {
@@ -26,9 +27,16 @@ public:
 
     void GetAllExtensionInfo(GetAllExtensionInfoCallback callback) override;
     void LoadExtension() override;
+    void InstallExtension() override;
+    void UninstallExtension(const std::string &id, UninstallExtensionCallback callback) override;
+    void UnloadExtension(const std::string &id, UnloadExtensionCallback callback) override;
+    void SetExtensionEnabled(const std::string &id, bool isEnabled,
+                             SetExtensionEnabledCallback callback) override;
 
 private:
+    bool FindExtensionById(const std::string &id, QWebEngineExtensionInfo &extensionInfo);
     void InnerLoadExtension(const base::FilePath &path);
+    void InnerInstallExtension(const base::FilePath &path);
 
     mojo::Receiver<qtwebengine::mojom::PageHandler> receiver_;
     mojo::Remote<qtwebengine::mojom::Page> page_;
