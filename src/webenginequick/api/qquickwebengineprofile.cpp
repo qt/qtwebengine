@@ -251,7 +251,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(const DownloadItemInfo &in
 {
     Q_Q(QQuickWebEngineProfile);
 
-    if (!q->receivers(SIGNAL(downloadRequested(QQuickWebEngineDownloadRequest *)))) {
+    if (!q->receivers(SIGNAL(downloadRequested(QQuickWebEngineDownloadRequest*)))) {
         m_profileAdapter->acceptDownload(info.id, info.accepted, info.useDownloadTargetCallback, info.path,
                                          info.savePageFormat);
         return;

@@ -848,7 +848,7 @@ void tst_QQuickWebEngineView::printToPdf()
     view->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
-    QSignalSpy savePdfSpy(view, SIGNAL(pdfPrintingFinished(const QString&, bool)));
+    QSignalSpy savePdfSpy(view, SIGNAL(pdfPrintingFinished(QString,bool)));
     QString path = tempDir.path() + "/print_success.pdf";
     view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
     QTRY_VERIFY2(savePdfSpy.size() == 1, "Printing to PDF file failed without signal");
