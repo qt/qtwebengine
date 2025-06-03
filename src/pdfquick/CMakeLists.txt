@@ -34,11 +34,17 @@ qt_internal_add_qml_module(PdfQuick
         qtpdfquickglobal_p.h
     INCLUDE_DIRECTORIES
         ../3rdparty/chromium
-    PUBLIC_LIBRARIES
-        Qt::QuickPrivate
+    LIBRARIES
         Qt::PdfPrivate
+        Qt::QuickPrivate
+    PRIVATE_MODULE_INTERFACE
+        Qt::PdfPrivate
+        Qt::QuickPrivate
+    PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+        Qt::Pdf
         Qt::Qml
+        Qt::Quick
     NO_GENERATE_CPP_EXPORTS
 )

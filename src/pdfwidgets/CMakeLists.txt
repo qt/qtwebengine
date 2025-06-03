@@ -9,11 +9,12 @@ qt_internal_add_module(PdfWidgets
         qpdfview.cpp qpdfview.h qpdfview_p.h
         qtpdfwidgetsglobal.h
     LIBRARIES
+        Qt::PdfPrivate
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+        Qt::Pdf
         Qt::Widgets
-        Qt::PdfPrivate
     NO_GENERATE_CPP_EXPORTS
 )
