@@ -145,7 +145,7 @@ void tst_QWebEngineHistory::count()
   */
 void tst_QWebEngineHistory::back()
 {
-    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(const QString&)));
+    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(QString)));
 
     for (int i = histsize;i > 1;i--) {
         QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
@@ -171,7 +171,7 @@ void tst_QWebEngineHistory::forward()
         QTRY_COMPARE(loadFinishedSpy->size(), histBackCount);
     }
 
-    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(const QString&)));
+    QSignalSpy titleChangedSpy(page, SIGNAL(titleChanged(QString)));
     for (int i = 1;i < histsize;i++) {
         QTRY_COMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->forward();
