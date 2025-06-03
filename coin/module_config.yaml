@@ -57,7 +57,7 @@ instructions:
         contains_value: "windows-11_24H2-msvc2022-arm64"
     - type: AppendToEnvironmentVariable
       variableName: COMMON_NON_QTBASE_CMAKE_ARGS
-      variableValue: " -DFEATURE_webengine_system_libxml=OFF"
+      variableValue: " -DFEATURE_webengine_system_libxml=OFF -DFEATURE_webengine_system_libtiff=OFF"
       enable_if:
         condition: property
         property: features
