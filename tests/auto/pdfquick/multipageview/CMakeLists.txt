@@ -11,6 +11,7 @@ qt_internal_add_test(tst_multipageview
     LIBRARIES
         Qt::Gui
         Qt::Quick
+        Qt::PdfPrivate
         Qt::PdfQuickPrivate
     TESTDATA ${test_data}
 )
