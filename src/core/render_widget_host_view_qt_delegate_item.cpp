@@ -348,7 +348,7 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
                             &RenderWidgetHostViewQtDelegateItem::releaseTextureResources,
                             Qt::DirectConnection));
             if (!m_isPopup)
-                m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
+                m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent*)), SLOT(onHide())));
         }
         m_client->visualPropertiesChanged();
     } else if (change == QQuickItem::ItemVisibleHasChanged) {
