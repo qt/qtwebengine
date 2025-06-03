@@ -253,7 +253,7 @@ void tst_QWebEngineFrame::printToPdfFile()
     QVERIFY(maybeInnerFrame);
     auto innerFrame = *maybeInnerFrame;
 
-    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString, bool)) };
+    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString,bool)) };
 
     QString outerPath = tempDir.path() + "/outer.pdf";
     outerFrame.printToPdf(outerPath);
@@ -293,7 +293,7 @@ void tst_QWebEngineFrame::printToPdfFileFailures()
     QVERIFY(maybeInnerFrame);
     auto innerFrame = *maybeInnerFrame;
 
-    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString, bool)) };
+    QSignalSpy savePdfSpy{ &page, SIGNAL(pdfPrintingFinished(QString,bool)) };
 
 #if !defined(Q_OS_WIN)
     auto badPath = tempDir.path() + "/print_//2_failed.pdf";

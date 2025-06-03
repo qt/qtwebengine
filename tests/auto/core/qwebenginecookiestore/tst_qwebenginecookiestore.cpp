@@ -79,8 +79,8 @@ void tst_QWebEngineCookieStore::cookieSignals()
     QWebEngineCookieStore *client = m_profile->cookieStore();
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
 
     page.load(QUrl("qrc:///resources/index.html"));
 
@@ -108,8 +108,8 @@ void tst_QWebEngineCookieStore::setAndDeleteCookie()
     QWebEngineCookieStore *client = m_profile->cookieStore();
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
 
     QNetworkCookie cookie1(QNetworkCookie::parseCookies(QByteArrayLiteral("khaos=I9GX8CWI; Domain=.example.com; Path=/docs")).first());
     QNetworkCookie cookie2(QNetworkCookie::parseCookies(QByteArrayLiteral("Test%20Cookie=foobar; domain=example.com; Path=/")).first());
@@ -155,8 +155,8 @@ void tst_QWebEngineCookieStore::setInvalidCookie()
     QWebEngineCookieStore *client = m_profile->cookieStore();
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
 
     QNetworkCookie goodCookie(
             QNetworkCookie::parseCookies(
@@ -186,8 +186,8 @@ void tst_QWebEngineCookieStore::batchCookieTasks()
     QWebEngineCookieStore *client = m_profile->cookieStore();
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
 
     QNetworkCookie cookie1(QNetworkCookie::parseCookies(QByteArrayLiteral("khaos=I9GX8CWI; Domain=.example.com; Path=/docs")).first());
     QNetworkCookie cookie2(QNetworkCookie::parseCookies(QByteArrayLiteral("Test%20Cookie=foobar; domain=example.com; Path=/")).first());
@@ -230,8 +230,8 @@ void tst_QWebEngineCookieStore::basicFilter()
     client->setCookieFilter([&](const QWebEngineCookieStore::FilterRequest &){ ++accessTested; return true;});
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
 
     page.load(QUrl("qrc:///resources/index.html"));
 
@@ -284,9 +284,9 @@ void tst_QWebEngineCookieStore::basicFilterOverHTTP()
     });
 
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
-    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
-    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(const QNetworkCookie &)));
-    QSignalSpy serverSpy(&httpServer, SIGNAL(newRequest(HttpReqRep *)));
+    QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(QNetworkCookie)));
+    QSignalSpy cookieRemovedSpy(client, SIGNAL(cookieRemoved(QNetworkCookie)));
+    QSignalSpy serverSpy(&httpServer, SIGNAL(newRequest(HttpReqRep*)));
 
     QUrl firstPartyUrl = httpServer.url("/test.html");
     page.load(firstPartyUrl);
