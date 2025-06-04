@@ -7,5 +7,7 @@
 
     Building Qt PDF for Android is currently
     \l{https://bugreports.qt.io/browse/QTBUG-83459} {not supported} on Windows host platforms.
+
+    Currently, it is not possible to build Qt PDF using MinGW.
 */
 
