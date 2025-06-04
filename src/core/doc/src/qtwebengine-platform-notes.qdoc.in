@@ -51,6 +51,8 @@
 
     \note It is not recommended to use tools from  \c msys2 or \c cygwin to build \QWE as it may result in build errors.
 
+    \note Currently, Qt WebEngine does not compile with MinGW.
+
     \section2 Linux
 
     On Linux, Clang or GCC version 9 or later is required.
