@@ -284,6 +284,12 @@ QString dictionariesPath()
                 break;
             }
         }
+
+        if (potentialDictionariesPath.isEmpty()) {
+            // return path for error message
+            potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator()
+                    % QLatin1String("qtwebengine_dictionaries");
+        }
     }
 
     return potentialDictionariesPath;

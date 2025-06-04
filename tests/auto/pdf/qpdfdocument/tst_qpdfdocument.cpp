@@ -36,6 +36,10 @@ private slots:
     void passwordClearedOnClose();
     void metaData();
     void pageLabels();
+    void getSelection_data();
+    void getSelection();
+    void getSelectionAtIndex_data();
+    void getSelectionAtIndex();
 
 private:
     void consistencyCheck(QPdfDocument &doc) const;
@@ -392,6 +396,86 @@ void tst_QPdfDocument::pageLabels()
     QCOMPARE(doc.pageLabel(0), "Qt");
     QCOMPARE(doc.pageLabel(1), "1");
     QCOMPARE(doc.pageLabel(2), "i"); // i of the tiger!
+}
+
+void tst_QPdfDocument::getSelection_data()
+{
+    QTest::addColumn<QString>("pdfPath");
+    QTest::addColumn<int>("page");
+    QTest::addColumn<QPointF>("start");
+    QTest::addColumn<QPointF>("end");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<int>("expectedStartIndex");
+    QTest::addColumn<int>("expectedEndIndex");
+    QTest::addColumn<QRect>("expectedBounds");
+    QTest::addColumn<int>("expectedPolygonCount");
+
+    QTest::newRow("raid") << QFINDTESTDATA("test.pdf")
+            << 1 << QPointF(316.4, 206) << QPointF(339, 201)
+            << "raid" << 80 << 84 << QRect(316, 201, 21, 12) << 1;
+    QTest::newRow("rotated text") << QFINDTESTDATA("rotated_text.pdf")
+            << 0 << QPointF(102, 94) << QPointF(125, 73)
+            << "world!" << 25 << 31 << QRect(98, 70, 26, 28) << 1;
+}
+
+void tst_QPdfDocument::getSelection()
+{
+    QFETCH(QString, pdfPath);
+    QFETCH(int, page);
+    QFETCH(QPointF, start);
+    QFETCH(QPointF, end);
+    QFETCH(QString, expectedText);
+    QFETCH(int, expectedStartIndex);
+    QFETCH(int, expectedEndIndex);
+    QFETCH(QRect, expectedBounds);
+    QFETCH(int, expectedPolygonCount);
+
+    QPdfDocument doc;
+    QCOMPARE(doc.load(pdfPath), QPdfDocument::Error::None);
+
+    QPdfSelection sel = doc.getSelection(page, start, end);
+    QCOMPARE(sel.text(), expectedText);
+    QCOMPARE(sel.startIndex(), expectedStartIndex);
+    QCOMPARE(sel.endIndex(), expectedEndIndex);
+    QCOMPARE(sel.boundingRectangle().toRect(), expectedBounds);
+    QCOMPARE(sel.bounds().size(), expectedPolygonCount);
+}
+
+void tst_QPdfDocument::getSelectionAtIndex_data()
+{
+    QTest::addColumn<QString>("pdfPath");
+    QTest::addColumn<int>("page");
+    QTest::addColumn<int>("start");
+    QTest::addColumn<int>("maxLen");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<QRect>("expectedBounds");
+    QTest::addColumn<int>("expectedPolygonCount");
+
+    QTest::newRow("raid") << QFINDTESTDATA("test.pdf")
+            << 1 << 80 << 4 << "raid" << QRect(316, 201, 21, 12) << 1;
+    QTest::newRow("rotated text") << QFINDTESTDATA("rotated_text.pdf")
+            << 0 << 7 << 6 << "world!" << QRect(76, 102, 26, 28) << 1;
+    QTest::newRow("displaced text") << QFINDTESTDATA("tagged_mcr_multipage.pdf")
+            << 0 << 0 << 10 << "1" << QRect(34, 22, 3, 8) << 1;
+}
+
+void tst_QPdfDocument::getSelectionAtIndex()
+{
+    QFETCH(QString, pdfPath);
+    QFETCH(int, page);
+    QFETCH(int, start);
+    QFETCH(int, maxLen);
+    QFETCH(QString, expectedText);
+    QFETCH(QRect, expectedBounds);
+    QFETCH(int, expectedPolygonCount);
+
+    QPdfDocument doc;
+    QCOMPARE(doc.load(pdfPath), QPdfDocument::Error::None);
+
+    QPdfSelection sel = doc.getSelectionAtIndex(page, start, maxLen);
+    QCOMPARE(sel.text(), expectedText);
+    QCOMPARE(sel.boundingRectangle().toRect(), expectedBounds);
+    QCOMPARE(sel.bounds().size(), expectedPolygonCount);
 }
 
 QTEST_MAIN(tst_QPdfDocument)

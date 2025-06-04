@@ -70,13 +70,14 @@ public:
         static OzonePlatform::PlatformRuntimeProperties properties;
 #if BUILDFLAG(USE_VAAPI)
         if (has_initialized_gpu()) {
+#if BUILDFLAG(USE_VAAPI_X11)
             if (GetQtXDisplay()) {
                 // This property is set when the GetPlatformRuntimeProperties is
                 // called on the gpu process side.
                 properties.supports_native_pixmaps = ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
-            } else {
+            } else
+#endif
                 properties.supports_native_pixmaps = true; // buffer_manager_->GetGbmDevice() != nullptr
-            }
         }
 #endif
         return properties;

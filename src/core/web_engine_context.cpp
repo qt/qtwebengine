@@ -601,9 +601,6 @@ const static char kDisableInProcGpuThread[] = "QTWEBENGINE_DISABLE_GPU_THREAD";
 bool WebEngineContext::isGpuServiceOnUIThread()
 {
     static bool threadedGpu =
-#if QT_CONFIG(opengl) && !defined(Q_OS_MACOS)
-            QOpenGLContext::supportsThreadedOpenGL() &&
-#endif
             !qEnvironmentVariableIsSet(kDisableInProcGpuThread);
     return !threadedGpu;
 }
@@ -985,7 +982,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "121.0.6167.160"; // FIXME: Remember to update
+    return "124.0.6367.208"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

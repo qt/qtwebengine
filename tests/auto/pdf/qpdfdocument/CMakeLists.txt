@@ -12,5 +12,7 @@ qt_internal_add_test(tst_qpdfdocument
     TESTDATA
         pdf-sample.protected.pdf
         pdf-sample.metadata.pdf
+        rotated_text.pdf
+        tagged_mcr_multipage.pdf
         test.pdf
 )

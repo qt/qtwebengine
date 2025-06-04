@@ -1,6 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include "qapplication.h"
 #include "qwebenginenotificationpresenter_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
@@ -156,6 +157,7 @@ public:
     }
     void SetClearColor(const QColor &color) override
     {
+        setUpdatesEnabled(false);
         QQuickWidget::setClearColor(color);
         // QQuickWidget is usually blended by punching holes into widgets
         // above it to simulate the visual stacking order. If we want it to be
@@ -164,7 +166,8 @@ public:
         bool isTranslucent = color.alpha() < 255;
         setAttribute(Qt::WA_AlwaysStackOnTop, isTranslucent);
         setAttribute(Qt::WA_OpaquePaintEvent, !isTranslucent);
-        update();
+        setUpdatesEnabled(true);
+        window()->update();
     }
     void MoveWindow(const QPoint &screenPos) override
     {
@@ -441,6 +444,8 @@ void QWebEngineViewPrivate::widgetChanged(QtWebEngineCore::WebEngineQuickWidget 
 #endif
         q->layout()->addWidget(newWidget);
         q->setFocusProxy(newWidget);
+        if (oldWidget && oldWidget == QApplication::focusWidget())
+            newWidget->setFocus();
         newWidget->show();
     }
 }

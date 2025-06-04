@@ -78,9 +78,12 @@ public:
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
     void updateLastError();
-    QString getText(FPDF_TEXTPAGE textPage, int startIndex, int count);
-    QPointF getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
-    QRectF getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex);
+    QString getText(FPDF_TEXTPAGE textPage, int startIndex, int count) const;
+    QPointF getCharPosition(FPDF_PAGE pdfPage, FPDF_TEXTPAGE textPage, int charIndex) const;
+    QRectF getCharBox(FPDF_PAGE pdfPage, FPDF_TEXTPAGE textPage, int charIndex) const;
+    QPointF mapPageToView(FPDF_PAGE pdfPage, double x, double y) const;
+    QRectF mapPageToView(FPDF_PAGE pdfPage, double left, double top, double right, double bottom) const;
+    QPointF mapViewToPage(FPDF_PAGE pdfPage, QPointF position) const;
 
     // FPDF takes the rotation parameter as an int.
     // This enum is mapping the int values defined in fpdfview.h:956.

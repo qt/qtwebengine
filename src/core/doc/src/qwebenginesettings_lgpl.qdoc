@@ -15,8 +15,8 @@
     \inmodule QtWebEngineCore
 
     QWebEngineSettings allows configuration of browser properties, such as font sizes and
-    families, the location of a custom style sheet, and generic attributes, such as JavaScript
-    support. Individual attributes are set using the setAttribute() function. The
+    families, and generic attributes, such as JavaScript support.
+    Individual attributes are set using the setAttribute() function. The
     \l{QWebEngineSettings::WebAttribute}{WebAttribute} enum further describes each attribute.
 
     Each QWebEnginePage object has its own QWebEngineSettings object, which configures the

@@ -446,7 +446,7 @@ void QPdfDocumentPrivate::fpdf_AddSegment(_FX_DOWNLOADHINTS *pThis, size_t offse
     Q_UNUSED(size);
 }
 
-QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int count)
+QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int count) const
 {
     QList<ushort> buf(count + 1);
     // TODO is that enough space in case one unicode character is more than one in utf-16?
@@ -455,23 +455,73 @@ QString QPdfDocumentPrivate::getText(FPDF_TEXTPAGE textPage, int startIndex, int
     return QString::fromUtf16(reinterpret_cast<const char16_t *>(buf.constData()), len - 1);
 }
 
-QPointF QPdfDocumentPrivate::getCharPosition(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex)
+QPointF QPdfDocumentPrivate::getCharPosition(FPDF_PAGE pdfPage, FPDF_TEXTPAGE textPage, int charIndex) const
 {
     double x, y;
-    int count = FPDFText_CountChars(textPage);
-    bool ok = FPDFText_GetCharOrigin(textPage, qMin(count - 1, charIndex), &x, &y);
-    if (!ok)
-        return QPointF();
-    return QPointF(x, pageHeight - y);
+    const int count = FPDFText_CountChars(textPage);
+    if (FPDFText_GetCharOrigin(textPage, qMin(count - 1, charIndex), &x, &y))
+        return mapPageToView(pdfPage, x, y);
+    return {};
 }
 
-QRectF QPdfDocumentPrivate::getCharBox(FPDF_TEXTPAGE textPage, double pageHeight, int charIndex)
+QRectF QPdfDocumentPrivate::getCharBox(FPDF_PAGE pdfPage, FPDF_TEXTPAGE textPage, int charIndex) const
 {
     double l, t, r, b;
-    bool ok = FPDFText_GetCharBox(textPage, charIndex, &l, &r, &b, &t);
-    if (!ok)
-        return QRectF();
-    return QRectF(l, pageHeight - t, r - l, t - b);
+    if (FPDFText_GetCharBox(textPage, charIndex, &l, &r, &b, &t))
+        return mapPageToView(pdfPage, l, t, r, b);
+    return {};
+}
+
+/*! \internal
+    Convert the point \a x , \a y to the usual 1x (pixels = points)
+    4th-quadrant "view" coordinate system relative to the top-left corner of
+    the rendered page. Some PDF files have internal transforms that make this
+    coordinate system different from "page coordinates", so we cannot just
+    subtract from page height to invert the y coordinates, in general.
+ */
+QPointF QPdfDocumentPrivate::mapPageToView(FPDF_PAGE pdfPage, double x, double y) const
+{
+    const auto pageHeight = FPDF_GetPageHeight(pdfPage);
+    const auto pageWidth = FPDF_GetPageWidth(pdfPage);
+    int rx, ry;
+    if (FPDF_PageToDevice(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, x, y, &rx, &ry))
+        return QPointF(rx, ry);
+    return {};
+}
+
+/*! \internal
+    Convert the bounding box defined by \a left \a top \a right and \a bottom
+    to the usual 1x (pixels = points) 4th-quadrant "view" coordinate system
+    that we use for rendering things on top of the page image.
+    Some PDF files have internal transforms that make this coordinate
+    system different from "page coordinates", so we cannot just
+    subtract from page height to invert the y coordinates, in general.
+ */
+QRectF QPdfDocumentPrivate::mapPageToView(FPDF_PAGE pdfPage, double left, double top, double right, double bottom) const
+{
+    const auto pageHeight = FPDF_GetPageHeight(pdfPage);
+    const auto pageWidth = FPDF_GetPageWidth(pdfPage);
+    int xfmLeft, xfmTop, xfmRight, xfmBottom;
+    if ( FPDF_PageToDevice(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, left, top, &xfmLeft, &xfmTop) &&
+         FPDF_PageToDevice(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, right, bottom, &xfmRight, &xfmBottom) )
+        return QRectF(xfmLeft, xfmTop, xfmRight - xfmLeft, xfmBottom - xfmTop);
+    return {};
+}
+
+/*! \internal
+    Convert the point \a x , \a y \a from the usual 1x (pixels = points)
+    4th-quadrant "view" coordinate system relative to the top-left corner of
+    the rendered page, to "page coordinates" suited to the given \a pdfPage,
+    which may have arbitrary internal transforms.
+ */
+QPointF QPdfDocumentPrivate::mapViewToPage(FPDF_PAGE pdfPage, QPointF position) const
+{
+    const auto pageHeight = FPDF_GetPageHeight(pdfPage);
+    const auto pageWidth = FPDF_GetPageWidth(pdfPage);
+    double rx, ry;
+    if (FPDF_DeviceToPage(pdfPage, 0, 0, qRound(pageWidth), qRound(pageHeight), 0, position.x(), position.y(), &rx, &ry))
+        return QPointF(rx, ry);
+    return {};
 }
 
 QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF position)
@@ -480,14 +530,14 @@ QPdfDocumentPrivate::TextPosition QPdfDocumentPrivate::hitTest(int page, QPointF
 
     TextPosition result;
     FPDF_PAGE pdfPage = FPDF_LoadPage(doc, page);
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
-    int hitIndex = FPDFText_GetCharIndexAtPos(textPage, position.x(), pageHeight - position.y(),
+    const QPointF pagePos = mapViewToPage(pdfPage, position);
+    int hitIndex = FPDFText_GetCharIndexAtPos(textPage, pagePos.x(), pagePos.y(),
                                               CharacterHitTolerance, CharacterHitTolerance);
     if (hitIndex >= 0) {
-        QPointF charPos = getCharPosition(textPage, pageHeight, hitIndex);
+        QPointF charPos = getCharPosition(pdfPage, textPage, hitIndex);
         if (!charPos.isNull()) {
-            QRectF charBox = getCharBox(textPage, pageHeight, hitIndex);
+            QRectF charBox = getCharBox(pdfPage, textPage, hitIndex);
             // If the given position is past the end of the line, i.e. if the right edge of the found character's
             // bounding box is closer to it than the left edge is, we say that we "hit" the next character index after
             if (qAbs(charBox.right() - position.x()) < qAbs(charPos.x() - position.x())) {
@@ -931,11 +981,12 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
 {
     const QPdfMutexLocker lock;
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
+    const QPointF pageStart = d->mapViewToPage(pdfPage, start);
+    const QPointF pageEnd = d->mapViewToPage(pdfPage, end);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
-    int startIndex = FPDFText_GetCharIndexAtPos(textPage, start.x(), pageHeight - start.y(),
+    int startIndex = FPDFText_GetCharIndexAtPos(textPage, pageStart.x(), pageStart.y(),
                                                 CharacterHitTolerance, CharacterHitTolerance);
-    int endIndex = FPDFText_GetCharIndexAtPos(textPage, end.x(), pageHeight - end.y(),
+    int endIndex = FPDFText_GetCharIndexAtPos(textPage, pageEnd.x(), pageEnd.y(),
                                               CharacterHitTolerance, CharacterHitTolerance);
 
     QPdfSelection result;
@@ -946,7 +997,7 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
 
         // If the given end position is past the end of the line, i.e. if the right edge of the last character's
         // bounding box is closer to it than the left edge is, then extend the char range by one
-        QRectF endCharBox = d->getCharBox(textPage, pageHeight, endIndex);
+        QRectF endCharBox = d->getCharBox(pdfPage, textPage, endIndex);
         if (qAbs(endCharBox.right() - end.x()) < qAbs(endCharBox.x() - end.x()))
             ++endIndex;
 
@@ -958,7 +1009,7 @@ QPdfSelection QPdfDocument::getSelection(int page, QPointF start, QPointF end)
         for (int i = 0; i < rectCount; ++i) {
             double l, r, b, t;
             FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
-            QRectF rect(l, pageHeight - t, r - l, t - b);
+            const QRectF rect = d->mapPageToView(pdfPage, l, t, r, b);
             if (hull.isNull())
                 hull = rect;
             else
@@ -988,7 +1039,6 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
         return {};
     const QPdfMutexLocker lock;
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
     int pageCount = FPDFText_CountChars(textPage);
     if (startIndex >= pageCount)
@@ -1003,7 +1053,7 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
         for (int i = 0; i < rectCount; ++i) {
             double l, r, b, t;
             FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
-            QRectF rect(l, pageHeight - t, r - l, t - b);
+            const QRectF rect = d->mapPageToView(pdfPage, l, t, r, b);
             if (hull.isNull())
                 hull = rect;
             else
@@ -1012,7 +1062,7 @@ QPdfSelection QPdfDocument::getSelectionAtIndex(int page, int startIndex, int ma
         }
     }
     if (bounds.isEmpty())
-        hull = QRectF(d->getCharPosition(textPage, pageHeight, startIndex), QSizeF());
+        hull = QRectF(d->getCharPosition(pdfPage, textPage, startIndex), QSizeF());
     qCDebug(qLcDoc) << "on page" << page << "at index" << startIndex << "maxLength" << maxLength
                     << "got" << text.size() << "chars," << rectCount << "rects within" << hull;
 
@@ -1029,7 +1079,6 @@ QPdfSelection QPdfDocument::getAllText(int page)
 {
     const QPdfMutexLocker lock;
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
-    double pageHeight = FPDF_GetPageHeight(pdfPage);
     FPDF_TEXTPAGE textPage = FPDFText_LoadPage(pdfPage);
     int count = FPDFText_CountChars(textPage);
     if (count < 1)
@@ -1041,7 +1090,7 @@ QPdfSelection QPdfDocument::getAllText(int page)
     for (int i = 0; i < rectCount; ++i) {
         double l, r, b, t;
         FPDFText_GetRect(textPage, i, &l, &t, &r, &b);
-        QRectF rect(l, pageHeight - t, r - l, t - b);
+        const QRectF rect = d->mapPageToView(pdfPage, l, t, r, b);
         if (hull.isNull())
             hull = rect;
         else

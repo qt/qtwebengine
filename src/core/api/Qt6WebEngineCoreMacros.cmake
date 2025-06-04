@@ -29,7 +29,7 @@ function(qt6_add_webengine_dictionary)
         set(copyCommand COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARGS_OUTPUT_DIRECTORY}/dict
            ${ARGS_OUTPUT_DIRECTORY}/$<CONFIG>
         )
-    elseif((MACOS OR IOS) AND isBundle)
+    elseif(APPLE AND isBundle)
         get_target_property(outputName ${ARGS_TARGET} OUTPUT_NAME)
         if(NOT outputName)
            set(outputName ${ARGS_TARGET})

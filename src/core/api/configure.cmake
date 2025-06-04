@@ -13,7 +13,7 @@ if(NOT QT_CONFIGURE_RUNNING)
         pkg_check_modules(XDAMAGE xdamage)
         pkg_check_modules(POPPLER_CPP poppler-cpp IMPORTED_TARGET)
         pkg_check_modules(GBM gbm)
-        pkg_check_modules(LIBVA libva)
+        pkg_check_modules(LIBVA libva>=1.14)
         if(NOT GIO_FOUND)
             pkg_check_modules(GIO gio-2.0)
         endif()
@@ -66,7 +66,7 @@ qt_feature("webengine-system-alsa" PRIVATE
 )
 qt_feature("webengine-v8-context-snapshot" PRIVATE
     LABEL "Use v8 context snapshot"
-    CONDITION NOT CMAKE_CROSSCOMPILING
+    AUTODETECT NOT CMAKE_CROSSCOMPILING
 )
 qt_feature("webengine-geolocation" PUBLIC
     LABEL "Geolocation"
