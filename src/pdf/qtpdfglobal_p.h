@@ -22,13 +22,11 @@
 // introduced alongside the new logging category macros in Qt 6.9. Since we need to support
 // building with older versions up to and including the last LTS release (6.8), we can't simply
 // switch to using Q_STATIC_LOGGING_CATEGORY. This file and the macro definition within
-// are intended to be removed in the next Qt 6 LTS release.
-#if QT_VERSION < QT_VERSION_CHECK(6, 11, 0)
+// are intended to be removed in the next Qt 6 LTS+1 release.
 #if defined(Q_STATIC_LOGGING_CATEGORY)
 #define Q_PDF_LOGGING_CATEGORY(name, ...) Q_STATIC_LOGGING_CATEGORY(name, __VA_ARGS__)
 #else
 #define Q_PDF_LOGGING_CATEGORY(name, ...) Q_LOGGING_CATEGORY(name, __VA_ARGS__)
-#endif
 #endif
 
 #endif // QTPDFGLOBAL_P_H
