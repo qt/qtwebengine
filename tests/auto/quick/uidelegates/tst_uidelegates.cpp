@@ -111,7 +111,9 @@ void tst_UIDelegates::javaScriptDialog()
     QFETCH(QString, expectedObjectName);
 
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -125,7 +127,9 @@ void tst_UIDelegates::javaScriptDialog()
 void tst_UIDelegates::fileDialog()
 {
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -141,7 +145,9 @@ void tst_UIDelegates::fileDialog()
 void tst_UIDelegates::contextMenu()
 {
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -155,7 +161,9 @@ void tst_UIDelegates::contextMenu()
 void tst_UIDelegates::tooltip()
 {
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -178,7 +186,9 @@ void tst_UIDelegates::tooltip()
 void tst_UIDelegates::colorDialog()
 {
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -218,7 +228,9 @@ void tst_UIDelegates::authenticationDialog()
     QVERIFY(server.start());
 
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
+    QVERIFY(qApp->focusObject());
     QQuickWebEngineView *view = webEngineView();
     view->loadHtml("<html><body>"
                    "</body></html>");
