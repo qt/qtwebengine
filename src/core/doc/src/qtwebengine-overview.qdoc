@@ -249,28 +249,8 @@
 
     \section1 High DPI Support
 
-    To support High DPI devices, it is recommended that the application attribute
-    Qt::AA_EnableHighDpiScaling is set to enable automatic scaling based on the
-    pixel density of the monitor. In \QWE applications, the scaling
-    affects the default zooming factor and scrollbar size.
-
-    For example:
-
-    \code
-    int main(int argc, char *argv[])
-    {
-      QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-      QApplication app(argc, argv);
-      // ...
-    }
-    \endcode
-
-    \QWE bundles images for normal and high-dpi resolutions into
-    \e qtwebengine_resources_100p.pak and \e qtwebengine_resources_200p.pak
-    files. Depending on the target resolutions, one or both of these files need
-    to be deployed.
-
-    For more information, see \l{High DPI}.
+    High DPI support is always enabled in Qt 6, and this also applies to \QWE. For more information,
+    see \l{High DPI}.
 
     \section1 Using WebEngine Core
 
