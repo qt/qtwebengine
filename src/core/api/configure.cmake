@@ -84,6 +84,12 @@ qt_feature("webengine-system-gbm" PRIVATE
     AUTODETECT UNIX
     CONDITION GBM_FOUND
 )
+qt_feature("webengine-webrtc-system-openh264" PRIVATE
+    LABEL "Use system openh264 for webrtc"
+    CONDITION UNIX
+        AND QT_FEATURE_webengine_system_openh264
+        AND QT_FEATURE_webengine_proprietary_codecs
+)
 qt_feature("webengine-printing-and-pdf" PRIVATE
     LABEL "Printing and PDF"
     PURPOSE "Provides printing and output to PDF."
@@ -223,6 +229,10 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_entry(
     ARGS "webengine-system-pulseaudio"
     CONDITION LINUX
+)
+qt_configure_add_summary_entry(
+    ARGS "webengine-webrtc-system-openh264"
+    CONDITION UNIX
 )
 qt_configure_add_summary_entry(ARGS "webengine-v8-context-snapshot")
 qt_configure_add_summary_entry(ARGS "webenginedriver")

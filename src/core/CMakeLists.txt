@@ -535,6 +535,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_system_gbm
             )
             extend_gn_list(gnArgArg
+                ARGS rtc_system_openh264
+                CONDITION QT_FEATURE_webengine_webrtc_system_openh264
+            )
+            extend_gn_list(gnArgArg
                 ARGS use_vaapi
                 CONDITION QT_FEATURE_webengine_vaapi
             )

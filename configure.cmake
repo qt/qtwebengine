@@ -25,6 +25,7 @@ qt_webengine_set_version(vpx 1.10.0)
 qt_webengine_set_version(libavutil 58.29.100)
 qt_webengine_set_version(libavcodec 60.31.102)
 qt_webengine_set_version(libavformat 60.16.100)
+qt_webengine_set_version(openh264 2.4.1)
 qt_webengine_set_version(windows_sdk 26100) # we only care about minor number "10.0.26100.0"
 
 if(QT_CONFIGURE_RUNNING)
@@ -93,6 +94,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(XKBFILE xkbfile)
     pkg_check_modules(XCBDRI3 xcb-dri3)
     pkg_check_modules(LIBUDEV libudev)
+    pkg_check_modules(OPENH264 openh264>=${QT_CONFIGURE_CHECK_openh264_version})
 endif()
 
 if(Python3_EXECUTABLE)
@@ -723,6 +725,11 @@ qt_feature("webengine-system-libudev" PRIVATE
     CONDITION UNIX AND LIBUDEV_FOUND
 )
 
+qt_feature("webengine-system-openh264" PRIVATE
+    LABEL "openh264"
+    CONDITION UNIX AND OPENH264_FOUND
+)
+
 qt_feature("webengine-ozone-x11" PRIVATE
     LABEL "Support X11 on qpa-xcb"
     CONDITION LINUX
@@ -778,6 +785,7 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-freetype")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpci")
     qt_configure_add_summary_entry(ARGS "webengine-system-libudev")
+    qt_configure_add_summary_entry(ARGS "webengine-system-openh264")
     qt_configure_end_summary_section()
 endif()
 
