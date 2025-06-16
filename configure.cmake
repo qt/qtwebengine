@@ -265,7 +265,9 @@ qt_webengine_configure_check("compiler-cxx20"
     MODULES QtWebEngine QtPdf
     CONDITION TEST_cxx20
     MESSAGE "Missing C++20 compiler support."
+
     DOCUMENTATION "C++20 compiler support"
+
 )
 
 qt_webengine_configure_check("cmake"

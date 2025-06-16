@@ -31,6 +31,10 @@
 
     \section2 All Platforms
 
+    \note Qt WebEngine requires a C++20-compatible compiler on all platforms, due to its
+    dependency on the Chromium project.
+    While Qt as a whole only requires C++17, Qt WebEngine is an exception.
+
     On all platforms, the following tools are required at build time:
 
     \list
