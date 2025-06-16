@@ -81,47 +81,6 @@ function(get_copy_of_response_file result target rsp)
     add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
 endfunction()
 
-# Creates an IMPORTED object library pointing to a single object file
-# that is the result of merging multiple Chromium object files with `clang -r`.
-#
-# The object file is added to the cmakeTarget static archive, without
-# propagating any usage requirements to the consumers of the cmakeTarget.
-#
-# Used exclusively for single-arch macOS static builds of QtPdf.
-function(add_archiver_options target buildDir completeStatic)
-    get_target_property(config ${target} CONFIG)
-    string(TOUPPER ${config} cfg)
-    get_target_property(ninjaTarget ${target} NINJA_TARGET)
-    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
-    set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
-
-    set(gn_object_target "GnObject_${cmakeTarget}_${config}")
-    add_library("${gn_object_target}" OBJECT IMPORTED GLOBAL)
-
-    # This genex construct is used to prevent leakage of the
-    # ${gn_object_target} target into the INTERFACE_LINK_LIBRARIES
-    # property of the <module> target in its exported
-    # <module>Targets.cmake file, and in the accompanying .prl file.
-    set(config_genex "$<CONFIG:${config}>")
-
-    # This prevents the .prl leakage, it always evaluates to true.
-    set(skip_walk_genex "$<BOOL:QT_SKIP_WALK_LIBS_PROCESSING>")
-
-    # This prevents the INTERFACE_LINK_LIBRARIES leakage.
-    if(CMAKE_VERSION VERSION_LESS "3.26")
-        set(build_genex "BUILD_INTERFACE")
-    else()
-        set(build_genex "BUILD_LOCAL_INTERFACE")
-    endif()
-
-    set(link_genex "$<${build_genex}:${gn_object_target}>")
-    set(condition "$<AND:${config_genex},${skip_walk_genex}>")
-    set(final_genex "$<${condition}:${link_genex}>")
-
-    target_link_libraries(${cmakeTarget} PRIVATE "${final_genex}")
-    set_property(TARGET "${gn_object_target}" PROPERTY IMPORTED_OBJECTS_${cfg} ${objects_out})
-endfunction()
-
 # Links Chromium object files and static libraries to a target Qt library (e.g. Pdf or
 # WebEngineCore), using response files.
 #
@@ -260,42 +219,131 @@ function(add_intermediate_archive target buildDir completeStatic)
     )
 endfunction()
 
-# Merges multiple Chromium object files into a single object file using `clang -r`.
-# E.g. multiple Pdf object files into a single Pdf_objects.o file.
-#
-# This is used for iOS builds and single-arch static macOS builds of QtPdf.
-#
-# TODO: This currently loses debug information for static Qt builds, because `clang -r` does NOT
-# transfer debug information, but only adds debug link info, see QTBUG-116619.
-function(add_intermediate_object target buildDir completeStatic)
+# Overrides the cmake archive creation rule with `libtool`, instead of `ar`, because it supports
+# response files and that simplifies linking to the Chromium static libraries and object files a
+# lot. libtool supports all the input kinds we need, including single or multi-arch object files
+# and static libraries, in any combination, which means we don't need to manually merge them or
+# lipo them.
+macro(qt_webengine_set_apple_archiver_flags)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+        set(CMAKE_CXX_ARCHIVE_CREATE
+            "libtool -o <TARGET> <LINK_FLAGS> -no_warning_for_no_symbols <OBJECTS>")
+        set(CMAKE_CXX_ARCHIVE_APPEND
+            "libtool -o <TARGET> <LINK_FLAGS> -no_warning_for_no_symbols <TARGET> <OBJECTS>")
+    endif()
+endmacro()
+
+# Given the <module>_objects.rsp file, creates a new response file with symlinked object files
+# that have unique names, to avoid issues with duplicate object names when archiving and running
+# dsymutil.
+# Uses a custom CMake script to create the symlinks in a separate dir.
+function(symlink_renamed_objects_in_new_rsp_file target buildDir output_rsp output_stamp)
     get_target_property(config ${target} CONFIG)
     get_target_property(arch ${target} ARCH)
-    get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(ninjaStamp ${target} NINJA_STAMP)
-    string(TOUPPER ${config} cfg)
-    if(IOS)
-        get_ios_target_triple_and_sysroot(args ${arch})
-    endif()
+
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
-    set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
-    if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
-        list(APPEND args -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
-    endif()
+    set(symlinked_objects_rsp "${buildDir}/${ninjaTarget}_symlinked_objects.rsp")
+    set(symlinker_stamp_file "${buildDir}/${ninjaTarget}_symlink_stamp.txt")
+
+    # This is where the symlinks are created.
+    set(symlinks_dir "${buildDir}/${ninjaTarget}_symlinked_objects")
+
+    # This is used to make the symlink paths relative to the build dir.
+    set(symlink_base_dir "${buildDir}")
+    file(MAKE_DIRECTORY "${symlinks_dir}")
+
+    set(symlinker_script
+        "${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtWebEngineRspSymlinker.cmake")
+
     add_custom_command(
-        OUTPUT ${objects_out}
-        COMMAND clang++ -r -nostdlib
-            ${args}
-            -o ${objects_out}
-            -Wl,-keep_private_externs
-            @${objects_rsp}
+        OUTPUT "${symlinker_stamp_file}"
+        COMMAND
+            "${CMAKE_COMMAND}"
+            "-DINPUT_RESPONSE_FILE_PATH=${objects_rsp}"
+            "-DOUTPUT_RESPONSE_FILE_PATH=${symlinked_objects_rsp}"
+            "-DOUTPUT_SYMLINKS_DIR=${symlinks_dir}"
+            "-DSYMLINK_BASE_DIR=${symlink_base_dir}"
+            -P
+            "${symlinker_script}"
+        COMMAND
+            ${CMAKE_COMMAND} -E touch "${symlinker_stamp_file}"
         DEPENDS
-            ${buildDir}/${ninjaStamp}
+            "${symlinker_script}"
+            "${buildDir}/${ninjaStamp}"
         WORKING_DIRECTORY "${buildDir}/../../.."
-        COMMENT "Creating intermediate object files for ${cmakeTarget}/${config}/${arch}"
+        COMMENT "Creating symlink response file for ${cmakeTarget}/${config}/${arch}"
         USES_TERMINAL
         VERBATIM
         COMMAND_EXPAND_LISTS
+    )
+    set(${output_rsp} "${symlinked_objects_rsp}" PARENT_SCOPE)
+    set(${output_stamp} "${symlinker_stamp_file}" PARENT_SCOPE)
+endfunction()
+
+# Adds the arch-specific objects from <module>_objects.rsp into a single universal static
+# library, using libtool.
+# Appends the response file to the STATIC_LIBRARY_OPTIONS property of the module target.
+# Used on static macOS and iOS builds for the QtPdf module.
+function(add_objects_to_apple_static_library target buildDir)
+    get_target_property(config ${target} CONFIG)
+    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
+    get_target_property(ninjaTarget ${target} NINJA_TARGET)
+
+    symlink_renamed_objects_in_new_rsp_file(
+        "${target}" "${buildDir}" symlinked_objects_rsp symlinker_stamp_file)
+
+    # We need a way to cause QtPdf to be recreated when any of the source object files change.
+    # The dependency chain is:
+    #   Chromium ninja stamp
+    #   -> create new rsp with symlinked objects
+    #   -> re-create QtPdf static archive
+    # CMake doesn't allow to directly model the last step.
+    # So there is no way to say that add_library(QtPdf) static should be recreated when the
+    # rsp file in STATIC_LIBRARY_OPTIONS changes.
+    #
+    # To work around that, create an empty OBJECT library target that depends on the
+    # symlink stamp file by adding it to OBJECT_DEPENDS, and then link that OBJECT library into
+    # the module target. This creates the needed dependency, at the cost of one more build rule
+    # to build the empty object file.
+    set(sym_objects_target ${target}_sym_objects)
+    set(sym_object_fake_cpp_path
+        "${buildDir}/${ninjaTarget}_sym_objects_${config}_${arch}.cpp")
+    file(GENERATE
+        OUTPUT "${sym_object_fake_cpp_path}"
+        CONTENT "// Empty source file to drive the ${sym_objects_target} target\n"
+    )
+
+    add_library("${sym_objects_target}" OBJECT "${sym_object_fake_cpp_path}")
+    set_property(SOURCE "${sym_object_fake_cpp_path}" PROPERTY OBJECT_DEPENDS
+        "${symlinker_stamp_file}"
+    )
+
+    # This genex construct is used to prevent leakage of the
+    # ${sym_objects_target} target into the INTERFACE_LINK_LIBRARIES
+    # property of the <module> target in its exported
+    # <module>Targets.cmake file, and in the accompanying .prl file.
+    set(config_genex "$<CONFIG:${config}>")
+
+    # This prevents the .prl leakage, it always evaluates to true.
+    set(skip_walk_genex "$<BOOL:QT_SKIP_WALK_LIBS_PROCESSING>")
+
+    # This prevents the INTERFACE_LINK_LIBRARIES leakage.
+    if(CMAKE_VERSION VERSION_LESS "3.26")
+        set(build_genex "BUILD_INTERFACE")
+    else()
+        set(build_genex "BUILD_LOCAL_INTERFACE")
+    endif()
+
+    set(link_genex "$<${build_genex}:${sym_objects_target}>")
+    set(condition "$<AND:${config_genex},${skip_walk_genex}>")
+    set(final_genex "$<${condition}:${link_genex}>")
+    target_link_libraries("${cmakeTarget}" PRIVATE "${final_genex}")
+
+    set_property(TARGET ${cmakeTarget} APPEND PROPERTY STATIC_LIBRARY_OPTIONS
+        "$<$<CONFIG:${config}>:@${symlinked_objects_rsp}>"
     )
 endfunction()
 
@@ -315,27 +363,6 @@ function(create_lipo_command target buildDir fileName)
         USES_TERMINAL
         COMMENT "Running lipo for ${target}/${config}/${arch}"
         VERBATIM
-    )
-endfunction()
-
-# Lipo-s object files into a single universal object file.
-#
-# The resulting lipo-ed object file is added to the STATIC_LIBRARY_OPTIONS of the module target
-# (e.g QtPdf).
-#
-# The function is only used for iOS QtPdf builds.
-function(add_ios_lipo_command target buildDir)
-    get_target_property(config ${target} CONFIG)
-    get_target_property(cmakeTarget ${target} CMAKE_TARGET)
-    set(fileName ${cmakeTarget}_objects.o)
-    create_lipo_command(${target} ${buildDir} ${fileName})
-    add_custom_target(lipo_${cmakeTarget}_${config} DEPENDS
-        ${buildDir}/${fileName}
-    )
-    add_dependencies(${cmakeTarget} lipo_${cmakeTarget}_${config})
-    qt_internal_get_target_property(options ${cmakeTarget} STATIC_LIBRARY_OPTIONS)
-    set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS
-        "${options}$<$<CONFIG:${config}>:${buildDir}/${fileName}>"
     )
 endfunction()
 
@@ -462,31 +489,31 @@ function(add_gn_build_artifacts_to_target)
             set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
                 LINK_DEPENDS ${arg_BUILDDIR}/${config}/${arch}/${arg_NINJA_STAMP}
             )
-            if(QT_IS_MACOS_UNIVERSAL)
-                # For universal macOS builds we create (merge) per-arch intermediate archives from
-                # objects and static archives, to lipo them later, and then link them to the
-                # module target via target_link_libraries().
-                # TODO: Currently broken for static universal QtPdf builds. Static WebEngine are
-                # not supported, so not relevant for that.
-                add_intermediate_archive(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
-            elseif(IOS)
-                # For iOS builds that only support building QtPdf, but not QtWebEngine, we create
-                # a per-arch merged object file from all Pdf object files, and later (see below)
-                # lipo them together, and finally add them to STATIC_LIBRARY_OPTIONS of QtPdf.
-                add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
-            else()
-                if(MACOS AND QT_FEATURE_static)
-                    # The macOS archiver does not support response files (aka @file notation),
-                    # so we create a merged intermediate object like on iOS, create an IMPORTED
-                    # object library for it, and link that to the module target.
-                    add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
-                    add_archiver_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
+            if(APPLE)
+                if(QT_IS_MACOS_UNIVERSAL AND QT_FEATURE_shared)
+                    # For universal macOS builds we create (merge) per-arch intermediate archives
+                    # from objects and static archives, to lipo them later, and then link them to
+                    # the module target via target_link_libraries().
+                    add_intermediate_archive(
+                        ${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
+                elseif(MACOS AND QT_FEATURE_shared)
+                    # For single-arch macOS shared builds, we directly link the response files to
+                    # the module target, like for all other platforms below..
+                    add_linker_options(
+                        ${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 else()
-                    # For single-arch macOS shared builds, and all other platforms (Linux, Windows,
-                    # Android), instead of merging objects, we directly link the response files to
-                    # the module target.
-                    add_linker_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
+                    # For macOS/iOS static builds that only support building QtPdf, but not
+                    # QtWebEngine, directly add the objects response file to the module target via
+                    # STATIC_LIBRARY_OPTIONS. libtool takes care of the lipo-ing. Works for
+                    # both single-arch and universal builds.
+                    add_objects_to_apple_static_library(
+                        ${target} ${arg_BUILDDIR}/${config}/${arch})
                 endif()
+           else()
+                # For all other platforms (Linux, Windows, Android), instead of merging objects,
+                # we directly link the response files to the module target.
+                add_linker_options(
+                    ${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             endif()
             unset(target)
         endforeach()
@@ -503,11 +530,8 @@ function(add_gn_build_artifacts_to_target)
                     QT_NO_DISABLE_WARN_DUPLICATE_LIBRARIES TRUE)
             endif()
         endif()
-        if(QT_IS_MACOS_UNIVERSAL)
+        if(QT_IS_MACOS_UNIVERSAL AND QT_FEATURE_shared)
             add_lipo_command(${target} ${arg_BUILDDIR}/${config})
-        endif()
-        if(IOS)
-            add_ios_lipo_command(${target} ${arg_BUILDDIR}/${config})
         endif()
     endforeach()
 endfunction()

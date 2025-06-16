@@ -34,6 +34,8 @@ addSyncTargets(core)
 get_configs(configs)
 get_architectures(archs)
 
+qt_webengine_set_apple_archiver_flags()
+
 foreach(arch ${archs})
     foreach(config ${configs})
 

@@ -14,6 +14,8 @@ set(buildDir "${CMAKE_CURRENT_BINARY_DIR}")
 #  PDF MODULE
 ##
 
+qt_webengine_set_apple_archiver_flags()
+
 qt_internal_add_module(Pdf
     SOURCES
         qpdfbookmarkmodel.cpp qpdfbookmarkmodel.h
