@@ -16,7 +16,7 @@ include(cmake/QtWebEngineSbomHelpers.cmake)
 include(cmake/QtToolchainHelpers.cmake)
 
 project(QtWebEngineDummy)
-find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals Core)
+find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals)
 
 # Sepcial case of just doing gn build
 if(DEFINED BUILD_ONLY_GN)
@@ -25,13 +25,14 @@ if(DEFINED BUILD_ONLY_GN)
 endif()
 
 project(QtWebEngine
-    VERSION ${Qt6Core_VERSION}
+    VERSION ${Qt6BuildInternals_VERSION}
     DESCRIPTION "QtWebEngine and QtPdf modules"
     HOMEPAGE_URL "https://qt.io/"
     LANGUAGES CXX C
 )
 qt_internal_project_setup()
 
+find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL Quick Qml PrintSupport
     WebChannel WebChannelQuick Positioning QuickControls2
