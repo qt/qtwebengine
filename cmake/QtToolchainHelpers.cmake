@@ -504,6 +504,10 @@ macro(append_compiler_linker_sdk_setup)
         ARGS use_lld
         CONDITION QT_FEATURE_use_lld_linker OR (MSVC AND CLANG)
     )
+    extend_gn_list(gnArgArg
+        ARGS use_mold
+        CONDITION QT_FEATURE_use_mold_linker
+    )
     unset(cpu)
 endmacro()
 
