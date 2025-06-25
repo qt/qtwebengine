@@ -93,8 +93,16 @@
     \list 1
         \li Download the qtwebengine sources.
         \li From the earlier Qt version, run
-            \c {qmake && make (&& make install)}.
+            \code
+            ../qtbase/bin/qt-configure-module .
+            cmake --build . --parallel
+            cmake --install .
+            \endcode
     \endlist
+
+    \note You may also use \c qmake with \c make and \c make install,
+    but this method is considered legacy and not recommended for
+    Qt 6 and later.
 
     \section1 Mac App Store Compatibility
 
