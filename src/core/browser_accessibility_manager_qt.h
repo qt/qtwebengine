@@ -10,6 +10,7 @@
 #include <QtCore/qtconfigmacros.h>
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
+QT_FORWARD_DECLARE_CLASS(QWebEngineSettings)
 
 namespace QtWebEngineCore {
 class WebContentsAccessibilityQt;
@@ -33,6 +34,7 @@ public:
 
     QAccessibleInterface *rootParentAccessible();
     bool isValid() const { return m_valid; }
+    QWebEngineSettings *webEngineSettings() const;
 
 private:
     Q_DISABLE_COPY(BrowserAccessibilityManagerQt)

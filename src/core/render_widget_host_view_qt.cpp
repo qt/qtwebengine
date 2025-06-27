@@ -315,6 +315,13 @@ QObject *WebContentsAccessibilityQt::accessibilityParentObject() const
     return nullptr;
 }
 
+QWebEngineSettings *WebContentsAccessibilityQt::webEngineSettings() const
+{
+    if (m_rwhv && m_rwhv->m_adapterClient)
+        return m_rwhv->m_adapterClient->webEngineSettings();
+    return nullptr;
+}
+
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {

@@ -18,6 +18,7 @@
 */
 
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <qtest.h>
 #include <widgetutil.h>
 
@@ -27,6 +28,7 @@
 #include <qaccessible.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
+#include <qwebengineprofile.h>
 #include <qwebenginesettings.h>
 #include <qwidget.h>
 
@@ -50,6 +52,7 @@ private Q_SLOTS:
     void roles_data();
     void roles();
     void objectName();
+    void identifier();
     void crossTreeParent();
     void tableCellInterface();
     void tableInterface();
@@ -661,6 +664,30 @@ void tst_Accessibility::objectName()
     QVERIFY(p->object());
     QCOMPARE(p->role(), QAccessible::Grouping);
     QCOMPARE(p->object()->objectName(), QStringLiteral("my_id"));
+}
+
+void tst_Accessibility::identifier()
+{
+    QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    webView.setHtml("<html><body><p id='my_id'></p></body></html>");
+    webView.show();
+    QTRY_COMPARE_WITH_TIMEOUT(spyFinished.size(), 1, 20000);
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 1, 20000);
+    QAccessibleInterface *document = view->child(0);
+    QAccessibleInterface *p = document->child(0);
+
+    // Qt normally appends the object hierarchy to the identifier string...
+    QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::TrimAccessibilityIdentifiers, false);
+    QString accessibleIdentifier = QAccessibleBridgeUtils::accessibleId(p);
+    QVERIFY(accessibleIdentifier.endsWith(QStringLiteral("my_id")));
+    QVERIFY(accessibleIdentifier != QStringLiteral("my_id"));
+
+    // ...but the TrimAccessibilityIdentifiers setting stops that behavior
+    QWebEngineProfile::defaultProfile()->settings()->setAttribute(QWebEngineSettings::TrimAccessibilityIdentifiers, true);
+    accessibleIdentifier = QAccessibleBridgeUtils::accessibleId(p);
+    QCOMPARE(accessibleIdentifier, QStringLiteral("my_id"));
 }
 
 void tst_Accessibility::crossTreeParent()

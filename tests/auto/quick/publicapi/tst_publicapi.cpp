@@ -551,6 +551,8 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.spatialNavigationEnabledChanged() --> void"
     << "QQuickWebEngineSettings.touchIconsEnabled --> bool"
     << "QQuickWebEngineSettings.touchIconsEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.trimAccessibilityIdentifiers --> bool"
+    << "QQuickWebEngineSettings.trimAccessibilityIdentifiersChanged() --> void"
     << "QQuickWebEngineSettings.unknownUrlSchemePolicy --> QQuickWebEngineSettings::UnknownUrlSchemePolicy"
     << "QQuickWebEngineSettings.unknownUrlSchemePolicyChanged() --> void"
     << "QQuickWebEngineSettings.webGLEnabled --> bool"

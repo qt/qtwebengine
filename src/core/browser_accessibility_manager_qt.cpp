@@ -89,6 +89,11 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
     return parent_manager->rootParentAccessible();
 }
 
+QWebEngineSettings *BrowserAccessibilityManagerQt::webEngineSettings() const
+{
+    return m_webContentsAccessibility->webEngineSettings();
+}
+
 void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
                                                    BrowserAccessibility *node,
                                                    int action_request_id)

@@ -552,6 +552,21 @@ bool QQuickWebEngineSettings::backForwardCacheEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::trimAccessibilityIdentifiers
+    \since QtWebEngine 6.11
+
+    Forces the HTML 'id' attribute to be used as the automation ID (QAccessible::Identifier)
+    without modification. When disabled, Qt will instead prepend the entire object hierarchy
+    to the identifier.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::trimAccessibilityIdentifiers() const
+{
+    return d_ptr->testAttribute(QWebEngineSettings::TrimAccessibilityIdentifiers);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -949,6 +964,14 @@ void QQuickWebEngineSettings::setBackForwardCacheEnabled(bool on)
     d_ptr->setAttribute(QWebEngineSettings::BackForwardCacheEnabled, on);
     if (wasOn != on)
         Q_EMIT backForwardCacheEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setTrimAccessibilityIdentifiers(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(QWebEngineSettings::TrimAccessibilityIdentifiers);
+    d_ptr->setAttribute(QWebEngineSettings::TrimAccessibilityIdentifiers, on);
+    if (wasOn != on)
+        Q_EMIT trimAccessibilityIdentifiersChanged();
 }
 
 QT_END_NAMESPACE

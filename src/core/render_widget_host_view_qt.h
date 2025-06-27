@@ -17,6 +17,8 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
+QT_FORWARD_DECLARE_CLASS(QWebEngineSettings)
+
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
@@ -239,6 +241,7 @@ class WebContentsAccessibilityQt : public content::WebContentsAccessibility
 public:
     WebContentsAccessibilityQt(RenderWidgetHostViewQt *rwhv) : m_rwhv(rwhv) {}
     QObject *accessibilityParentObject() const;
+    QWebEngineSettings *webEngineSettings() const;
 };
 
 } // namespace QtWebEngineCore

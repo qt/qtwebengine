@@ -201,6 +201,9 @@
     \value BackForwardCacheEnabled Enables support for back/forward cache (or bfcache) to speed up back and
            forward navigation.
            Disabled by default. (Added in Qt 6.10)
+    \value TrimAccessibilityIdentifiers Forces the HTML 'id' attribute to be used as the automation ID (QAccessible::Identifier)
+           without modification. When disabled, Qt will instead prepend the entire object hierarchy to the identifier.
+           Disabled by default. (Added in Qt 6.11)
 */
 
 /*!
