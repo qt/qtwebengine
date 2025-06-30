@@ -31,6 +31,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT MODULE REQUIRED)
 
+if(DEFINED ENV{QT_WEBENGINE_VERBOSE_SBOM_OUTPUT})
+    set(SCRIPT_VERBOSE "--verbose")
+else()
+    set(SCRIPT_VERBOSE "")
+endif()
+
 execute_process(
     COMMAND "${Python3_EXECUTABLE}" "${SCRIPT_PATH}"
         --gn-binary "${Gn_EXECUTABLE}"
@@ -39,6 +45,7 @@ execute_process(
         --gn-version ${Gn_VERSION}
         --package-id ${PACKAGE_ID}
         --namespace "${DOC_NAMESPACE}"
+        ${SCRIPT_VERBOSE}
         "${OUTPUT}"
     RESULT_VARIABLE gn_result
     OUTPUT_VARIABLE gn_output
@@ -46,8 +53,12 @@ execute_process(
     TIMEOUT 600
 )
 
+string(REGEX REPLACE "\n$" "" gn_output "${gn_output}")
+string(REGEX REPLACE "\n$" "" gn_error "${gn_error}")
 if(NOT gn_result EQUAL 0)
-    string(REGEX REPLACE "\n$" "" gn_output "${gn_output}")
-    string(REGEX REPLACE "\n$" "" gn_error "${gn_error}")
     message(FATAL_ERROR "\n-- SBOM generation FAILED\n${gn_output}\n${gn_error}\n-- Exit code: ${gn_result}\n")
+elseif(DEFINED ENV{QT_WEBENGINE_VERBOSE_SBOM_OUTPUT})
+    message(STATUS "SBOM generation successful\n-- stdout: ${gn_output}\n-- stderr: ${gn_error}")
+elseif(NOT (gn_output STREQUAL "" AND gn_error STREQUAL ""))
+    message(STATUS "SBOM generation successful but did not run cleanly:\n-- stdout: ${gn_output}\n-- stderr: ${gn_error}")
 endif()
