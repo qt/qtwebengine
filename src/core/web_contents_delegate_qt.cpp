@@ -173,17 +173,21 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     if (changed_flags & content::INVALIDATE_TYPE_URL && !m_pendingUrlUpdate) {
         m_pendingUrlUpdate = true;
         base::WeakPtr<WebContentsDelegateQt> delegate = AsWeakPtr();
-        QTimer::singleShot(0, [delegate, this](){ if (delegate) m_viewClient->urlChanged();});
+        QTimer::singleShot(0, m_viewClient->holdingQObject(), [delegate, this]() {
+            if (delegate)
+                m_viewClient->urlChanged();
+        });
     }
 
     if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
         QString newTitle = toQt(source->GetTitle());
         if (m_title != newTitle) {
             m_title = newTitle;
-            QTimer::singleShot(0, [delegate = AsWeakPtr(), title = newTitle] () {
-                if (delegate)
-                    delegate->adapterClient()->titleChanged(title);
-            });
+            QTimer::singleShot(0, m_viewClient->holdingQObject(),
+                               [delegate = AsWeakPtr(), title = newTitle]() {
+                                   if (delegate)
+                                       delegate->adapterClient()->titleChanged(title);
+                               });
         }
     }
 
@@ -640,9 +644,8 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost * /*frameHos
                                                             listener, toQt(params.default_file_name.value()), acceptedMimeTypes));
 
     // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
-    QTimer::singleShot(0, [this] () {
-        m_viewClient->runFileChooser(m_filePickerController);
-    });
+    QTimer::singleShot(0, m_viewClient->holdingQObject(),
+                       [this]() { m_viewClient->runFileChooser(m_filePickerController); });
 }
 
 bool WebContentsDelegateQt::DidAddMessageToConsole(content::WebContents *source, blink::mojom::ConsoleMessageLevel log_level,

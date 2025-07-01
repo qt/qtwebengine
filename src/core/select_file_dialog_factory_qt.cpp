@@ -124,7 +124,8 @@ void SelectFileDialogQt::SelectFileImpl(Type type, const std::u16string &title,
 
     m_filePickerController.reset(createFilePickerController(
             toFileChooserMode(type), listener_, toQt(default_path.value()), acceptedSuffixes));
-    QTimer::singleShot(0, [this]() { m_client->runFileChooser(m_filePickerController); });
+    QTimer::singleShot(0, m_client->holdingQObject(),
+                       [this]() { m_client->runFileChooser(m_filePickerController); });
 }
 
 SelectFileDialogFactoryQt::SelectFileDialogFactoryQt() = default;
