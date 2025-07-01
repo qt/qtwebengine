@@ -36,6 +36,7 @@ webassembly-linux-thread-asyncify             OFF             OFF
 windows-10_22h2-msvc2022                      ON              ON
 windows-10_22h2-mingw13                       OFF             ON
 windows-11_22h2-arm64-msvc2022                OFF             ON
+windows-11_23h2-arm64-msvc2022                OFF             ON
 windows-11_23H2-llvm                          OFF             ON
 windows-11_23H2-msvc2022-arm64                ON              ON
 windows-11_23H2-msvc2022                      ON              ON
