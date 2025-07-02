@@ -155,11 +155,13 @@ bool GLOzoneEGLQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*impleme
 {
     gl::GLGetProcAddressProc getProcAddressPtr = nullptr;
 
+#if QT_CONFIG(opengl) && QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
         QOpenGLContext *context = OzoneUtilQt::getQOpenGLContext();
         getProcAddressPtr = reinterpret_cast<gl::GLGetProcAddressProc>(
                 context->getProcAddress("eglGetProcAddress"));
     }
+#endif
 
 #if QT_CONFIG(dlopen)
     if (getProcAddressPtr == nullptr) {
