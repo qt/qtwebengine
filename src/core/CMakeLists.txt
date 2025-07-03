@@ -55,6 +55,8 @@ foreach(arch ${archs})
 
         set(gnCxxCompileOptions "")
         if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            get_gn_arch(cpu ${TEST_architecture_arch})
+
             # Silence warning in boringssl headers.
             list(APPEND gnCxxCompileOptions -Wno-ignored-qualifiers)
 
@@ -62,6 +64,12 @@ foreach(arch ${archs})
                 # GCC 11.1 has a regression in the integrated preprocessor, so disable it as a workaround (QTBUG-93360)
                 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100796
                 list(APPEND gnCxxCompileOptions -no-integrated-cpp)
+            endif()
+
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "15.1.0" AND cpu STREQUAL "arm")
+                # GCC 15.1 workaround for invalid use of NEON registers,
+                # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120351
+                list(APPEND gnCxxCompileOptions -fno-late-combine-instructions)
             endif()
         endif()
 
