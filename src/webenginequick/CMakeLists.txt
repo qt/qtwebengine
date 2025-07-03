@@ -10,6 +10,7 @@ qt_internal_add_qml_module(WebEngineQuick
     DEPENDENCIES
         QtQuick/auto
         QtWebChannel/auto
+        QtWebEngine.ControlsDelegates/auto
     PLUGIN_TARGET qtwebenginequickplugin
     NO_GENERATE_PLUGIN_SOURCE
     NO_PLUGIN_OPTIONAL

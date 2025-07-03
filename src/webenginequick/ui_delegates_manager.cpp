@@ -28,20 +28,22 @@
 
 #include <algorithm>
 
+using namespace Qt::Literals::StringLiterals;
+
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG
 
 namespace QtWebEngineCore {
 
 #define NO_SEPARATOR
-#define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
-    case UIDelegatesManager::TYPE:\
-        return QStringLiteral(#TYPE".qml");
+#define NAME_CASE_STATEMENT(TYPE, COMPONENT)                                                       \
+    case UIDelegatesManager::TYPE:                                                                 \
+        return QStringLiteral(#TYPE);
 
-static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
+static QString nameForComponent(UIDelegatesManager::ComponentType type)
 {
     switch (type) {
-    FOR_EACH_COMPONENT_TYPE(FILE_NAME_CASE_STATEMENT, NO_SEPARATOR)
+        FOR_EACH_COMPONENT_TYPE(NAME_CASE_STATEMENT, NO_SEPARATOR)
     default:
         Q_UNREACHABLE();
     }
@@ -97,6 +99,11 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 // clang-format on
 {
+    const QString fromEnv = qEnvironmentVariable("QTWEBENGINE_UI_DELEGATE_MODULE");
+    if (!fromEnv.isEmpty()) {
+        m_moduleList = fromEnv.split(u';');
+    }
+    m_moduleList << u"QtWebEngine.ControlsDelegates"_s;
 }
 
 UIDelegatesManager::~UIDelegatesManager()
@@ -115,47 +122,36 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!engine)
         return false;
 
-    if (m_importDirs.isEmpty() && !initializeImportDirs(m_importDirs, engine))
-        return false;
-
     QQmlComponent **component;
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
     default:
         Q_UNREACHABLE_RETURN(false);
     }
-    QString fileName(fileNameForComponent(type));
+    const QString &name = nameForComponent(type);
 #ifndef UI_DELEGATES_DEBUG
     if (*component)
         return true;
 #else // Unconditionally reload the components each time.
     fprintf(stderr, "%s: %s\n", Q_FUNC_INFO, qPrintable(fileName));
 #endif
-
-    for (const QString &importDir : std::as_const(m_importDirs)) {
-        const QString componentFilePath = importDir % QLatin1Char('/') % fileName;
-
-        if (!QFileInfo(componentFilePath).exists())
-            continue;
-
-        // FIXME: handle async loading
-        *component = (new QQmlComponent(engine,
-                                        importDir.startsWith(QLatin1String(":/")) ? QUrl(QLatin1String("qrc") + componentFilePath)
-                                                                                  : QUrl::fromLocalFile(componentFilePath),
-                                        QQmlComponent::PreferSynchronous, m_view));
-
-        if ((*component)->status() != QQmlComponent::Ready) {
-            const QList<QQmlError> errs = (*component)->errors();
-            for (const QQmlError &err : errs)
-                qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
-            delete *component;
-            *component = nullptr;
-            return false;
-        }
-        return true;
+    for (const QString &module : m_moduleList) {
+        delete *component;
+        *component = new QQmlComponent(engine);
+        (*component)->loadFromModule(module, name, QQmlComponent::PreferSynchronous);
+        if ((*component)->status() == QQmlComponent::Ready)
+            break;
     }
-    qWarning("Default ui delegate %s can not be found.", qPrintable(fileName));
-    return false;
+
+    if ((*component)->status() != QQmlComponent::Ready) {
+        const QList<QQmlError> errs = (*component)->errors();
+        for (const QQmlError &err : errs)
+            qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
+        delete *component;
+        *component = nullptr;
+        return false;
+    }
+    return true;
 }
 
 #define CHECK_QML_SIGNAL_PROPERTY(prop, location) \
@@ -725,30 +721,6 @@ void UIDelegatesManager::hideAutofillPopup()
             controller->notifyPopupHidden();
         }
     });
-}
-
-bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
-{
-    const QStringList paths = engine->importPathList();
-    for (const QString &path : paths) {
-        QString controlsImportPath = path % QLatin1String("/QtWebEngine/ControlsDelegates/");
-
-        // resource paths have to be tested using the ":/" prefix
-        if (controlsImportPath.startsWith(QLatin1String("qrc:/"))) {
-            controlsImportPath.remove(0, 3);
-        }
-
-        QFileInfo fi(controlsImportPath);
-        if (fi.exists()) {
-            dirs << fi.absolutePath();
-
-            // add subdirectories
-            QDirIterator it(controlsImportPath, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-            while (it.hasNext())
-                dirs << QFileInfo(it.next()).absoluteFilePath();
-        }
-    }
-    return !dirs.isEmpty();
 }
 
 QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint &pos)

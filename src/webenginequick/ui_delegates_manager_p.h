@@ -81,7 +81,6 @@ public:
     UIDelegatesManager(QQuickWebEngineView *);
     virtual ~UIDelegatesManager();
 
-    virtual bool initializeImportDirs(QStringList &dirs, QQmlEngine *engine);
     virtual void addMenuItem(QQuickWebEngineAction *action, QObject *menu,
                              bool checkable = false, bool checked = true);
     void addMenuSeparator(QObject *menu);
@@ -106,10 +105,10 @@ private:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
-    QStringList m_importDirs;
     QScopedPointer<QObject> m_toolTip;
     QScopedPointer<QObject> m_touchSelectionMenu;
     QScopedPointer<QObject> m_autofillPopup;
+    QStringList m_moduleList;
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 
