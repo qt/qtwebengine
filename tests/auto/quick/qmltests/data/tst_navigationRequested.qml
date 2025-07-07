@@ -12,6 +12,7 @@ TestWebEngineView {
 
     property bool shouldIgnoreLinkClicks: false
     property bool shouldIgnoreSubFrameRequests: false
+    property var navigationRequests: []
 
     QtObject {
         id: attributes
@@ -35,6 +36,13 @@ TestWebEngineView {
     }
 
     onNavigationRequested: function(request) {
+        navigationRequests.push({
+            "url": request.url,
+            "navigationType": request.navigationType,
+            "userInitiated": request.userInitiated,
+            "isMainFrame": request.isMainFrame
+        })
+
         if (request.isMainFrame) {
             attributes.mainUrl = request.url
         } else {
@@ -61,6 +69,7 @@ TestWebEngineView {
         function init() {
             attributes.clear()
             navigationSpy.clear()
+            navigationRequests = []
             shouldIgnoreLinkClicks = false
             shouldIgnoreSubFrameRequests = false
         }
@@ -112,6 +121,228 @@ TestWebEngineView {
             compare(navigationSpy.count, 2)
             compare(attributes.mainUrl, Qt.resolvedUrl("test-iframe.html"))
             compare(attributes.iframeUrl, Qt.resolvedUrl("test1.html"))
+        }
+
+        // Programmatic URL set is browser-initiated, hence user-initiated
+        function test_userInitiatedProgrammaticLoad() {
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationSpy.count, 1)
+            // Browser-initiated navigations (e.g. setting url from C++/QML)
+            // are treated as user-initiated
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.TypedNavigation)
+        }
+
+        // User clicking a link is user-initiated
+        function test_userInitiatedLinkClick() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            const center = getElementCenter("link")
+            mouseClick(webEngineView, center.x, center.y)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.LinkClickedNavigation)
+        }
+
+        // Programmatic .click() on a link triggered by a real user gesture
+        // is still user-initiated (user activation propagates)
+        function test_userInitiatedJsClickLink() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            const center = getElementCenter("jsClick")
+            mouseClick(webEngineView, center.x, center.y)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.LinkClickedNavigation)
+        }
+
+        // Programmatic .click() without user gesture is not user-initiated
+        function test_userInitiatedJsClickLinkNoGesture() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.runJavaScript("document.getElementById('link').click()")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, false)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.LinkClickedNavigation)
+        }
+
+        // JavaScript-driven navigation (window.location) without user gesture
+        function test_userInitiatedJsNavigation() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.runJavaScript("window.location = 'test1.html'")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, false)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.LinkClickedNavigation)
+        }
+
+        // Browser-initiated loadHtml with meta-refresh redirect
+        function test_userInitiatedRedirect() {
+            const redirectUrl = Qt.resolvedUrl("test1.html")
+            webEngineView.loadHtml(
+                "<html><head><meta http-equiv='refresh' content='0;url="
+                + redirectUrl + "'></head><body>Redirecting...</body></html>")
+            tryVerify(function() {
+                return webEngineView.url.toString().includes("test1.html")
+            }, 10000)
+
+            // The initial loadHtml is browser-initiated (TypedNavigation)
+            const initial = navigationRequests[0]
+            compare(initial.userInitiated, true)
+            compare(initial.navigationType,
+                    WebEngineNavigationRequest.TypedNavigation)
+
+            // On some platforms Chromium emits a separate redirect navigation
+            if (navigationRequests.length > 1) {
+                const redirect = navigationRequests[navigationRequests.length - 1]
+                compare(redirect.url.toString().includes("test1.html"), true)
+                compare(redirect.userInitiated, false)
+                compare(redirect.navigationType,
+                        WebEngineNavigationRequest.RedirectNavigation)
+            }
+        }
+
+        // Meta-refresh redirect from a file load
+        function test_userInitiatedFileRedirect() {
+            webEngineView.url = Qt.resolvedUrl("redirect.html")
+            tryVerify(function() {
+                return webEngineView.url.toString().includes("test1.html")
+            }, 10000)
+
+            // Expect 2 navigations: the initial file load and the redirect
+            compare(navigationRequests.length, 2)
+
+            // The initial file load is browser-initiated, hence user-initiated
+            const initial = navigationRequests[0]
+            compare(initial.url.toString().includes("redirect.html"), true)
+            compare(initial.userInitiated, true)
+            compare(initial.navigationType,
+                    WebEngineNavigationRequest.TypedNavigation)
+
+            // The redirect navigation to test1.html
+            const redirect = navigationRequests[navigationRequests.length - 1]
+            compare(redirect.url.toString().includes("test1.html"), true)
+            compare(redirect.userInitiated, false)
+            compare(redirect.navigationType,
+                    WebEngineNavigationRequest.RedirectNavigation)
+        }
+
+        // Form submission is user-initiated when triggered by user click
+        function test_userInitiatedFormSubmit() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            const center = getElementCenter("formSubmit")
+            mouseClick(webEngineView, center.x, center.y)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.FormSubmittedNavigation)
+        }
+
+        // Form submission via JS without user gesture is not user-initiated
+        function test_userInitiatedFormSubmitJs() {
+            webEngineView.url = Qt.resolvedUrl("nav-user-initiated.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.runJavaScript("document.getElementById('form').submit()")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, false)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.FormSubmittedNavigation)
+        }
+
+        // Back/forward navigation is user-initiated (browser-initiated)
+        function test_userInitiatedBackForward() {
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            webEngineView.url = Qt.resolvedUrl("test2.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.goBack()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.BackForwardNavigation)
+        }
+
+        // history.back() from JS without user gesture is not user-initiated
+        function test_userInitiatedBackForwardJs() {
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            webEngineView.url = Qt.resolvedUrl("test2.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.runJavaScript("history.back()")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, false)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.BackForwardNavigation)
+        }
+
+        // Reload is user-initiated (browser-initiated)
+        function test_userInitiatedReload() {
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.reload()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, true)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.ReloadNavigation)
+        }
+
+        // window.location.reload() from JS without user gesture is not user-initiated
+        function test_userInitiatedReloadJs() {
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+            navigationRequests = []
+
+            webEngineView.runJavaScript("window.location.reload()")
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(navigationRequests.length, 1)
+            const nav = navigationRequests[0]
+            compare(nav.userInitiated, false)
+            compare(nav.navigationType,
+                    WebEngineNavigationRequest.RedirectNavigation)
         }
     }
 }

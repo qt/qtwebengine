@@ -904,11 +904,18 @@ static void navigationThrottleCallback(content::NavigationHandle *handle,
     if (handle->WasServerRedirect())
         transition_type = ui::PageTransitionFromInt(transition_type | ui::PAGE_TRANSITION_SERVER_REDIRECT);
 
+    // Treat browser-initiated navigations as user interactions.
+    // Note that |HasUserGesture| does not capture browser-initiated navigations.
+    // The negation of |IsRendererInitiated| tells us whether the navigation is
+    // browser-generated.
+    const bool userInitiated = handle->HasUserGesture() || !handle->IsRendererInitiated();
+
     client->navigationRequested(pageTransitionToNavigationType(transition_type),
                                 toQt(handle->GetURL()),
                                 navigationAccepted,
                                 handle->IsInPrimaryMainFrame(),
-                                handle->IsFormSubmission());
+                                handle->IsFormSubmission(),
+                                userInitiated);
     std::move(result_callback).Run(!navigationAccepted);
 }
 

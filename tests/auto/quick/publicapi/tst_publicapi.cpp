@@ -389,6 +389,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineNavigationRequest.actionChanged() --> void"
     << "QWebEngineNavigationRequest.isMainFrame --> bool"
     << "QWebEngineNavigationRequest.hasFormData --> bool"
+    << "QWebEngineNavigationRequest.userInitiated --> bool"
     << "QWebEngineNavigationRequest.navigationType --> QWebEngineNavigationRequest::NavigationType"
     << "QWebEngineNavigationRequest.url --> QUrl"
     << "QWebEngineNavigationRequest.AcceptRequest --> NavigationRequestAction"

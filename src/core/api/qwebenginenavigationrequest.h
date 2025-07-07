@@ -20,6 +20,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineNavigationRequest : public QObject
     Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL)
     Q_PROPERTY(bool hasFormData READ hasFormData CONSTANT REVISION(6, 8) FINAL)
     Q_PROPERTY(NavigationType navigationType READ navigationType CONSTANT FINAL)
+    Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT REVISION(6, 12) FINAL)
 
 public:
     ~QWebEngineNavigationRequest();
@@ -40,6 +41,7 @@ public:
     bool isMainFrame() const;
     bool hasFormData() const;
     NavigationType navigationType() const;
+    bool isUserInitiated() const;
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void reject();
@@ -63,8 +65,8 @@ Q_SIGNALS:
 #endif
 
 private:
-    QWebEngineNavigationRequest(const QUrl &url, NavigationType navigationType, bool mainFrame, bool formData,
-                                QObject *parent = nullptr);
+    QWebEngineNavigationRequest(const QUrl &url, NavigationType navigationType, bool mainFrame,
+                                bool formData, bool userInitiated, QObject *parent = nullptr);
 
     friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineViewPrivate;

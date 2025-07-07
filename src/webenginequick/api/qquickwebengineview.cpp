@@ -441,7 +441,9 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
     ui()->showMenu(menu);
 }
 
-void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFrameData)
+void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url,
+                                                     bool &accepted, bool isMainFrame,
+                                                     bool hasFrameData, bool userInitiated)
 {
     Q_Q(QQuickWebEngineView);
 
@@ -449,7 +451,9 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
     if (!engine)
         return;
 
-    auto request = new QWebEngineNavigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame, hasFrameData);
+    auto request = new QWebEngineNavigationRequest(
+            url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType),
+            isMainFrame, hasFrameData, userInitiated);
 
     engine->newQObject(request);
     Q_EMIT q->navigationRequested(request);

@@ -1581,13 +1581,18 @@ void QWebEnginePagePrivate::contextMenuRequested(QWebEngineContextMenuRequest *d
     \sa acceptNavigationRequest()
 */
 
-void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFormData)
+void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted,
+                                                bool isMainFrame, bool hasFormData,
+                                                bool userInitiated)
 {
     Q_Q(QWebEnginePage);
 
-    accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
+    accepted = q->acceptNavigationRequest(
+            url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
     if (accepted) {
-        QWebEngineNavigationRequest navigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame, hasFormData);
+        QWebEngineNavigationRequest navigationRequest(
+                url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType),
+                isMainFrame, hasFormData, userInitiated);
         Q_EMIT q->navigationRequested(navigationRequest);
         accepted = navigationRequest.isAccepted();
     }
