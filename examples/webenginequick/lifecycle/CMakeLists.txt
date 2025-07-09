@@ -30,14 +30,20 @@ target_link_libraries(lifecycle PUBLIC
     Qt::WebEngineQuick
 )
 
-# Resources:
+qt_add_qml_module(lifecycle
+    URI LifecycleUtils
+    VERSION 1.0
+    QML_FILES
+        "WebBrowser.qml"
+        "WebTab.qml"
+        "WebTabBar.qml"
+        "WebTabButton.qml"
+        "WebTabStack.qml"
+        "WebToolButton.qml"
+    RESOURCE_PREFIX /
+)
+
 set(resources_resource_files
-    "WebBrowser.qml"
-    "WebTab.qml"
-    "WebTabBar.qml"
-    "WebTabButton.qml"
-    "WebTabStack.qml"
-    "WebToolButton.qml"
     "qtquickcontrols2.conf"
 )
 
