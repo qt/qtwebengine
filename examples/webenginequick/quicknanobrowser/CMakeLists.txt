@@ -43,25 +43,15 @@ target_link_libraries(quicknanobrowser PUBLIC
 qt_add_qml_module(quicknanobrowser
     URI BrowserUtils
     VERSION 1.0
+    QML_FILES
+        "ApplicationRoot.qml"
+        "BrowserDialog.qml"
+        "BrowserWindow.qml"
+        "DownloadView.qml"
+        "FindBar.qml"
+        "FullScreenNotification.qml"
+        "WebAuthDialog.qml"
     RESOURCE_PREFIX /
-)
-
-# Resources:
-set(resources_resource_files
-    "ApplicationRoot.qml"
-    "BrowserDialog.qml"
-    "BrowserWindow.qml"
-    "DownloadView.qml"
-    "FindBar.qml"
-    "FullScreenNotification.qml"
-    "WebAuthDialog.qml"
-)
-
-qt_add_resources(quicknanobrowser "resources"
-    PREFIX
-        "/"
-    FILES
-        ${resources_resource_files}
 )
 
 set(resources1_resource_files
