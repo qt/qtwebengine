@@ -16,6 +16,6 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     Utils utils;
     engine.rootContext()->setContextProperty("utils", &utils);
-    engine.load(QUrl(QStringLiteral("qrc:/WebBrowser.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/LifecycleUtils/WebBrowser.qml")));
     return app.exec();
 }
