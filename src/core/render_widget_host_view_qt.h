@@ -191,7 +191,7 @@ private:
 
     bool isPopup() const;
 
-    bool updateCursorFromResource(ui::mojom::CursorType type);
+    bool updateCursorFromResource(const ui::Cursor &cursorInfo);
 
     scoped_refptr<base::SingleThreadTaskRunner> m_taskRunner;
 

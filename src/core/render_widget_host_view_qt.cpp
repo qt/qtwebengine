@@ -53,6 +53,7 @@
 
 #if defined(Q_OS_MACOS)
 #include "ui/resources/grit/ui_resources.h"
+#include "cursor_utils_qt_mac.h"
 #endif
 
 #include <QGuiApplication>
@@ -429,7 +430,7 @@ void RenderWidgetHostViewQt::UnlockPointer()
     host()->LostPointerLock();
 }
 
-bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type)
+bool RenderWidgetHostViewQt::updateCursorFromResource(const ui::Cursor &cursorInfo)
 {
     int resourceId;
     // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
@@ -440,22 +441,31 @@ bool RenderWidgetHostViewQt::updateCursorFromResource(ui::mojom::CursorType type
 #if defined(USE_AURA)
     gfx::Point hotspot;
     bool isAnimated;
-    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, type, hotspotDpr, &resourceId, &hotspot, &isAnimated))
+    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, cursorInfo.type(), hotspotDpr, &resourceId,
+                              &hotspot, &isAnimated))
         return false;
     hotX = hotspot.x();
     hotY = hotspot.y();
 #elif defined(Q_OS_MACOS)
     // FIXME: find a way to reimplement
-    return false;
+    // get QImage from native cursor
+    ImageInfo imageInfo = QImageFromNSCursor(cursorInfo);
+    hotX = imageInfo.hotSpotData.x();
+    hotY = imageInfo.hotSpotData.y();
 #else
     Q_UNREACHABLE_RETURN(false);
 #endif
 
+    QImage imageQt;
+#if defined(Q_OS_MACOS)
+    imageQt = imageInfo.image;
+#else
     const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId);
     if (!imageSkia)
         return false;
 
-    QImage imageQt = toQImage(imageSkia->GetRepresentation(GetScreenInfo().device_scale_factor));
+    imageQt = toQImage(imageSkia->GetRepresentation(GetScreenInfo().device_scale_factor));
+#endif
 
     // Convert hotspot coordinates into device-independent pixels.
     hotX /= hotspotDpr;
@@ -560,7 +570,7 @@ void RenderWidgetHostViewQt::DisplayCursor(const ui::Cursor &cursorInfo)
     case ui::mojom::CursorType::kContextMenu:
     case ui::mojom::CursorType::kZoomIn:
     case ui::mojom::CursorType::kZoomOut:
-        if (updateCursorFromResource(cursorInfo.type()))
+        if (updateCursorFromResource(cursorInfo))
             return;
         break;
     case ui::mojom::CursorType::kEastWestNoResize:

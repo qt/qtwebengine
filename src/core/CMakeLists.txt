@@ -251,6 +251,7 @@ foreach(arch ${archs})
                 native_web_keyboard_event_qt_mac.mm
                 compositor/native_skia_output_device_mac.mm
                 compositor/native_skia_output_device_metal.cpp compositor/native_skia_output_device_metal.h
+                cursor_utils_qt_mac.mm cursor_utils_qt_mac.h
         )
 
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
