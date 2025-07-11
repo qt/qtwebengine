@@ -22,6 +22,7 @@
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <qtest.h>
 #include <util.h>
+#include <visualutil.h>
 #include <private/qinputmethod_p.h>
 #include <qpainter.h>
 #include <qpagelayout.h>
@@ -1239,6 +1240,8 @@ void tst_QWebEngineView::focusOnNavigation()
 
 void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     // Create a container widget, that will hold a line edit that has initial focus, and a web
     // engine view.
     QScopedPointer<QWidget> containerWidget(new QWidget);
@@ -1260,7 +1263,8 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     containerWidget->resize(300, 200);
     containerWidget->setLayout(layout);
     containerWidget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
+    containerWidget->window()->windowHandle()->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(containerWidget.data()));
 
     // Load the content, and check that focus is not set.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
@@ -1597,6 +1601,8 @@ public:
 
 void tst_QWebEngineView::keyboardFocusAfterPopup()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     const QString html = QStringLiteral(
         "<html>"
         "  <body onload=\"document.getElementById('input1').focus()\">"
@@ -1608,7 +1614,8 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     connect(window.lineEdit, &QLineEdit::editingFinished, [&] { window.webView->setHtml(html); });
     window.webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     window.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    window.window()->windowHandle()->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&window));
 
     // Focus will initially go to the QLineEdit.
     QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
@@ -1832,6 +1839,8 @@ void tst_QWebEngineView::postData()
 
 void tst_QWebEngineView::inputFieldOverridesShortcuts()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
                 QPlatformIntegration::WindowActivation))
         QSKIP("Cannot test on platforms without window activation capability");
@@ -1851,6 +1860,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
     QVERIFY(loadFinishedSpy.wait());
 
     view.show();
+    view.window()->windowHandle()->requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     auto inputFieldValue = [&view] () -> QString {
@@ -2044,9 +2054,12 @@ void tst_QWebEngineView::softwareInputPanel()
 
 void tst_QWebEngineView::inputContextQueryInput()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QWebEngineView view;
     view.resize(640, 480);
     view.show();
+    view.window()->windowHandle()->requestActivate();
 
     // testContext will be destroyed before the view, so no events are sent accidentally
     // when the view is destroyed.
@@ -2058,8 +2071,7 @@ void tst_QWebEngineView::inputContextQueryInput()
                  "  <input type='text' id='input1' value='' size='50'/>"
                  "</body></html>");
     QTRY_COMPARE(loadFinishedSpy.size(), 1);
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QTRY_VERIFY(qApp->focusObject());
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(testContext.infos.size(), 0);
 
     // Set focus on an input field.
@@ -2552,10 +2564,13 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 
 void tst_QWebEngineView::imeComposition()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QWebEngineView view;
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
+    view.window()->windowHandle()->requestActivate();
 
     QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
@@ -2563,7 +2578,7 @@ void tst_QWebEngineView::imeComposition()
                  "  <input type='text' id='input1' value='QtWebEngine inputMethod'/>"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_COMPARE(selectionChangedSpy.size(), 1);
@@ -2771,17 +2786,20 @@ void tst_QWebEngineView::imeComposition()
 
 void tst_QWebEngineView::newlineInTextarea()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QWebEngineView view;
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.resize(640, 480);
     view.show();
+    view.window()->windowHandle()->requestActivate();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.page()->setHtml("<html><body>"
                          "  <textarea rows='5' cols='1' id='input1'></textarea>"
                          "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
@@ -3018,18 +3036,21 @@ void tst_QWebEngineView::imeCompositionQueryEvent_data()
 
 void tst_QWebEngineView::imeCompositionQueryEvent()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QWebEngineView view;
     view.resize(640, 480);
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
 
     view.show();
+    view.window()->windowHandle()->requestActivate();
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' />"
                  "</body></html>");
     QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
@@ -4024,6 +4045,8 @@ void tst_QWebEngineView::deferredDelete()
 // QTBUG-111927
 void tst_QWebEngineView::setCursorOnEmbeddedView()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: Can't manipulate the mouse cursor in auto test.");
 
@@ -4048,9 +4071,9 @@ void tst_QWebEngineView::setCursorOnEmbeddedView()
     view.setHtml(html);
     parentWidget.show();
     view.show();
+    parentWidget.window()->windowHandle()->requestActivate();
 
-    QVERIFY(QTest::qWaitForWindowExposed(&parentWidget));
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QVERIFY(QTest::qWaitForWindowActive(&parentWidget));
 
     QTRY_VERIFY(firstPaintSpy.size());
 
