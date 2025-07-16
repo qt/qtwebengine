@@ -625,6 +625,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/third_party/blink/public/strings/permission_element_generated_strings.pak",
     "$root_gen_dir/ui/webui/resources/webui_resources.pak",
     "$root_gen_dir/components/user_actions_ui_resources.pak",
   ]
@@ -658,6 +659,7 @@ repack("qtwebengine_repack_resources") {
      "//mojo/public/js:resources",
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
+     "//third_party/blink/public/strings:permission_element_generated_strings_grit",
      "//ui/webui/resources",
   ]
   if (enable_extensions) {
