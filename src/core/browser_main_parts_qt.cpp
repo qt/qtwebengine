@@ -26,7 +26,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
-#include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "select_file_dialog_factory_qt.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -42,6 +41,10 @@
 #include "extensions/extensions_browser_client_qt.h"
 #include "extensions/extension_system_factory_qt.h"
 #include "common/extensions/extensions_client_qt.h"
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
+#endif
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -198,6 +201,10 @@ std::unique_ptr<base::MessagePump> messagePumpFactory()
 #endif
 }
 
+BrowserMainPartsQt::BrowserMainPartsQt() = default;
+
+BrowserMainPartsQt::~BrowserMainPartsQt() = default;
+
 int BrowserMainPartsQt::PreEarlyInitialization()
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -242,6 +249,12 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     content::PluginService *plugin_service = content::PluginService::GetInstance();
     plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
 #endif // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+    m_webrtcEventLogManager =
+            webrtc_event_logging::WebRtcEventLogManager::CreateSingletonInstance();
+#endif
+
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     if (base::FeatureList::IsEnabled(features::kWebUsb)) {
