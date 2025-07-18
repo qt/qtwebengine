@@ -1,5 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
@@ -23,7 +26,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Open
-                    icon.source: "qrc:/singlepage/resources/document-open.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/document-open.svg"
                     onTriggered: fileDialog.open()
                 }
             }
@@ -31,7 +34,7 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
                     enabled: view.sourceSize.width < 10000
-                    icon.source: "qrc:/singlepage/resources/zoom-in.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/zoom-in.svg"
                     onTriggered: view.renderScale *= root.scaleStep
                 }
             }
@@ -39,46 +42,46 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
                     enabled: view.sourceSize.width > 50
-                    icon.source: "qrc:/singlepage/resources/zoom-out.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/zoom-out.svg"
                     onTriggered: view.renderScale /= root.scaleStep
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/zoom-fit-width.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/zoom-fit-width.svg"
                     onTriggered: view.scaleToWidth(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/zoom-fit-best.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/zoom-fit-best.svg"
                     onTriggered: view.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
-                    icon.source: "qrc:/singlepage/resources/zoom-original.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/zoom-original.svg"
                     onTriggered: view.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
-                    icon.source: "qrc:/singlepage/resources/rotate-left.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/rotate-left.svg"
                     onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
-                    icon.source: "qrc:/singlepage/resources/rotate-right.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/rotate-right.svg"
                     onTriggered: view.pageRotation += 90
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/go-previous-view-page.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/go-previous-view-page.svg"
                     enabled: view.backEnabled
                     onTriggered: view.back()
                 }
@@ -104,7 +107,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/go-next-view-page.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/go-next-view-page.svg"
                     enabled: view.forwardEnabled
                     onTriggered: view.forward()
                 }
@@ -115,14 +118,14 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.SelectAll
-                    icon.source: "qrc:/singlepage/resources/edit-select-all.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/edit-select-all.svg"
                     onTriggered: view.selectAll()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Copy
-                    icon.source: "qrc:/singlepage/resources/edit-copy.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/edit-copy.svg"
                     enabled: view.selectedText !== ""
                     onTriggered: view.copySelectionToClipboard()
                 }
@@ -235,7 +238,7 @@ ApplicationWindow {
                     Label {
                         font.bold: true
                         text: view.searchString
-                        width: implicitWidth
+                        Layout.preferredWidth: implicitWidth
                     }
                     Label {
                         text: resultDelegate.contextAfter
@@ -257,7 +260,7 @@ ApplicationWindow {
             anchors.fill: parent
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/go-up-search.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/go-up-search.svg"
                     shortcut: StandardKey.FindPrevious
                     enabled: view.searchModel.count > 0
                     onTriggered: view.searchBack()
@@ -275,7 +278,7 @@ ApplicationWindow {
                 onAccepted: searchDrawer.open()
                 Image {
                     visible: searchField.text !== ""
-                    source: "qrc:/singlepage/resources/edit-clear.svg"
+                    source: "qrc:/qt/qml/SinglePage/resources/edit-clear.svg"
                     anchors {
                         right: parent.right
                         top: parent.top
@@ -290,7 +293,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/singlepage/resources/go-down-search.svg"
+                    icon.source: "qrc:/qt/qml/SinglePage/resources/go-down-search.svg"
                     shortcut: StandardKey.FindNext
                     enabled: view.searchModel.count > 0
                     onTriggered: view.searchForward()

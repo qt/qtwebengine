@@ -1,6 +1,7 @@
 <RCC>
-    <qresource prefix="/singlepage">
-        <file>viewer.qml</file>
+    <qresource prefix="/qt/qml/SinglePage">
+        <file>Viewer.qml</file>
+        <file>qmldir</file>
         <file>resources/document-open.svg</file>
         <file>resources/edit-clear.svg</file>
         <file>resources/edit-copy.svg</file>

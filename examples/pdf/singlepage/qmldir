@@ -1,0 +1,3 @@
+module SinglePage
+prefer :/qt/qml/SinglePage/
+Viewer 254.0 Viewer.qml

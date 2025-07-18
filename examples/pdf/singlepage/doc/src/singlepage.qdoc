@@ -22,7 +22,7 @@
     Instantiate an \l ApplicationWindow, bind its title to the title of the
     PDF document, and create a toolbar:
 
-    \quotefromfile singlepage/viewer.qml
+    \quotefromfile singlepage/Viewer.qml
     \skipto ApplicationWindow
     \printuntil rightMargin
 
