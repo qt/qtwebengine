@@ -28,8 +28,8 @@ Rectangle {
         NumberAnimation {
             duration: 750
             onStopped: {
-                if (opacity == 0)
-                    visible = false;
+                if (fullScreenNotification.opacity === 0)
+                    fullScreenNotification.visible = false;
             }
         }
     }
@@ -37,7 +37,7 @@ Rectangle {
     Timer {
         id: reset
         interval: 5000
-        onTriggered: hide()
+        onTriggered: fullScreenNotification.hide()
     }
 
     anchors.horizontalCenter: parent.horizontalCenter

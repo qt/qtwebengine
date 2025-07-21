@@ -15,7 +15,7 @@ import BrowserUtils
 
 ApplicationWindow {
     id: win
-    property QtObject applicationRoot
+    required property QtObject applicationRoot
     property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
     property int createdTabs: 0
@@ -74,7 +74,9 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabBar.createTab(tabBar.count != 0 ? win.currentWebView.profile : defaultProfilePrototype.instance());
+            tabBar.createTab(tabBar.count != 0
+                             ? win.currentWebView.profile
+                             : (win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance());
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -180,6 +182,7 @@ ApplicationWindow {
                     Instantiator {
                         model: win.currentWebView?.history?.items
                         MenuItem {
+                            required property var model
                             text: model.title
                             onTriggered: win.currentWebView.goBackOrForward(model.offset)
                             checkable: !enabled
@@ -323,10 +326,12 @@ ApplicationWindow {
                         id: offTheRecordEnabled
                         text: "Off The Record"
                         checkable: true
-                        checked: win.currentWebView?.profile === otrPrototype.instance()
+                        checked: win.currentWebView?.profile === (win.applicationRoot as ApplicationRoot).otrPrototype.instance()
                         onToggled: function(checked) {
                             if (win.currentWebView) {
-                                win.currentWebView.profile = checked ? otrPrototype.instance() : defaultProfilePrototype.instance();
+                                win.currentWebView.profile = checked
+                                        ? (win.applicationRoot as ApplicationRoot).otrPrototype.instance()
+                                        : (win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance();
                             }
                         }
                     }
@@ -421,8 +426,8 @@ ApplicationWindow {
                 left: parent.left
                 top: parent.bottom
                 right: parent.right
-                leftMargin: parent.leftMargin
-                rightMargin: parent.rightMargin
+                leftMargin: parent.anchors.leftMargin
+                rightMargin: parent.anchors.rightMargin
             }
             background: Item {}
             z: -2
@@ -446,22 +451,22 @@ ApplicationWindow {
         id: tabButtonComponent
 
         TabButton {
+            id: tabButton
             property color frameColor: "#999"
             property color fillColor: "#eee"
             property color nonSelectedColor: "#ddd"
             property string tabTitle: "New Tab"
 
-            id: tabButton
             contentItem: Rectangle {
                 id: tabRectangle
-                color: tabButton.down ? fillColor : nonSelectedColor
+                color: tabButton.down ? tabButton.fillColor : tabButton.nonSelectedColor
                 border.width: 1
-                border.color: frameColor
+                border.color: tabButton.frameColor
                 implicitWidth: Math.max(text.width + 30, 80)
                 implicitHeight: Math.max(text.height + 10, 20)
-                Rectangle { height: 1 ; width: parent.width ; color: frameColor}
-                Rectangle { height: parent.height ; width: 1; color: frameColor}
-                Rectangle { x: parent.width - 2; height: parent.height ; width: 1; color: frameColor}
+                Rectangle { height: 1 ; width: parent.width ; color: tabButton.frameColor}
+                Rectangle { height: parent.height ; width: 1; color: tabButton.frameColor}
+                Rectangle { x: parent.width - 2; height: parent.height ; width: 1; color: tabButton.frameColor}
                 Text {
                     id: text
                     anchors.left: parent.left
@@ -469,7 +474,7 @@ ApplicationWindow {
                     anchors.leftMargin: 6
                     text: tabButton.tabTitle
                     elide: Text.ElideRight
-                    color: tabButton.down ? "black" : frameColor
+                    color: tabButton.down ? "black" : tabButton.frameColor
                     width: parent.width - button.background.width
                 }
                 Button {
@@ -488,7 +493,7 @@ ApplicationWindow {
                 }
             }
 
-            onClicked: addressBar.text = tabLayout.itemAt(TabBar.index).url;
+            onClicked: addressBar.text = (tabLayout.itemAt(TabBar.index) as WebEngineView).url;
             function closeTab() {
                 tabBar.removeView(TabBar.index);
             }
@@ -500,7 +505,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        Component.onCompleted: createTab(defaultProfilePrototype.instance())
+        Component.onCompleted: createTab((win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance())
 
         function createTab(profile, focusOnNewTab = true, url = undefined) {
             var webview = tabComponent.createObject(tabLayout, {profile: profile});
@@ -588,10 +593,10 @@ ApplicationWindow {
                         var backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
                         backgroundTab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                        var dialog = applicationRoot.createDialog(win.currentWebView.profile);
+                        var dialog = (win.applicationRoot as ApplicationRoot).createDialog(win.currentWebView.profile);
                         dialog.win.currentWebView.acceptAsNewWindow(request);
                     } else {
-                        var window = applicationRoot.createWindow(win.currentWebView.profile);
+                        var window = (win.applicationRoot as ApplicationRoot).createWindow(win.currentWebView.profile);
                         window.win.currentWebView.acceptAsNewWindow(request);
                     }
                 }

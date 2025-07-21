@@ -1,6 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -9,7 +11,7 @@ import QtWebEngine
 Dialog {
     id: webAuthDialog
     anchors.centerIn: parent
-    width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
+    width: Math.min(parent.parent.width, parent.parent.height) / 3 * 2
     contentWidth: verticalLayout.width +10;
     contentHeight: verticalLayout.height +10;
     standardButtons: Dialog.Cancel | Dialog.Apply
@@ -137,10 +139,12 @@ Dialog {
                 id : selectAccountRepeater
                 model: selectAccountModel
                 Column {
+                    id: selectAccountRepeaterColumn
+                    required property string modelData
                     spacing : 5
                     RadioButton {
-                        text: modelData
-                        ButtonGroup.group : selectAccount;
+                        text: selectAccountRepeaterColumn.modelData
+                        ButtonGroup.group : webAuthDialog.selectAccount;
                         onClicked: function(){
                             webAuthDialog.selectAccount = text;
                         }
@@ -182,7 +186,7 @@ Dialog {
             pinEdit.visible = true;
             confirmPinLabel.visible = false;
             confirmPinEdit.visible = false;
-        } else if (reason === WebEngineWebAuthUxRequest.PinEntryReason.Set) {
+        } else if (requestInfo.reason === WebEngineWebAuthUxRequest.PinEntryReason.Set) {
             heading.text = "Set PIN ";
             description.text = "Set new PIN for your security key";
             pinLabel.visible = true;
