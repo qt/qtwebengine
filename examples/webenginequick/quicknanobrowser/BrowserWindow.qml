@@ -12,7 +12,7 @@ import QtWebEngine
 import BrowserUtils
 
 ApplicationWindow {
-    id: browserWindow
+    id: win
     property QtObject applicationRoot
     property Item currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
@@ -85,13 +85,13 @@ ApplicationWindow {
     }
     Action {
         shortcut: StandardKey.Quit
-        onTriggered: browserWindow.close()
+        onTriggered: win.close()
     }
     Action {
         shortcut: "Escape"
         onTriggered: {
             if (currentWebView.state == "FullScreen") {
-                browserWindow.visibility = browserWindow.previousVisibility;
+                win.visibility = win.previousVisibility;
                 fullScreenNotification.hide();
                 currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
             }
@@ -200,14 +200,14 @@ ApplicationWindow {
                 icon.source: "icons/3rdparty/go-previous.png"
                 onClicked: currentWebView.goBack()
                 enabled: currentWebView && currentWebView.canGoBack
-                activeFocusOnTab: !browserWindow.platformIsMac
+                activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: forwardButton
                 icon.source: "icons/3rdparty/go-next.png"
                 onClicked: currentWebView.goForward()
                 enabled: currentWebView && currentWebView.canGoForward
-                activeFocusOnTab: !browserWindow.platformIsMac
+                activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: reloadButton
@@ -215,7 +215,7 @@ ApplicationWindow {
                              ? "icons/3rdparty/process-stop.png"
                              : "icons/3rdparty/view-refresh.png"
                 onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
-                activeFocusOnTab: !browserWindow.platformIsMac
+                activeFocusOnTab: !win.platformIsMac
             }
             TextField {
                 id: addressBar
@@ -518,7 +518,7 @@ ApplicationWindow {
                 tabBar.removeItem(tabBar.itemAt(index));
                 tabLayout.children[index].destroy();
             } else {
-                browserWindow.close();
+                win.close();
             }
         }
 
@@ -597,12 +597,12 @@ ApplicationWindow {
                 onFullScreenRequested: function(request) {
                     if (request.toggleOn) {
                         webEngineView.state = "FullScreen";
-                        browserWindow.previousVisibility = browserWindow.visibility;
-                        browserWindow.showFullScreen();
+                        win.previousVisibility = win.visibility;
+                        win.showFullScreen();
                         fullScreenNotification.show();
                     } else {
                         webEngineView.state = "";
-                        browserWindow.visibility = browserWindow.previousVisibility;
+                        win.visibility = win.previousVisibility;
                         fullScreenNotification.hide();
                     }
                     request.accept();
@@ -746,7 +746,7 @@ ApplicationWindow {
     Dialog {
         id: permissionDialog
         anchors.centerIn: parent
-        width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
+        width: Math.min(win.width, win.height) / 3 * 2
         contentWidth: mainTextForPermissionDialog.width
         contentHeight: mainTextForPermissionDialog.height
         standardButtons: Dialog.No | Dialog.Yes
