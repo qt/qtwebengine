@@ -1,0 +1,4 @@
+module MultiPage
+typeinfo multipage.qmltypes
+prefer :/qt/qml/MultiPage/
+Viewer 254.0 Viewer.qml

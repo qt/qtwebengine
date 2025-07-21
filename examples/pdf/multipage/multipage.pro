@@ -7,7 +7,7 @@ SOURCES += main.cpp pdfapplication.cpp
 RESOURCES += \
     viewer.qrc
 EXAMPLE_FILES = \
-    viewer.qml
+    Viewer.qml
 
 target.path = $$[QT_INSTALL_EXAMPLES]/pdf/multipage
 INSTALLS += target

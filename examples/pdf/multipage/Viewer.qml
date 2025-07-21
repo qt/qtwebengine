@@ -1,5 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
@@ -22,7 +25,7 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Open
-                    icon.source: "qrc:/multipage/resources/document-open.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/document-open.svg"
                     onTriggered: fileDialog.open()
                 }
             }
@@ -30,7 +33,7 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomIn
                     enabled: view.renderScale < 10
-                    icon.source: "qrc:/multipage/resources/zoom-in.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/zoom-in.svg"
                     onTriggered: view.renderScale *= Math.sqrt(2)
                 }
             }
@@ -38,46 +41,46 @@ ApplicationWindow {
                 action: Action {
                     shortcut: StandardKey.ZoomOut
                     enabled: view.renderScale > 0.1
-                    icon.source: "qrc:/multipage/resources/zoom-out.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/zoom-out.svg"
                     onTriggered: view.renderScale /= Math.sqrt(2)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/zoom-fit-width.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/zoom-fit-width.svg"
                     onTriggered: view.scaleToWidth(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/zoom-fit-best.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/zoom-fit-best.svg"
                     onTriggered: view.scaleToPage(root.contentItem.width, root.contentItem.height)
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+0"
-                    icon.source: "qrc:/multipage/resources/zoom-original.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/zoom-original.svg"
                     onTriggered: view.resetScale()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+L"
-                    icon.source: "qrc:/multipage/resources/rotate-left.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/rotate-left.svg"
                     onTriggered: view.pageRotation -= 90
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: "Ctrl+R"
-                    icon.source: "qrc:/multipage/resources/rotate-right.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/rotate-right.svg"
                     onTriggered: view.pageRotation += 90
                 }
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/go-previous-view-page.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/go-previous-view-page.svg"
                     enabled: view.backEnabled
                     onTriggered: view.back()
                 }
@@ -102,7 +105,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/go-next-view-page.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/go-next-view-page.svg"
                     enabled: view.forwardEnabled
                     onTriggered: view.forward()
                 }
@@ -113,14 +116,14 @@ ApplicationWindow {
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.SelectAll
-                    icon.source: "qrc:/multipage/resources/edit-select-all.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/edit-select-all.svg"
                     onTriggered: view.selectAll()
                 }
             }
             ToolButton {
                 action: Action {
                     shortcut: StandardKey.Copy
-                    icon.source: "qrc:/multipage/resources/edit-copy.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/edit-copy.svg"
                     enabled: view.selectedText !== ""
                     onTriggered: view.copySelectionToClipboard()
                 }
@@ -248,14 +251,14 @@ ApplicationWindow {
                 anchors.fill: parent
                 currentIndex: sidebarTabs.currentIndex
                 component InfoField: TextInput {
-                    width: parent.width
+                    Layout.preferredWidth: parent.width
                     selectByMouse: true
                     readOnly: true
                     wrapMode: Text.WordWrap
                 }
                 Column {
                     spacing: 6
-                    width: parent.width - 6
+                    Layout.preferredWidth: parent.width - 6
                     Label { font.bold: true; text: qsTr("Title") }
                     InfoField { text: doc.title }
                     Label { font.bold: true; text: qsTr("Author") }
@@ -302,7 +305,7 @@ ApplicationWindow {
                             Label {
                                 font.bold: true
                                 text: view.searchString
-                                width: implicitWidth
+                                Layout.preferredWidth: implicitWidth
                             }
                             Label {
                                 text: resultDelegate.contextAfter
@@ -339,6 +342,7 @@ ApplicationWindow {
                     cellWidth: width / 2
                     cellHeight: cellWidth + 10
                     delegate: Item {
+                        id: del
                         required property int index
                         required property string label
                         required property size pointSize
@@ -353,13 +357,13 @@ ApplicationWindow {
                             PdfPageImage {
                                 id: image
                                 document: doc
-                                currentFrame: index
+                                currentFrame: del.index
                                 asynchronous: true
                                 fillMode: Image.PreserveAspectFit
-                                property bool landscape: pointSize.width > pointSize.height
+                                property bool landscape: del.pointSize.width > del.pointSize.height
                                 width: landscape ? thumbnailsView.cellWidth - 6
-                                                 : height * pointSize.width / pointSize.height
-                                height: landscape ? width * pointSize.height / pointSize.width
+                                                 : height * del.pointSize.width / del.pointSize.height
+                                height: landscape ? width * del.pointSize.height / del.pointSize.width
                                                   : thumbnailsView.cellHeight - 14
                                 sourceSize.width: width
                                 sourceSize.height: height
@@ -369,10 +373,10 @@ ApplicationWindow {
                             id: pageNumber
                             anchors.bottom: parent.bottom
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: label
+                            text: del.label
                         }
                         TapHandler {
-                            onTapped: view.goToPage(index)
+                            onTapped: view.goToPage(del.index)
                         }
                     }
                 }
@@ -390,7 +394,9 @@ ApplicationWindow {
                     id: sidebarOpenAction
                     checkable: true
                     checked: sidebar.opened
-                    icon.source: checked ? "qrc:/multipage/resources/sidebar-collapse-left.svg" : "qrc:/multipage/resources/sidebar-expand-left.svg"
+                    icon.source: checked
+                                 ? "qrc:/qt/qml/MultiPage/resources/sidebar-collapse-left.svg"
+                                 : "qrc:/qt/qml/MultiPage/resources/sidebar-expand-left.svg"
                     onTriggered: sidebar.open()
                 }
                 ToolTip.visible: enabled && hovered
@@ -399,7 +405,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/go-up-search.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/go-up-search.svg"
                     shortcut: StandardKey.FindPrevious
                     enabled: view.searchModel.count > 0
                     onTriggered: view.searchBack()
@@ -420,7 +426,7 @@ ApplicationWindow {
                 }
                 Image {
                     visible: searchField.text !== ""
-                    source: "qrc:/multipage/resources/edit-clear.svg"
+                    source: "qrc:/qt/qml/MultiPage/resources/edit-clear.svg"
                     sourceSize.height: searchField.height - 6
                     anchors {
                         right: parent.right
@@ -434,7 +440,7 @@ ApplicationWindow {
             }
             ToolButton {
                 action: Action {
-                    icon.source: "qrc:/multipage/resources/go-down-search.svg"
+                    icon.source: "qrc:/qt/qml/MultiPage/resources/go-down-search.svg"
                     shortcut: StandardKey.FindNext
                     enabled: view.searchModel.count > 0
                     onTriggered: view.searchForward()
