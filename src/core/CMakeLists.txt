@@ -669,6 +669,7 @@ if(WIN32)
             TARGET QtWebEngineCoreSandbox
             OUTPUT QtWebEngineCoreSandbox.lib
             BUILDDIR ${buildDir}/${config}/${arch}
+            DEPENDS WebEngineCore_sync_headers
             MODULE core
         )
         qt_webengine_add_gn_target_to_sbom(QtWebEngineCoreSandbox ${buildDir}/${config}/${arch})
