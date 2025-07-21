@@ -23,7 +23,7 @@ ApplicationWindow {
     width: 1300
     height: 900
     visible: true
-    title: win.currentWebView && win.currentWebView.title
+    title: win.currentWebView?.title ?? ""
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
@@ -172,13 +172,13 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             ToolButton {
-                enabled: win.currentWebView && (win.currentWebView.canGoBack || win.currentWebView.canGoForward)
+                enabled: win.currentWebView?.canGoBack || win.currentWebView?.canGoForward
                 onClicked: historyMenu.open()
                 text: qsTr("▼")
                 Menu {
                     id: historyMenu
                     Instantiator {
-                        model: win.currentWebView && win.currentWebView.history.items
+                        model: win.currentWebView?.history?.items
                         MenuItem {
                             text: model.title
                             onTriggered: win.currentWebView.goBackOrForward(model.offset)
@@ -201,22 +201,22 @@ ApplicationWindow {
                 id: backButton
                 icon.source: "icons/3rdparty/go-previous.png"
                 onClicked: win.currentWebView.goBack()
-                enabled: win.currentWebView && win.currentWebView.canGoBack
+                enabled: win.currentWebView?.canGoBack ?? false
                 activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: forwardButton
                 icon.source: "icons/3rdparty/go-next.png"
                 onClicked: win.currentWebView.goForward()
-                enabled: win.currentWebView && win.currentWebView.canGoForward
+                enabled: win.currentWebView?.canGoForward ?? false
                 activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: reloadButton
-                icon.source: win.currentWebView && win.currentWebView.loading
+                icon.source: win.currentWebView?.loading
                              ? "icons/3rdparty/process-stop.png"
                              : "icons/3rdparty/view-refresh.png"
-                onClicked: win.currentWebView && win.currentWebView.loading ? win.currentWebView.stop() : win.currentWebView.reload()
+                onClicked: win.currentWebView?.loading ? win.currentWebView.stop() : win.currentWebView.reload()
                 activeFocusOnTab: !win.platformIsMac
             }
             TextField {
@@ -228,7 +228,7 @@ ApplicationWindow {
                     id: faviconImage
                     width: 16; height: 16
                     sourceSize: Qt.size(width, height)
-                    source: win.currentWebView && win.currentWebView.icon ? win.currentWebView.icon : ''
+                    source: win.currentWebView?.icon ? win.currentWebView.icon : ''
                 }
                 MouseArea {
                     id: textFieldMouseArea
@@ -323,7 +323,7 @@ ApplicationWindow {
                         id: offTheRecordEnabled
                         text: "Off The Record"
                         checkable: true
-                        checked: win.currentWebView && win.currentWebView.profile === otrPrototype.instance()
+                        checked: win.currentWebView?.profile === otrPrototype.instance()
                         onToggled: function(checked) {
                             if (win.currentWebView) {
                                 win.currentWebView.profile = checked ? otrPrototype.instance() : defaultProfilePrototype.instance();
@@ -333,8 +333,8 @@ ApplicationWindow {
                     MenuItem {
                         id: httpDiskCacheEnabled
                         text: "HTTP Disk Cache"
-                        checkable: win.currentWebView && !win.currentWebView.profile.offTheRecord
-                        checked: win.currentWebView && (win.currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
+                        checkable: !win.currentWebView?.profile?.offTheRecord ?? false
+                        checked: win.currentWebView?.profile.httpCacheType === WebEngineProfile.DiskHttpCache
                         onToggled: function(checked) {
                             if (win.currentWebView) {
                                 win.currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
@@ -428,7 +428,7 @@ ApplicationWindow {
             z: -2
             from: 0
             to: 100
-            value: (win.currentWebView && win.currentWebView.loadProgress < 100) ? win.currentWebView.loadProgress : 0
+            value: (win.currentWebView?.loadProgress < 100) ? win.currentWebView.loadProgress : 0
         }
     }
 
@@ -863,13 +863,13 @@ ApplicationWindow {
 
         onFindNext: {
             if (text)
-                win.currentWebView && win.currentWebView.findText(text);
+                win.currentWebView?.findText(text);
             else if (!visible)
                 visible = true;
         }
         onFindPrevious: {
             if (text)
-                win.currentWebView && win.currentWebView.findText(text, WebEngineView.FindBackward);
+                win.currentWebView?.findText(text, WebEngineView.FindBackward);
             else if (!visible)
                 visible = true;
         }
