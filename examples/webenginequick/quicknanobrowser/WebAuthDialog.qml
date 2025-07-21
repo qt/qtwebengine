@@ -229,14 +229,14 @@ Dialog {
         case WebEngineWebAuthUxRequest.RequestFailureReason.KeyNotRegistered:
             return "Key not registered";
         case WebEngineWebAuthUxRequest.RequestFailureReason.KeyAlreadyRegistered:
-            return "You already registered this device. You don't have to register it again
-                    Try agin with different key or device";
+            return "You already registered this device. You don't have to register it again\n"
+                     + "Try again with different key or device.";
         case WebEngineWebAuthUxRequest.RequestFailureReason.SoftPinBlock:
-            return "The security key is locked because the wrong PIN was entered too many times.
-                    To unlock it, remove and reinsert it.";
+            return "The security key is locked because the wrong PIN was entered too many times.\n"
+                    + "To unlock it, remove and reinsert it.";
         case WebEngineWebAuthUxRequest.RequestFailureReason.HardPinBlock:
-            return "The security key is locked because the wrong PIN was entered too many times.
-                    You'll need to reset the security key.";
+            return "The security key is locked because the wrong PIN was entered too many times.\n"
+                    + "You'll need to reset the security key.";
         case WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorRemovedDuringPinEntry:
             return "Authenticator removed during verification. Please reinsert and try again";
         case WebEngineWebAuthUxRequest.RequestFailureReason.AuthenticatorMissingResidentKeys:
