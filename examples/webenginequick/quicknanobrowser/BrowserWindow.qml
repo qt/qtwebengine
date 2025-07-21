@@ -1,6 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+pragma ComponentBehavior: Bound
+
 import QtCore
 import QtQml
 import QtQuick
@@ -14,14 +16,14 @@ import BrowserUtils
 ApplicationWindow {
     id: win
     property QtObject applicationRoot
-    property Item currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
+    property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
     property int createdTabs: 0
 
     width: 1300
     height: 900
     visible: true
-    title: currentWebView && currentWebView.title
+    title: win.currentWebView && win.currentWebView.title
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
@@ -65,14 +67,14 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.Refresh
         onTriggered: {
-            if (currentWebView)
-                currentWebView.reload();
+            if (win.currentWebView)
+                win.currentWebView.reload();
         }
     }
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabBar.createTab(tabBar.count != 0 ? currentWebView.profile : defaultProfilePrototype.instance());
+            tabBar.createTab(tabBar.count != 0 ? win.currentWebView.profile : defaultProfilePrototype.instance());
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -80,7 +82,7 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.Close
         onTriggered: {
-            currentWebView.triggerWebAction(WebEngineView.RequestClose);
+            win.currentWebView.triggerWebAction(WebEngineView.RequestClose);
         }
     }
     Action {
@@ -90,10 +92,10 @@ ApplicationWindow {
     Action {
         shortcut: "Escape"
         onTriggered: {
-            if (currentWebView.state == "FullScreen") {
+            if (win.currentWebView.state == "FullScreen") {
                 win.visibility = win.previousVisibility;
                 fullScreenNotification.hide();
-                currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
+                win.currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
             }
 
             if (findBar.visible)
@@ -102,52 +104,52 @@ ApplicationWindow {
     }
     Action {
         shortcut: "Ctrl+0"
-        onTriggered: currentWebView.zoomFactor = 1.0
+        onTriggered: win.currentWebView.zoomFactor = 1.0
     }
     Action {
         shortcut: StandardKey.ZoomOut
-        onTriggered: currentWebView.zoomFactor -= 0.1
+        onTriggered: win.currentWebView.zoomFactor -= 0.1
     }
     Action {
         shortcut: StandardKey.ZoomIn
-        onTriggered: currentWebView.zoomFactor += 0.1
+        onTriggered: win.currentWebView.zoomFactor += 0.1
     }
 
     Action {
         shortcut: StandardKey.Copy
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Copy)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Copy)
     }
     Action {
         shortcut: StandardKey.Cut
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Cut)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Cut)
     }
     Action {
         shortcut: StandardKey.Paste
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Paste)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Paste)
     }
     Action {
         shortcut: "Shift+"+StandardKey.Paste
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.PasteAndMatchStyle)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.PasteAndMatchStyle)
     }
     Action {
         shortcut: StandardKey.SelectAll
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.SelectAll)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.SelectAll)
     }
     Action {
         shortcut: StandardKey.Undo
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Undo)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Undo)
     }
     Action {
         shortcut: StandardKey.Redo
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Redo)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Redo)
     }
     Action {
         shortcut: StandardKey.Back
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Back)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Back)
     }
     Action {
         shortcut: StandardKey.Forward
-        onTriggered: currentWebView.triggerWebAction(WebEngineView.Forward)
+        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Forward)
     }
     Action {
         shortcut: StandardKey.Find
@@ -170,16 +172,16 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             ToolButton {
-                enabled: currentWebView && (currentWebView.canGoBack || currentWebView.canGoForward)
+                enabled: win.currentWebView && (win.currentWebView.canGoBack || win.currentWebView.canGoForward)
                 onClicked: historyMenu.open()
                 text: qsTr("▼")
                 Menu {
                     id: historyMenu
                     Instantiator {
-                        model: currentWebView && currentWebView.history.items
+                        model: win.currentWebView && win.currentWebView.history.items
                         MenuItem {
                             text: model.title
-                            onTriggered: currentWebView.goBackOrForward(model.offset)
+                            onTriggered: win.currentWebView.goBackOrForward(model.offset)
                             checkable: !enabled
                             checked: !enabled
                             enabled: model.offset
@@ -198,23 +200,23 @@ ApplicationWindow {
             ToolButton {
                 id: backButton
                 icon.source: "icons/3rdparty/go-previous.png"
-                onClicked: currentWebView.goBack()
-                enabled: currentWebView && currentWebView.canGoBack
+                onClicked: win.currentWebView.goBack()
+                enabled: win.currentWebView && win.currentWebView.canGoBack
                 activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: forwardButton
                 icon.source: "icons/3rdparty/go-next.png"
-                onClicked: currentWebView.goForward()
-                enabled: currentWebView && currentWebView.canGoForward
+                onClicked: win.currentWebView.goForward()
+                enabled: win.currentWebView && win.currentWebView.canGoForward
                 activeFocusOnTab: !win.platformIsMac
             }
             ToolButton {
                 id: reloadButton
-                icon.source: currentWebView && currentWebView.loading
+                icon.source: win.currentWebView && win.currentWebView.loading
                              ? "icons/3rdparty/process-stop.png"
                              : "icons/3rdparty/view-refresh.png"
-                onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
+                onClicked: win.currentWebView && win.currentWebView.loading ? win.currentWebView.stop() : win.currentWebView.reload()
                 activeFocusOnTab: !win.platformIsMac
             }
             TextField {
@@ -226,7 +228,7 @@ ApplicationWindow {
                     id: faviconImage
                     width: 16; height: 16
                     sourceSize: Qt.size(width, height)
-                    source: currentWebView && currentWebView.icon ? currentWebView.icon : ''
+                    source: win.currentWebView && win.currentWebView.icon ? win.currentWebView.icon : ''
                 }
                 MouseArea {
                     id: textFieldMouseArea
@@ -274,10 +276,10 @@ ApplicationWindow {
                 focus: true
                 Layout.fillWidth: true
                 Binding on text {
-                    when: currentWebView
-                    value: currentWebView.url
+                    when: win.currentWebView
+                    value: win.currentWebView.url
                 }
-                onAccepted: currentWebView.url = Utils.fromUserInput(text)
+                onAccepted: win.currentWebView.url = Utils.fromUserInput(text)
                 selectByMouse: true
             }
             ToolButton {
@@ -321,21 +323,21 @@ ApplicationWindow {
                         id: offTheRecordEnabled
                         text: "Off The Record"
                         checkable: true
-                        checked: currentWebView && currentWebView.profile === otrPrototype.instance()
+                        checked: win.currentWebView && win.currentWebView.profile === otrPrototype.instance()
                         onToggled: function(checked) {
-                            if (currentWebView) {
-                                currentWebView.profile = checked ? otrPrototype.instance() : defaultProfilePrototype.instance();
+                            if (win.currentWebView) {
+                                win.currentWebView.profile = checked ? otrPrototype.instance() : defaultProfilePrototype.instance();
                             }
                         }
                     }
                     MenuItem {
                         id: httpDiskCacheEnabled
                         text: "HTTP Disk Cache"
-                        checkable: currentWebView && !currentWebView.profile.offTheRecord
-                        checked: currentWebView && (currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
+                        checkable: win.currentWebView && !win.currentWebView.profile.offTheRecord
+                        checked: win.currentWebView && (win.currentWebView.profile.httpCacheType === WebEngineProfile.DiskHttpCache)
                         onToggled: function(checked) {
-                            if (currentWebView) {
-                                currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                            if (win.currentWebView) {
+                                win.currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
                             }
                         }
                     }
@@ -426,7 +428,7 @@ ApplicationWindow {
             z: -2
             from: 0
             to: 100
-            value: (currentWebView && currentWebView.loadProgress < 100) ? currentWebView.loadProgress : 0
+            value: (win.currentWebView && win.currentWebView.loadProgress < 100) ? win.currentWebView.loadProgress : 0
         }
     }
 
@@ -580,17 +582,17 @@ ApplicationWindow {
                     if (!request.userInitiated)
                         console.warn("Blocked a popup window.");
                     else if (request.destination === WebEngineNewWindowRequest.InNewTab) {
-                        var tab = tabBar.createTab(currentWebView.profile, true, request.requestedUrl);
+                        var tab = tabBar.createTab(win.currentWebView.profile, true, request.requestedUrl);
                         tab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewBackgroundTab) {
-                        var backgroundTab = tabBar.createTab(currentWebView.profile, false);
+                        var backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
                         backgroundTab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                        var dialog = applicationRoot.createDialog(currentWebView.profile);
-                        dialog.currentWebView.acceptAsNewWindow(request);
+                        var dialog = applicationRoot.createDialog(win.currentWebView.profile);
+                        dialog.win.currentWebView.acceptAsNewWindow(request);
                     } else {
-                        var window = applicationRoot.createWindow(currentWebView.profile);
-                        window.currentWebView.acceptAsNewWindow(request);
+                        var window = applicationRoot.createWindow(win.currentWebView.profile);
+                        window.win.currentWebView.acceptAsNewWindow(request);
                     }
                 }
 
@@ -670,7 +672,7 @@ ApplicationWindow {
                     interval: 0
                     running: false
                     repeat: false
-                    onTriggered: currentWebView.reload()
+                    onTriggered: win.currentWebView.reload()
                 }
             }
         }
@@ -684,7 +686,7 @@ ApplicationWindow {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         onNewWindowRequested: function(request) {
-            var tab = tabBar.createTab(currentWebView.profile);
+            var tab = tabBar.createTab(win.currentWebView.profile);
             request.openIn(tab);
         }
 
@@ -861,13 +863,13 @@ ApplicationWindow {
 
         onFindNext: {
             if (text)
-                currentWebView && currentWebView.findText(text);
+                win.currentWebView && win.currentWebView.findText(text);
             else if (!visible)
                 visible = true;
         }
         onFindPrevious: {
             if (text)
-                currentWebView && currentWebView.findText(text, WebEngineView.FindBackward);
+                win.currentWebView && win.currentWebView.findText(text, WebEngineView.FindBackward);
             else if (!visible)
                 visible = true;
         }
