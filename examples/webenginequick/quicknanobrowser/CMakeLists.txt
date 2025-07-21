@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(quicknanobrowser LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -14,9 +12,10 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/quicknanobrowser")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick WebEngineQuick)
 
+qt_standard_project_setup(REQUIRES 6.8)
+
 qt_add_executable(quicknanobrowser
     main.cpp
-    utils.h
 )
 
 if(WIN32)
@@ -42,32 +41,21 @@ target_link_libraries(quicknanobrowser PUBLIC
 
 qt_add_qml_module(quicknanobrowser
     URI BrowserUtils
-    VERSION 1.0
     QML_FILES
-        "ApplicationRoot.qml"
-        "BrowserDialog.qml"
-        "BrowserWindow.qml"
-        "DownloadView.qml"
-        "FindBar.qml"
-        "FullScreenNotification.qml"
-        "WebAuthDialog.qml"
-    RESOURCE_PREFIX /
-)
-
-set(resources1_resource_files
-    "icons/3rdparty/go-next.png"
-    "icons/3rdparty/go-previous.png"
-    "icons/3rdparty/process-stop.png"
-    "icons/3rdparty/view-refresh.png"
-)
-
-qt_add_resources(quicknanobrowser "resources1"
-    PREFIX
-        "/icons"
-    BASE
-        "icons/3rdparty"
-    FILES
-        ${resources1_resource_files}
+        ApplicationRoot.qml
+        BrowserDialog.qml
+        BrowserWindow.qml
+        DownloadView.qml
+        FindBar.qml
+        FullScreenNotification.qml
+        WebAuthDialog.qml
+    SOURCES
+        utils.h
+    RESOURCES
+        icons/3rdparty/go-next.png
+        icons/3rdparty/go-previous.png
+        icons/3rdparty/process-stop.png
+        icons/3rdparty/view-refresh.png
 )
 
 if(TARGET Qt::Widgets)

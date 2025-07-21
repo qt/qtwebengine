@@ -41,9 +41,7 @@ int main(int argc, char **argv)
     parser.process(app);
 
     QQmlApplicationEngine appEngine;
-    appEngine.load(QUrl("qrc:/BrowserUtils/ApplicationRoot.qml"));
-    if (appEngine.rootObjects().isEmpty())
-        qFatal("Failed to load sources");
+    appEngine.loadFromModule("BrowserUtils", "ApplicationRoot");
 
     const QUrl url = startupUrl(parser);
     QMetaObject::invokeMethod(appEngine.rootObjects().constFirst(),

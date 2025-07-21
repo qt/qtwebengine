@@ -197,21 +197,23 @@ ApplicationWindow {
 
             ToolButton {
                 id: backButton
-                icon.source: "qrc:/icons/go-previous.png"
+                icon.source: "icons/3rdparty/go-previous.png"
                 onClicked: currentWebView.goBack()
                 enabled: currentWebView && currentWebView.canGoBack
                 activeFocusOnTab: !browserWindow.platformIsMac
             }
             ToolButton {
                 id: forwardButton
-                icon.source: "qrc:/icons/go-next.png"
+                icon.source: "icons/3rdparty/go-next.png"
                 onClicked: currentWebView.goForward()
                 enabled: currentWebView && currentWebView.canGoForward
                 activeFocusOnTab: !browserWindow.platformIsMac
             }
             ToolButton {
                 id: reloadButton
-                icon.source: currentWebView && currentWebView.loading ? "qrc:/icons/process-stop.png" : "qrc:/icons/view-refresh.png"
+                icon.source: currentWebView && currentWebView.loading
+                             ? "icons/3rdparty/process-stop.png"
+                             : "icons/3rdparty/view-refresh.png"
                 onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
                 activeFocusOnTab: !browserWindow.platformIsMac
             }

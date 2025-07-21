@@ -64,7 +64,7 @@ Rectangle {
                 Button {
                     id: cancelButton
                     anchors.right: parent.right
-                    icon.source: "qrc:/icons/process-stop.png"
+                    icon.source: "icons/3rdparty/process-stop.png"
                     onClicked: {
                         var download = downloadModel.downloads[index];
 
