@@ -327,9 +327,9 @@ ApplicationWindow {
                         text: "Off The Record"
                         checkable: true
                         checked: win.currentWebView?.profile === win.applicationRoot.otrPrototype.instance()
-                        onToggled: function(checked) {
+                        onToggled: function() {
                             if (win.currentWebView) {
-                                win.currentWebView.profile = checked
+                                win.currentWebView.profile = offTheRecordEnabled.checked
                                         ? win.applicationRoot.otrPrototype.instance()
                                         : win.applicationRoot.defaultProfilePrototype.instance();
                             }
@@ -340,9 +340,11 @@ ApplicationWindow {
                         text: "HTTP Disk Cache"
                         checkable: !win.currentWebView?.profile?.offTheRecord ?? false
                         checked: win.currentWebView?.profile.httpCacheType === WebEngineProfile.DiskHttpCache
-                        onToggled: function(checked) {
+                        onToggled: function() {
                             if (win.currentWebView) {
-                                win.currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+                                win.currentWebView.profile.httpCacheType = httpDiskCacheEnabled.checked
+                                        ? WebEngineProfile.DiskHttpCache
+                                        : WebEngineProfile.MemoryHttpCache;
                             }
                         }
                     }
@@ -702,7 +704,7 @@ ApplicationWindow {
             repeat: false
             onTriggered: devToolsEnabled.checked = false
         }
-        onWindowCloseRequested: function(request) {
+        onWindowCloseRequested: function() {
             // Delay hiding for keep the inspectedView set to receive the ACK message of close.
             hideTimer.running = true;
         }
