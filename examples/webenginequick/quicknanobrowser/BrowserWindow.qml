@@ -33,7 +33,7 @@ ApplicationWindow {
     }
 
     // When using style "mac", ToolButtons are not supposed to accept focus.
-    property bool platformIsMac: Qt.platform.os == "osx"
+    property bool platformIsMac: Qt.platform.os === "osx"
 
     Settings {
         id : appSettings
@@ -74,7 +74,7 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.AddTab
         onTriggered: {
-            tabBar.createTab(tabBar.count != 0
+            tabBar.createTab(tabBar.count !== 0
                              ? win.currentWebView.profile
                              : win.applicationRoot.defaultProfilePrototype.instance());
             addressBar.forceActiveFocus();
@@ -94,7 +94,7 @@ ApplicationWindow {
     Action {
         shortcut: "Escape"
         onTriggered: {
-            if (win.currentWebView.state == "FullScreen") {
+            if (win.currentWebView.state === "FullScreen") {
                 win.visibility = win.previousVisibility;
                 fullScreenNotification.hide();
                 win.currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
@@ -538,7 +538,7 @@ ApplicationWindow {
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl == "")
+                    if (hoveredUrl === "")
                         hideStatusText.start();
                     else {
                         statusText.text = hoveredUrl;
@@ -662,7 +662,7 @@ ApplicationWindow {
                 }
 
                 onLoadingChanged: function(loadRequest) {
-                    if (loadRequest.status == WebEngineView.LoadStartedStatus)
+                    if (loadRequest.status === WebEngineView.LoadStartedStatus)
                         findBar.reset();
                 }
 

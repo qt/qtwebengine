@@ -64,7 +64,7 @@ Rectangle {
 
         Label {
             text: root.activeMatch + "/" + root.numberOfMatches
-            visible: findTextField.text != ""
+            visible: findTextField.text !== ""
             color: "black"
         }
 

@@ -44,7 +44,7 @@ Rectangle {
                 }
 
                 radius: 3
-                color: width == listView.width ? "green" : "#2b74c7"
+                color: width === listView.width ? "green" : "#2b74c7"
                 width: listView.width * progress
                 height: cancelButton.height
 
