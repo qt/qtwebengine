@@ -15,7 +15,7 @@ import BrowserUtils
 
 ApplicationWindow {
     id: win
-    required property QtObject applicationRoot
+    required property ApplicationRoot applicationRoot
     property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
     property int createdTabs: 0
@@ -76,7 +76,7 @@ ApplicationWindow {
         onTriggered: {
             tabBar.createTab(tabBar.count != 0
                              ? win.currentWebView.profile
-                             : (win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance());
+                             : win.applicationRoot.defaultProfilePrototype.instance());
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -326,12 +326,12 @@ ApplicationWindow {
                         id: offTheRecordEnabled
                         text: "Off The Record"
                         checkable: true
-                        checked: win.currentWebView?.profile === (win.applicationRoot as ApplicationRoot).otrPrototype.instance()
+                        checked: win.currentWebView?.profile === win.applicationRoot.otrPrototype.instance()
                         onToggled: function(checked) {
                             if (win.currentWebView) {
                                 win.currentWebView.profile = checked
-                                        ? (win.applicationRoot as ApplicationRoot).otrPrototype.instance()
-                                        : (win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance();
+                                        ? win.applicationRoot.otrPrototype.instance()
+                                        : win.applicationRoot.defaultProfilePrototype.instance();
                             }
                         }
                     }
@@ -505,7 +505,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        Component.onCompleted: createTab((win.applicationRoot as ApplicationRoot).defaultProfilePrototype.instance())
+        Component.onCompleted: createTab(win.applicationRoot.defaultProfilePrototype.instance())
 
         function createTab(profile, focusOnNewTab = true, url = undefined) {
             var webview = tabComponent.createObject(tabLayout, {profile: profile});
@@ -593,10 +593,10 @@ ApplicationWindow {
                         var backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
                         backgroundTab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                        var dialog = (win.applicationRoot as ApplicationRoot).createDialog(win.currentWebView.profile);
+                        var dialog = win.applicationRoot.createDialog(win.currentWebView.profile);
                         dialog.win.currentWebView.acceptAsNewWindow(request);
                     } else {
-                        var window = (win.applicationRoot as ApplicationRoot).createWindow(win.currentWebView.profile);
+                        var window = win.applicationRoot.createWindow(win.currentWebView.profile);
                         window.win.currentWebView.acceptAsNewWindow(request);
                     }
                 }
@@ -832,6 +832,7 @@ ApplicationWindow {
     WebAuthDialog {
         id: webAuthDialog
         visible: false
+        browserWindow: win
     }
 
     MessageDialog {

@@ -11,12 +11,13 @@ import QtWebEngine
 Dialog {
     id: webAuthDialog
     anchors.centerIn: parent
-    width: Math.min(parent.parent.width, parent.parent.height) / 3 * 2
+    width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
     contentWidth: verticalLayout.width +10;
     contentHeight: verticalLayout.height +10;
     standardButtons: Dialog.Cancel | Dialog.Apply
     title: "WebAuth Request"
 
+    required property BrowserWindow browserWindow
     property var selectAccount;
     property var authrequest: null;
 
