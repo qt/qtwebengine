@@ -70,11 +70,9 @@ Rectangle {
 
         Rectangle {
             border.width: 1
-            border.color: "#ddd"
-            width: 2
-            height: parent.height
-            anchors.topMargin: 5
-            anchors.bottomMargin: 5
+            border.color: "#dddddd"
+            Layout.preferredWidth: 2
+            Layout.preferredHeight: parent.height
         }
 
         ToolButton {

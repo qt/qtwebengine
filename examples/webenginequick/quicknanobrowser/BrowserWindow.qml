@@ -454,9 +454,9 @@ ApplicationWindow {
 
         TabButton {
             id: tabButton
-            property color frameColor: "#999"
-            property color fillColor: "#eee"
-            property color nonSelectedColor: "#ddd"
+            property color frameColor: "#999999"
+            property color fillColor: "#eeeeee"
+            property color nonSelectedColor: "#dddddd"
             property string tabTitle: "New Tab"
 
             contentItem: Rectangle {
@@ -488,7 +488,7 @@ ApplicationWindow {
                     background: Rectangle {
                         implicitWidth: 12
                         implicitHeight: 12
-                        color: button.hovered ? "#ccc" : tabRectangle.color
+                        color: button.hovered ? "#cccccc" : tabRectangle.color
                         Text {text: "x"; anchors.centerIn: parent; color: "gray"}
                     }
                     onClicked: tabButton.closeTab()
