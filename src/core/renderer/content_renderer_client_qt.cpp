@@ -495,6 +495,16 @@ void ContentRendererClientQt::DidStartServiceWorkerContextOnWorkerThread(
                                                          service_worker_scope, script_url);
 }
 
+void ContentRendererClientQt::WillDestroyServiceWorkerContextOnWorkerThread(
+        v8::Local<v8::Context> context, int64_t service_worker_version_id,
+        const GURL &service_worker_scope, const GURL &script_url)
+{
+    extensions::ExtensionsRendererClient::Get()
+            ->dispatcher()
+            ->WillDestroyServiceWorkerContextOnWorkerThread(context, service_worker_version_id,
+                                                            service_worker_scope, script_url);
+}
+
 bool ContentRendererClientQt::AllowScriptExtensionForServiceWorker(const url::Origin &script_origin)
 {
     return script_origin.scheme() == extensions::kExtensionScheme;
