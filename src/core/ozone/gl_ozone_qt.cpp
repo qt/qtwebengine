@@ -10,6 +10,7 @@
 #include "ozone_util_qt.h"
 
 #include <QtCore/private/qconfig_p.h>
+#include <QtGui/qguiapplication.h>
 #include <QtGui/qopenglcontext.h>
 
 #include "ui/base/ozone_buildflags.h"
@@ -28,6 +29,8 @@
 #if QT_CONFIG(dlopen)
 #include <dlfcn.h>
 #endif
+
+using namespace Qt::StringLiterals;
 
 extern "C" {
 typedef void (*__eglMustCastToProperFunctionPointerType)(void);
@@ -138,6 +141,18 @@ GLOzoneQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
 
 bool GLOzoneANGLEQt::LoadGLES2Bindings(const gl::GLImplementationParts & /*implementation*/)
 {
+    if (QGuiApplication::platformName() == "wayland"_L1) {
+        const char eglPlatformVar[] = "EGL_PLATFORM";
+        const QByteArray eglPlatform = qgetenv(eglPlatformVar);
+        if (eglPlatform.isEmpty())
+            qputenv(eglPlatformVar, "wayland");
+        else if (eglPlatform != "wayland") {
+            qWarning("EGL_PLATFORM environment variable is set to \"%s\". "
+                     "This may break hardware rendering on Wayland.",
+                     eglPlatform.constData());
+        }
+    }
+
     gl::SetGLGetProcAddressProc(&EGL_GetProcAddress);
     return true;
 }
