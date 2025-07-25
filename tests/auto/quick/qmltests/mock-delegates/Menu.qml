@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 import QtQml
-import "../../TestParams"
 
 QtObject {
     id: menu

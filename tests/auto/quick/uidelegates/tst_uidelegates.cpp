@@ -53,6 +53,7 @@ tst_UIDelegates::tst_UIDelegates()
     m_component.reset(new QQmlComponent(engine, this));
     m_component->setData(QByteArrayLiteral("import QtQuick\n"
                                            "import QtWebEngine\n"
+                                           "import QtWebEngine.ControlsDelegates\n"
                                            "WebEngineView {}"),
                          QUrl());
 }

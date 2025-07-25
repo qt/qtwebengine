@@ -4,7 +4,7 @@
 import QtQuick
 import QtTest
 import QtWebEngine
-import "../mock-delegates/TestParams"
+import QtWebEngine.TestMockDelegates
 
 TestWebEngineView {
     id: webEngineView

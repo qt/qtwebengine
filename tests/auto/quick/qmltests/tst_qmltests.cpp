@@ -29,19 +29,6 @@
 #include <unistd.h>
 #endif
 
-class Setup : public QObject
-{
-    Q_OBJECT
-public:
-    Setup() { }
-
-public slots:
-    void qmlEngineAvailable(QQmlEngine *engine)
-    {
-        engine->addImportPath(QDir(QT_TESTCASE_SOURCEDIR).canonicalPath() + "/mock-delegates");
-    }
-};
-
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
 static bool debuggerPresent()
 {
@@ -247,6 +234,7 @@ int main(int argc, char **argv)
 
     sigaction(SIGSEGV, &sigAction, 0);
 #endif
+    qputenv("QTWEBENGINE_UI_DELEGATE_MODULE", "QtWebEngine.TestMockDelegates");
     QtWebEngineQuick::initialize();
     // Force to use English language for testing due to error message checks
     QLocale::setDefault(QLocale("en"));
@@ -281,10 +269,9 @@ int main(int argc, char **argv)
                 return new HttpsServer(":/resources/server.pem", ":/resources/server.key", "");
             });
 #endif
-    Setup setup;
-    int i = quick_test_main_with_setup(
+    int i = quick_test_main(
             argc, argv, "qmltests",
-            qPrintable(QT_TESTCASE_BUILDDIR + QLatin1String("/webengine.qmltests")), &setup);
+            qPrintable(QT_TESTCASE_BUILDDIR + QLatin1String("/webengine.qmltests")));
     return i;
 }
 

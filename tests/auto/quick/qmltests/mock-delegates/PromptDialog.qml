@@ -3,7 +3,6 @@
 
 import QtQml
 import QtTest
-import "../../TestParams"
 
 QtObject {
     property string text

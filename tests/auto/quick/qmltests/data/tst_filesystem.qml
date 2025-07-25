@@ -4,9 +4,9 @@
 import QtQuick
 import QtTest
 import QtWebEngine
+import QtWebEngine.TestMockDelegates
 import Test.util
 import "../../qmltests/data"
-import "../mock-delegates/TestParams"
 
 
 TestWebEngineView {
