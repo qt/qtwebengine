@@ -44,8 +44,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(bool isPushServiceEnabled READ isPushServiceEnabled WRITE setPushServiceEnabled NOTIFY pushServiceEnabledChanged FINAL REVISION(6,5))
     Q_PROPERTY(QWebEngineClientHints *clientHints READ clientHints FINAL REVISION(6,8))
 #if QT_CONFIG(webengine_extensions)
-    Q_PROPERTY(QWebEngineExtensionManager *extensionManager READ extensionManager FINAL
-                       REVISION(6, 10))
+    Q_PROPERTY(QWebEngineExtensionManager *extensionManager READ extensionManager REVISION(6, 10))
 #endif
     QML_NAMED_ELEMENT(WebEngineProfile)
     QML_ADDED_IN_VERSION(1, 1)
