@@ -1,8 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWEBENGINEEXTENSION_H_
-#define QWEBENGINEEXTENSION_H_
+#ifndef QWEBENGINEEXTENSIONINFO_H_
+#define QWEBENGINEEXTENSIONINFO_H_
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
@@ -75,4 +75,4 @@ Q_DECLARE_SHARED(QWebEngineExtensionInfo)
 QT_END_NAMESPACE
 
 #endif // QT_CONFIG(webengine_extensions)
-#endif // QWEBENGINEEXTENSION_H_
+#endif // QWEBENGINEEXTENSIONINFO_H_

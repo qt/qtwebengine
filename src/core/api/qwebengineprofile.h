@@ -129,7 +129,7 @@ public:
     QList<QWebEnginePermission> listPermissionsForOrigin(const QUrl &securityOrigin) const;
     QList<QWebEnginePermission> listPermissionsForPermissionType(QWebEnginePermission::PermissionType permissionType) const;
 
-    QWebEngineExtensionManager *extensionManager();
+    QWebEngineExtensionManager *extensionManager() const;
 
     static QWebEngineProfile *defaultProfile();
 

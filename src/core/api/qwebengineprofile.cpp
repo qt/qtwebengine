@@ -1101,10 +1101,10 @@ QWebEngineClientHints *QWebEngineProfile::clientHints() const
     \since 6.10
     \sa QWebEngineExtensionManager
 */
-QWebEngineExtensionManager *QWebEngineProfile::extensionManager()
+QWebEngineExtensionManager *QWebEngineProfile::extensionManager() const
 {
 #if QT_CONFIG(webengine_extensions)
-    Q_D(QWebEngineProfile);
+    Q_D(const QWebEngineProfile);
     return d->profileAdapter()->extensionManager();
 #else
     return nullptr;

@@ -50,7 +50,7 @@ private:
     friend class QtWebEngineCore::ProfileAdapter;
     Q_DISABLE_COPY(QWebEngineExtensionManager)
 
-    QWebEngineExtensionManager(QtWebEngineCore::ExtensionManager *d);
+    explicit QWebEngineExtensionManager(QtWebEngineCore::ExtensionManager *d);
     QtWebEngineCore::ExtensionManager *d_ptr;
 };
 
