@@ -19,6 +19,7 @@ ApplicationWindow {
     property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
     property int createdTabs: 0
+    property bool lastTabClosing: false
 
     width: 1300
     height: 900
@@ -497,7 +498,7 @@ ApplicationWindow {
 
             onClicked: addressBar.text = (tabLayout.itemAt(TabBar.index) as WebEngineView).url;
             function closeTab() {
-                tabBar.removeView(TabBar.index);
+                tabBar.tryCloseView(TabBar.index);
             }
         }
     }
@@ -510,7 +511,7 @@ ApplicationWindow {
         Component.onCompleted: createTab(win.applicationRoot.defaultProfilePrototype.instance())
 
         function createTab(profile, focusOnNewTab = true, url = undefined) {
-            var webview = tabComponent.createObject(tabLayout, {profile: profile});
+            var webview = tabComponent.createObject(tabLayout, {index: tabBar.count , profile: profile});
             var newTabButton = tabButtonComponent.createObject(tabBar, {tabTitle: Qt.binding(function () { return webview.title; })});
             tabBar.addItem(newTabButton);
             if (focusOnNewTab) {
@@ -522,11 +523,16 @@ ApplicationWindow {
             return webview;
         }
 
+        function tryCloseView(index) {
+            tabLayout.children[index].triggerWebAction(WebEngineView.RequestClose);
+        }
+
         function removeView(index) {
             if (tabBar.count > 1) {
                 tabBar.removeItem(tabBar.itemAt(index));
                 tabLayout.children[index].destroy();
             } else {
+                lastTabClosing = true;
                 win.close();
             }
         }
@@ -535,6 +541,7 @@ ApplicationWindow {
             id: tabComponent
             WebEngineView {
                 id: webEngineView
+                property int index;
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
@@ -574,6 +581,10 @@ ApplicationWindow {
                 settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
                 settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
                 settings.screenCaptureEnabled: true
+
+                onWindowCloseRequested: function() {
+                    tabBar.removeView(webEngineView.index);
+                }
 
                 onCertificateError: function(error) {
                     if (!error.isMainFrame) {
@@ -909,5 +920,15 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    onClosing: function(closeEvent) {
+       if (lastTabClosing) {
+           return;
+       }
+       closeEvent.accepted = false
+       for (var i = 0; i < tabBar.count; i++)  {
+           tabBar.tryCloseView(i);
+       }
     }
 }
