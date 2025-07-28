@@ -92,6 +92,11 @@ static void removeRecursive(const QString& dirname)
     QDir().rmdir(dirname);
 }
 
+bool fuzzyEqual(float a, float b, float epsilon = 1e-4f)
+{
+    return std::fabs(a - b) <= epsilon;
+}
+
 struct TestBasePage : QWebEnginePage
 {
     explicit TestBasePage(QWebEngineProfile *profile, QObject *parent = nullptr) : QWebEnginePage(profile, parent) { }
@@ -2584,13 +2589,16 @@ void tst_QWebEnginePage::scrollPosition()
 
     // try to set the scroll offset programmatically
     view.page()->runJavaScript("window.scrollTo(23, 29);");
-    QTRY_COMPARE(view.page()->scrollPosition().x(), 23);
-    QCOMPARE(view.page()->scrollPosition().y(), 29);
+    double dpr = view.windowHandle()->devicePixelRatio();
+    float expectedX = qFloor(23 * dpr) / dpr;
+    float expectedY = qFloor(29 * dpr) / dpr;
+    QTRY_VERIFY(fuzzyEqual(view.page()->scrollPosition().x(), expectedX));
+    QVERIFY(fuzzyEqual(view.page()->scrollPosition().y(), expectedY));
 
-    int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
-    int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
-    QCOMPARE(x, 23);
-    QCOMPARE(y, 29);
+    float x = evaluateJavaScriptSync(view.page(), "window.scrollX").toFloat();
+    float y = evaluateJavaScriptSync(view.page(), "window.scrollY").toFloat();
+    QVERIFY(fuzzyEqual(x, expectedX));
+    QVERIFY(fuzzyEqual(y, expectedY));
 }
 
 void tst_QWebEnginePage::scrollbarsOff()
