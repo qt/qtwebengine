@@ -97,11 +97,11 @@ ApplicationWindow {
                 value: view.currentPage + 1
                 onValueModified: view.goToPage(value - 1)
                 Shortcut {
-                    sequence: StandardKey.MoveToPreviousPage
+                    sequences: [ StandardKey.MoveToPreviousPage ]
                     onActivated: view.goToPage(currentPageSB.value - 2)
                 }
                 Shortcut {
-                    sequence: StandardKey.MoveToNextPage
+                    sequences: [ StandardKey.MoveToNextPage ]
                     onActivated: view.goToPage(currentPageSB.value)
                 }
             }
