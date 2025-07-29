@@ -37,8 +37,8 @@ public:
     Q_INVOKABLE void uninstallExtension(const QWebEngineExtensionInfo &extension);
     Q_INVOKABLE void setExtensionEnabled(const QWebEngineExtensionInfo &extension, bool enabled);
 
-    QString installPath();
-    QList<QWebEngineExtensionInfo> extensions();
+    QString installPath() const;
+    QList<QWebEngineExtensionInfo> extensions() const;
 
 Q_SIGNALS:
     void loadFinished(const QWebEngineExtensionInfo &extension);

@@ -146,7 +146,7 @@ void QWebEngineExtensionManager::setExtensionEnabled(const QWebEngineExtensionIn
     \sa installExtension(), QWebEngineExtensionInfo::isInstalled()
 */
 
-QString QWebEngineExtensionManager::installPath()
+QString QWebEngineExtensionManager::installPath() const
 {
     return d_ptr->installDirectory();
 }
@@ -157,7 +157,7 @@ QString QWebEngineExtensionManager::installPath()
 
     \sa QWebEngineExtensionInfo
 */
-QList<QWebEngineExtensionInfo> QWebEngineExtensionManager::extensions()
+QList<QWebEngineExtensionInfo> QWebEngineExtensionManager::extensions() const
 {
     return d_ptr->extensions();
 }
