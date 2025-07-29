@@ -97,8 +97,6 @@ QWebEngineExtensionInfo::QWebEngineExtensionInfo(QWebEngineExtensionInfoPrivate 
 
 QWebEngineExtensionInfo::QWebEngineExtensionInfo(const QWebEngineExtensionInfo &other) noexcept =
         default;
-QWebEngineExtensionInfo::QWebEngineExtensionInfo(QWebEngineExtensionInfo &&other) noexcept =
-        default;
 QWebEngineExtensionInfo &
 QWebEngineExtensionInfo::operator=(const QWebEngineExtensionInfo &other) noexcept = default;
 

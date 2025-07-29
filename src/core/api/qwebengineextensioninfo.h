@@ -42,8 +42,7 @@ public:
 
     Q_WEBENGINECORE_EXPORT
     QWebEngineExtensionInfo(const QWebEngineExtensionInfo &other) noexcept;
-    Q_WEBENGINECORE_EXPORT
-    QWebEngineExtensionInfo(QWebEngineExtensionInfo &&other) noexcept;
+    QWebEngineExtensionInfo(QWebEngineExtensionInfo &&other) noexcept = default;
     Q_WEBENGINECORE_EXPORT
     QWebEngineExtensionInfo &operator=(const QWebEngineExtensionInfo &other) noexcept;
     Q_WEBENGINECORE_EXPORT ~QWebEngineExtensionInfo();
