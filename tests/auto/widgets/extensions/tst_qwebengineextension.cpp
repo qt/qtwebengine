@@ -72,7 +72,7 @@ int tst_QWebEngineExtension::extensionCount()
 
 QWebEngineExtensionInfo tst_QWebEngineExtension::loadExtensionSync(const QString &path)
 {
-    QSignalSpy spy(m_manager, SIGNAL(extensionLoadFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(m_manager, SIGNAL(loadFinished(QWebEngineExtensionInfo)));
     m_manager->loadExtension(path);
     spy.wait();
     if (spy.size() != 1) {
@@ -84,14 +84,14 @@ QWebEngineExtensionInfo tst_QWebEngineExtension::loadExtensionSync(const QString
 
 void tst_QWebEngineExtension::unloadExtensionSync(const QWebEngineExtensionInfo &extension)
 {
-    QSignalSpy spy(m_manager, SIGNAL(extensionUnloadFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(m_manager, SIGNAL(unloadFinished(QWebEngineExtensionInfo)));
     m_manager->unloadExtension(extension);
     QTRY_COMPARE(spy.size(), 1);
 }
 
 QWebEngineExtensionInfo tst_QWebEngineExtension::installExtensionSync(const QString &path)
 {
-    QSignalSpy spy(m_manager, SIGNAL(extensionInstallFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(m_manager, SIGNAL(installFinished(QWebEngineExtensionInfo)));
     m_manager->installExtension(path);
     spy.wait();
     if (spy.size() != 1) {
@@ -103,7 +103,7 @@ QWebEngineExtensionInfo tst_QWebEngineExtension::installExtensionSync(const QStr
 
 void tst_QWebEngineExtension::uninstallExtensionSync(const QWebEngineExtensionInfo &extension)
 {
-    QSignalSpy spy(m_manager, SIGNAL(extensionUninstallFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(m_manager, SIGNAL(uninstallFinished(QWebEngineExtensionInfo)));
     m_manager->uninstallExtension(extension);
     QTRY_COMPARE(spy.size(), 1);
 }
@@ -271,7 +271,7 @@ void tst_QWebEngineExtension::uninstallOutsideFromProfileDir()
     QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
     QVERIFY(extension.error().isEmpty());
     QObject::connect(
-            m_manager, &QWebEngineExtensionManager::extensionUninstallFinished,
+            m_manager, &QWebEngineExtensionManager::uninstallFinished,
             [](QWebEngineExtensionInfo extension) { QVERIFY(!extension.error().isEmpty()); });
     uninstallExtensionSync(extension);
     QVERIFY(QDir(path).exists());
@@ -312,7 +312,7 @@ void tst_QWebEngineExtension::loadInIncognito()
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
     QWebEngineExtensionManager *manager = profile.extensionManager();
-    QSignalSpy spy(manager, SIGNAL(extensionLoadFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(manager, SIGNAL(loadFinished(QWebEngineExtensionInfo)));
     manager->loadExtension(resourcesPath() + u"content_script_ext");
     QTRY_COMPARE(spy.size(), 1);
     auto extension = spy.takeFirst().at(0).value<QWebEngineExtensionInfo>();
@@ -325,7 +325,7 @@ void tst_QWebEngineExtension::installInIncognito()
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
     QWebEngineExtensionManager *manager = profile.extensionManager();
-    QSignalSpy spy(manager, SIGNAL(extensionInstallFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(manager, SIGNAL(installFinished(QWebEngineExtensionInfo)));
     manager->installExtension(resourcesPath() + u"packed_ext.zip");
     QTRY_COMPARE(spy.size(), 1);
     auto extension = spy.takeFirst().at(0).value<QWebEngineExtensionInfo>();
@@ -342,7 +342,7 @@ void tst_QWebEngineExtension::loadInstalledExtensions()
     QWebEngineProfile *profile = profileBuilder.createProfile("Test");
     QWebEngineExtensionManager *manager = profile->extensionManager();
 
-    QSignalSpy spy(manager, SIGNAL(extensionInstallFinished(QWebEngineExtensionInfo)));
+    QSignalSpy spy(manager, SIGNAL(installFinished(QWebEngineExtensionInfo)));
     manager->installExtension(resourcesPath() + u"packed_ext.zip");
     QTRY_COMPARE(spy.size(), 1);
     auto extension = spy.takeFirst().at(0).value<QWebEngineExtensionInfo>();

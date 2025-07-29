@@ -41,10 +41,10 @@ public:
     QList<QWebEngineExtensionInfo> extensions();
 
 Q_SIGNALS:
-    void extensionLoadFinished(const QWebEngineExtensionInfo &extension);
-    void extensionInstallFinished(const QWebEngineExtensionInfo &extension);
-    void extensionUnloadFinished(const QWebEngineExtensionInfo &extension);
-    void extensionUninstallFinished(const QWebEngineExtensionInfo &extension);
+    void loadFinished(const QWebEngineExtensionInfo &extension);
+    void installFinished(const QWebEngineExtensionInfo &extension);
+    void unloadFinished(const QWebEngineExtensionInfo &extension);
+    void uninstallFinished(const QWebEngineExtensionInfo &extension);
 
 private:
     friend class QtWebEngineCore::ProfileAdapter;

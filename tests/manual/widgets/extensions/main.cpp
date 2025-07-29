@@ -109,7 +109,7 @@ public:
         QObject::connect(uninstallBtn, &QPushButton::clicked, this, &ExtensionsWidget::uninstall);
         layout()->addWidget(uninstallBtn);
 
-        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::extensionLoadFinished,
+        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::loadFinished,
                          [this](QWebEngineExtensionInfo extension) {
                              if (!extension.isLoaded()) {
                                  showInfoDialog("Failed to load extension\n\nFile:"
@@ -123,7 +123,7 @@ public:
                              update();
                          });
 
-        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::extensionInstallFinished,
+        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::,
                          [this](QWebEngineExtensionInfo extension) {
                              if (!extension.isInstalled()) {
                                  showInfoDialog("Failed to install extension\n\nFile: "
@@ -136,7 +136,7 @@ public:
                              m_extensionManager->setExtensionEnabled(extension, true);
                              update();
                          });
-        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::extensionUnloadFinished,
+        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::unloadFinished,
                          [this](QWebEngineExtensionInfo extension) {
                              if (!extension.error().isEmpty()) {
                                  showInfoDialog("Failed to unload " + extension.name()
@@ -149,7 +149,7 @@ public:
                              update();
                          });
         QObject::connect(
-                m_extensionManager, &QWebEngineExtensionManager::extensionUninstallFinished,
+                m_extensionManager, &QWebEngineExtensionManager::uninstallFinished,
                 [this](QWebEngineExtensionInfo extension) {
                     if (!extension.error().isEmpty()) {
                         showInfoDialog("Failed to uninstall " + extension.name() + "\n\nFile: "

@@ -66,7 +66,7 @@ void ExtensionsUIPageHandlerQt::InnerLoadExtension(const base::FilePath &path)
     QWebEngineExtensionManager *manager = profileAdapter->extensionManager();
 
     QMetaObject::Connection *const connection = new QMetaObject::Connection;
-    *connection = QObject::connect(manager, &QWebEngineExtensionManager::extensionLoadFinished,
+    *connection = QObject::connect(manager, &QWebEngineExtensionManager::loadFinished,
                                    [this, connection]() {
                                        page_->ReloadPage();
                                        QObject::disconnect(*connection);
@@ -81,7 +81,7 @@ void ExtensionsUIPageHandlerQt::InnerInstallExtension(const base::FilePath &path
     QWebEngineExtensionManager *manager = profileAdapter->extensionManager();
 
     QMetaObject::Connection *const connection = new QMetaObject::Connection;
-    *connection = QObject::connect(manager, &QWebEngineExtensionManager::extensionInstallFinished,
+    *connection = QObject::connect(manager, &QWebEngineExtensionManager::installFinished,
                                    [this, connection]() {
                                        page_->ReloadPage();
                                        QObject::disconnect(*connection);
@@ -103,7 +103,7 @@ void ExtensionsUIPageHandlerQt::UninstallExtension(const std::string &id,
     }
 
     QMetaObject::Connection *const connection = new QMetaObject::Connection;
-    *connection = QObject::connect(manager, &QWebEngineExtensionManager::extensionUninstallFinished,
+    *connection = QObject::connect(manager, &QWebEngineExtensionManager::uninstallFinished,
                                    [connection, cb = std::move(callback)](
                                            const QWebEngineExtensionInfo &extension) mutable {
                                        std::move(cb).Run(extension.error().toStdString());
@@ -127,7 +127,7 @@ void ExtensionsUIPageHandlerQt::UnloadExtension(const std::string &id,
     }
 
     QMetaObject::Connection *const connection = new QMetaObject::Connection;
-    *connection = QObject::connect(manager, &QWebEngineExtensionManager::extensionUnloadFinished,
+    *connection = QObject::connect(manager, &QWebEngineExtensionManager::unloadFinished,
                                    [connection, cb = std::move(callback)](
                                            const QWebEngineExtensionInfo &extension) mutable {
                                        std::move(cb).Run(extension.error().toStdString());

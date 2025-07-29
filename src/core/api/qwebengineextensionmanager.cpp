@@ -49,7 +49,7 @@ QWebEngineExtensionManager::~QWebEngineExtensionManager() { }
 /*!
     Loads an unpacked extension from \a path
 
-    The \l QWebEngineExtensionManager::extensionLoadFinished signal is emitted when an extension
+    The \l QWebEngineExtensionManager::loadFinished signal is emitted when an extension
     is loaded or the load failed. If the load succeeded \l QWebEngineExtensionInfo::isLoaded() will
     return true otherwise \l QWebEngineExtensionInfo::error() will contain information where the
     loading process failed.
@@ -67,7 +67,7 @@ void QWebEngineExtensionManager::loadExtension(const QString &path)
 /*!
     Installs an extension from \a path to the profile's directory and loads it
 
-    The \l QWebEngineExtensionManager::extensionInstallFinished signal is emitted after an
+    The \l QWebEngineExtensionManager::installFinished signal is emitted after an
     extension is installed or the install failed. If the install succeeded \l
     QWebEngineExtensionInfo::isInstalled() will return true, otherwise \l
     QWebEngineExtensionInfo::error() will contain information how the install process failed.
@@ -96,7 +96,7 @@ void QWebEngineExtensionManager::installExtension(const QString &path)
 
     Removes all the extension's data from memory.
 
-    The \l QWebEngineExtensionManager::extensionUnloadFinished signal is emitted after the unload
+    The \l QWebEngineExtensionManager::unloadFinished signal is emitted after the unload
     process finished.
 
     \note It is also possible to unload internal extensions like Hangouts and PDF,
@@ -114,7 +114,7 @@ void QWebEngineExtensionManager::unloadExtension(const QWebEngineExtensionInfo &
 
     Removes the extension's files from the install path and unloads
     the extension.
-    The \l QWebEngineExtensionManager::extensionUninstallFinished signal is emitted
+    The \l QWebEngineExtensionManager::uninstallFinished signal is emitted
     after the process finished.
 
     \sa QWebEngineExtensionManager::installPath(), QWebEngineExtensionInfo::isInstalled(),

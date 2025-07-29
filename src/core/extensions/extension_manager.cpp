@@ -88,7 +88,7 @@ void ExtensionManager::unloadExtension(const std::string &id)
     m_actionManager->removeExtensionAction(extension->id());
     m_loader->unloadExtension(extension->id());
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionUnloadFinished(
+    Q_EMIT q->unloadFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, extension)));
 }
 
@@ -99,7 +99,7 @@ void ExtensionManager::uninstallExtension(const std::string &id)
         m_installer->uninstallExtension(extension);
     } else {
         Q_Q(QWebEngineExtensionManager);
-        Q_EMIT q->extensionUninstallFinished(QWebEngineExtensionInfo(
+        Q_EMIT q->uninstallFinished(QWebEngineExtensionInfo(
                 createWebEngineExtensionData(this, extension, "This extension was not installed")));
     }
 }
@@ -150,14 +150,14 @@ QList<QWebEngineExtensionInfo> ExtensionManager::extensions()
 void ExtensionManager::onExtensionLoaded(const Extension *extension)
 {
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionLoadFinished(
+    Q_EMIT q->loadFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, extension)));
 }
 
 void ExtensionManager::onExtensionLoadError(const QString &path, const std::string &error)
 {
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionLoadFinished(
+    Q_EMIT q->loadFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, path, error)));
 }
 
@@ -165,7 +165,7 @@ void ExtensionManager::onExtensionInstalled(const Extension *extension)
 {
     m_loader->addExtension(extension);
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionInstallFinished(
+    Q_EMIT q->installFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, extension)));
 }
 
@@ -176,14 +176,14 @@ void ExtensionManager::onExtensionUninstalled(const std::string &id)
     m_loader->unloadExtension(extension->id());
 
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionUninstallFinished(
+    Q_EMIT q->uninstallFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, extension)));
 }
 
 void ExtensionManager::onExtensionInstallError(const QString &path, const std::string &error)
 {
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionInstallFinished(
+    Q_EMIT q->installFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, path, error)));
 }
 
@@ -191,7 +191,7 @@ void ExtensionManager::onExtensionUninstallError(const std::string &id, const st
 {
     scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);
     Q_Q(QWebEngineExtensionManager);
-    Q_EMIT q->extensionInstallFinished(
+    Q_EMIT q->installFinished(
             QWebEngineExtensionInfo(createWebEngineExtensionData(this, extension, error)));
 }
 
