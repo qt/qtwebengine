@@ -74,7 +74,7 @@ void QWebEngineExtensionManager::loadExtension(const QString &path)
 
     Extensions are loaded in disabled state after the install succeded.
     Installed extensions are automatically loaded at every starutup in disabled state.
-    The install directory can be queried with \l installDirectory().
+    The install path can be queried with \l installPath().
 
     The installer is capable of installing zipped or unpacked extensions.
     The \a path parameter should point to a directory or a zip file containing the extension's
@@ -84,7 +84,7 @@ void QWebEngineExtensionManager::loadExtension(const QString &path)
     Installing an already loaded or installed extension from the same path will install a new
     extension.
 
-    \sa QWebEngineExtensionInfo::isInstalled(), QWebEngineExtensionInfo::error(), installDirectory()
+    \sa QWebEngineExtensionInfo::isInstalled(), QWebEngineExtensionInfo::error(), installPath()
 */
 void QWebEngineExtensionManager::installExtension(const QString &path)
 {
@@ -112,12 +112,12 @@ void QWebEngineExtensionManager::unloadExtension(const QWebEngineExtensionInfo &
 /*!
     Uninstalls the \a extension
 
-    Removes the extension's files from the install directory and unloads
+    Removes the extension's files from the install path and unloads
     the extension.
     The \l QWebEngineExtensionManager::extensionUninstallFinished signal is emitted
     after the process finished.
 
-    \sa QWebEngineExtensionManager::installDirectory(), QWebEngineExtensionInfo::isInstalled(),
+    \sa QWebEngineExtensionManager::installPath(), QWebEngineExtensionInfo::isInstalled(),
     QWebEngineExtensionInfo::error()
 */
 void QWebEngineExtensionManager::uninstallExtension(const QWebEngineExtensionInfo &extension)
@@ -140,13 +140,13 @@ void QWebEngineExtensionManager::setExtensionEnabled(const QWebEngineExtensionIn
 }
 
 /*!
-    \property QWebEngineExtensionManager::installDirectory
+    \property QWebEngineExtensionManager::installPath
     \brief Returns the directory's path where the extensions are installed.
 
     \sa installExtension(), QWebEngineExtensionInfo::isInstalled()
 */
 
-QString QWebEngineExtensionManager::installDirectory()
+QString QWebEngineExtensionManager::installPath()
 {
     return d_ptr->installDirectory();
 }

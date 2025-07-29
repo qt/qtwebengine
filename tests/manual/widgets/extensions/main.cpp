@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
     QWebEngineProfile *profile = profileBuilder.createProfile("ExtensionsManualTest");
 
     auto *extensionManager = profile->extensionManager();
-    qDebug() << "installDir" << extensionManager->installDirectory();
+    qDebug() << "installPath" << extensionManager->installPath();
 
     QWebEngineView view(profile);
     view.setUrl(QUrl(QStringLiteral("https://www.google.com")));

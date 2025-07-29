@@ -325,7 +325,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineExtensionManager.unloadExtension(QWebEngineExtensionInfo) --> void"
     << "QWebEngineExtensionManager.uninstallExtension(QWebEngineExtensionInfo) --> void"
     << "QWebEngineExtensionManager.setExtensionEnabled(QWebEngineExtensionInfo,bool) --> void"
-    << "QWebEngineExtensionManager.installDirectory --> QString"
+    << "QWebEngineExtensionManager.installPath --> QString"
     << "QWebEngineExtensionManager.extensionLoadFinished(QWebEngineExtensionInfo) --> void"
     << "QWebEngineExtensionManager.extensionUnloadFinished(QWebEngineExtensionInfo) --> void"
     << "QWebEngineExtensionManager.extensionInstallFinished(QWebEngineExtensionInfo) --> void"

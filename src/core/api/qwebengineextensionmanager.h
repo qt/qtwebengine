@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
 class Q_WEBENGINECORE_EXPORT QWebEngineExtensionManager : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString installDirectory READ installDirectory FINAL)
+    Q_PROPERTY(QString installPath READ installPath FINAL)
     Q_PROPERTY(QList<QWebEngineExtensionInfo> extensions READ extensions FINAL)
 public:
     QML_NAMED_ELEMENT(WebEngineExtensionManager)
@@ -37,7 +37,7 @@ public:
     Q_INVOKABLE void uninstallExtension(const QWebEngineExtensionInfo &extension);
     Q_INVOKABLE void setExtensionEnabled(const QWebEngineExtensionInfo &extension, bool enabled);
 
-    QString installDirectory();
+    QString installPath();
     QList<QWebEngineExtensionInfo> extensions();
 
 Q_SIGNALS:

@@ -60,7 +60,7 @@ private:
 
 int tst_QWebEngineExtension::installedFiles()
 {
-    return QDir(m_manager->installDirectory())
+    return QDir(m_manager->installPath())
             .entryInfoList(QDir::AllEntries | QDir::NoDot | QDir::NoDotDot)
             .size();
 }
@@ -115,13 +115,13 @@ QString tst_QWebEngineExtension::resourcesPath()
 
 QDir tst_QWebEngineExtension::extensionsInstallDir()
 {
-    QString path = m_manager->installDirectory();
+    QString path = m_manager->installPath();
     return QDir(path);
 }
 
 void tst_QWebEngineExtension::cleanup()
 {
-    QVERIFY(QDir(m_manager->installDirectory()).removeRecursively());
+    QVERIFY(QDir(m_manager->installPath()).removeRecursively());
     QCOMPARE(installedFiles(), 0);
     for (auto extension : m_manager->extensions())
         m_manager->unloadExtension(extension);
