@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qwebenginecookiestore
 set(tst_qwebenginecookiestore_resource_files
     "resources/content.html"
     "resources/index.html"
+    "resources/fav.png"
 )
 
 qt_internal_add_resource(tst_qwebenginecookiestore "tst_qwebenginecookiestore"
