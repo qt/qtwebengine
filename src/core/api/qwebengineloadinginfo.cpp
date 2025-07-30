@@ -66,6 +66,10 @@ QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QUrl& url, LoadStatus status,
 {
 }
 
+QWebEngineLoadingInfo::QWebEngineLoadingInfo() : QWebEngineLoadingInfo(QUrl(), QWebEngineLoadingInfo::LoadStartedStatus)
+{
+}
+
 QWebEngineLoadingInfo::QWebEngineLoadingInfo(const QWebEngineLoadingInfo &other) = default;
 QWebEngineLoadingInfo& QWebEngineLoadingInfo::operator=(const QWebEngineLoadingInfo &other) = default;
 QWebEngineLoadingInfo::QWebEngineLoadingInfo(QWebEngineLoadingInfo &&other) = default;

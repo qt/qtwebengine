@@ -67,6 +67,9 @@ public:
 QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(const QUrl &origin, bool toggleOn, const std::function<void (bool)> &setFullScreenCallback)
     : d_ptr(new QWebEngineFullScreenRequestPrivate(origin, toggleOn, setFullScreenCallback)) { }
 
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest()
+    : d_ptr(new QWebEngineFullScreenRequestPrivate(QUrl(), false, {})) { }
+
 QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(const QWebEngineFullScreenRequest &other) = default;
 QWebEngineFullScreenRequest& QWebEngineFullScreenRequest::operator=(const QWebEngineFullScreenRequest &other) = default;
 QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEngineFullScreenRequest &&other) = default;
