@@ -75,7 +75,7 @@ void HttpServer::handleNewConnection()
     auto rr = new HttpReqRep(m_tcpServer->nextPendingConnection(), this);
     connect(rr, &HttpReqRep::requestReceived, [this, rr]() {
         Q_EMIT newRequest(rr);
-        if (rr->isClosed()) // was explicitly answered
+        if (rr->isClosing() || rr->isClosed()) // was explicitly answered
             return;
 
         // if request wasn't handled or purposely ignored for default behavior

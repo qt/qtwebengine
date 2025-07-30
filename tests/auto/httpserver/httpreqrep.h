@@ -19,6 +19,7 @@ public:
     void sendResponse(const QByteArray &response);
     void close();
     bool isClosed() const { return m_state == State::DISCONNECTED; }
+    bool isClosing() const { return m_state == State::DISCONNECTING; }
 
     // Request parameters (only valid after requestReceived())
 
