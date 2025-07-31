@@ -170,6 +170,11 @@ void NativeSkiaOutputDevice::releaseTexture()
     }
 }
 
+bool NativeSkiaOutputDevice::hasResources()
+{
+    return m_frontBuffer && m_frontBuffer->textureCleanupCallback;
+}
+
 void NativeSkiaOutputDevice::releaseResources()
 {
     if (m_frontBuffer)
@@ -215,7 +220,10 @@ NativeSkiaOutputDevice::Buffer::Buffer(NativeSkiaOutputDevice *parent)
 
 NativeSkiaOutputDevice::Buffer::~Buffer()
 {
-    DCHECK(!textureCleanupCallback);
+    // FIXME: Can't be called in case of threaded rendering with unexposed window.
+    //DCHECK(!textureCleanupCallback);
+    if (textureCleanupCallback)
+        qWarning("NativeSkiaOutputDevice: Leaking graphics resources.");
 
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
