@@ -20,6 +20,9 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLContext;
+class QSurface;
+
 class WGLHelper
 {
 public:
@@ -88,6 +91,8 @@ private:
     HANDLE m_interopDevice;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_d3dTexture;
 
+    QOpenGLContext *m_createContext = nullptr;
+    QSurface *m_createSurface = nullptr;
     GLuint m_glTexture = 0;
     HANDLE m_glTextureHandle = INVALID_HANDLE_VALUE;
 

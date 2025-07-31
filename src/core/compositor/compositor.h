@@ -131,6 +131,9 @@ public:
     // Is the texture produced upside down?
     virtual bool textureIsFlipped();
 
+    // Are there resources to be released?
+    virtual bool hasResources() { return false; }
+
     // Release resources created in texture()
     virtual void releaseResources();
 

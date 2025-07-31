@@ -5,10 +5,13 @@
 
 #include "render_widget_host_view_qt_delegate_client.h"
 
+#include <QtCore/qrunnable.h>
+#include <QtCore/qthread.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtQuick/qsgimagenode.h>
+#include <rhi/qrhi.h>
 
 #if QT_CONFIG(accessibility)
 #include <QtGui/qaccessible.h>
@@ -37,7 +40,9 @@ RenderWidgetHostViewQtDelegateItem::RenderWidgetHostViewQtDelegateItem(RenderWid
 
 RenderWidgetHostViewQtDelegateItem::~RenderWidgetHostViewQtDelegateItem()
 {
-    releaseTextureResources();
+    if (QQuickItem::window())
+        releaseResources();
+
     unbind(); // Compositor::Observer
     if (m_widgetDelegate) {
         m_widgetDelegate->Unbind();
@@ -326,12 +331,6 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
             for (const QMetaObject::Connection &c : std::as_const(m_windowConnections))
                 disconnect(c);
             m_windowConnections.clear();
-
-            auto comp = compositor();
-            if (comp && comp->type() == Compositor::Type::Native) {
-                comp->releaseTexture();
-                comp->releaseResources();
-            }
         }
 
         if (value.window) {
@@ -343,10 +342,12 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(
                     connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
-            m_windowConnections.append(
-                    connect(value.window, &QQuickWindow::sceneGraphAboutToStop, this,
-                            &RenderWidgetHostViewQtDelegateItem::releaseTextureResources,
-                            Qt::DirectConnection));
+            m_windowConnections.append(connect(
+                    value.window, &QQuickWindow::sceneGraphAboutToStop, this,
+                    &RenderWidgetHostViewQtDelegateItem::releaseResources, Qt::DirectConnection));
+            m_windowConnections.append(connect(
+                    value.window, &QQuickWindow::sceneGraphInvalidated, this,
+                    &RenderWidgetHostViewQtDelegateItem::releaseResources, Qt::DirectConnection));
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent*)), SLOT(onHide())));
         }
@@ -363,6 +364,61 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
         }
     } else if (change == QQuickItem::ItemDevicePixelRatioHasChanged) {
         m_client->visualPropertiesChanged();
+    }
+}
+
+class CleanupJob : public QRunnable
+{
+public:
+    CleanupJob(Compositor::Handle<Compositor> compositor) : m_compositor(std::move(compositor)) { }
+
+    ~CleanupJob()
+    {
+        if (m_compositor->hasResources()) {
+            qWarning("Failed to release graphics resources because the clean-up render job was "
+                     "deleted.");
+        }
+    }
+
+    void run() override { m_compositor->releaseResources(); }
+
+private:
+    Compositor::Handle<Compositor> m_compositor;
+};
+
+void RenderWidgetHostViewQtDelegateItem::releaseResources()
+{
+    auto comp = compositor();
+    if (!comp || comp->type() != Compositor::Type::Native || !comp->hasResources())
+        return;
+
+    comp->releaseTexture();
+
+    QQuickWindow *win = QQuickItem::window();
+    if (!win) {
+        qWarning("Failed to release graphics resources because QQuickWindow is not available.");
+        return;
+    }
+
+    QRhi *rhi = win->rhi();
+    if (!rhi) {
+        qWarning("Failed to release graphics resources because RHI is not available.");
+        return;
+    }
+
+    // Do not schedule clean-up if the resources were created on the current thread.
+    if (QThread::currentThread() == rhi->thread()) {
+        comp->releaseResources();
+        return;
+    }
+
+    if (win->isExposed())
+        win->scheduleRenderJob(new CleanupJob(std::move(comp)), QQuickWindow::NoStage);
+    else {
+        // TODO: Try to find a proper way to schedule job on the render thread if the window is
+        // not exposed.
+        // This is reproducible with ./tst_qquickwebengineviewgraphics simpleGraphics simpleGraphics
+        qWarning("Failed to release graphics resources because QQuickWindow is not exposed.");
     }
 }
 
@@ -445,15 +501,6 @@ void RenderWidgetHostViewQtDelegateItem::onHide()
 {
     QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
     m_client->forwardEvent(&event);
-}
-
-void RenderWidgetHostViewQtDelegateItem::releaseTextureResources()
-{
-    auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::Native)
-        return;
-
-    comp->releaseResources();
 }
 
 void RenderWidgetHostViewQtDelegateItem::adapterClientChanged(WebContentsAdapterClient *client)

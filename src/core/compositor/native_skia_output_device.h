@@ -74,6 +74,7 @@ public:
     void swapFrame() override;
     void waitForTexture() override;
     void releaseTexture() override;
+    bool hasResources() override;
     void releaseResources() override;
     bool textureIsFlipped() override;
     QSize size() override;
