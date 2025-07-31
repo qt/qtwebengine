@@ -124,9 +124,10 @@ D3DSharedTexture::D3DSharedTexture(WGLHelper::WGLFunctions *wglFun, ID3D11Device
     // for an already shared texture.
     immediateContext->CopyResource(m_d3dTexture.Get(), srcTexture.Get());
 
-    auto *glContext = QOpenGLContext::currentContext();
-    Q_ASSERT(glContext);
-    auto *glFun = glContext->functions();
+    m_createContext = QOpenGLContext::currentContext();
+    m_createSurface = m_createContext->surface();
+    Q_ASSERT(m_createContext);
+    auto *glFun = m_createContext->functions();
 
     glFun->glGenTextures(1, &m_glTexture);
 
@@ -148,10 +149,31 @@ D3DSharedTexture::~D3DSharedTexture()
         m_wglFun->wglDXUnregisterObjectNV(m_interopDevice, m_glTextureHandle);
     }
 
-    auto *glContext = QOpenGLContext::currentContext();
-    if (m_glTexture && glContext) {
-        auto *glFun = glContext->functions();
+    if (m_glTexture) {
+        QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+        QSurface *currentSurface = nullptr;
+
+        if (m_createContext != currentContext) {
+            if (currentContext)
+                currentSurface = currentContext->surface();
+
+            if (!m_createContext->makeCurrent(m_createSurface)) {
+                qWarning("Failed to make OpenGL context current for clean-up, OpenGL resources "
+                         "will not be destroyed.");
+                return;
+            }
+        }
+
+        if (!m_createContext->isValid())
+            return;
+
+        auto *glFun = m_createContext->functions();
         glFun->glDeleteTextures(1, &m_glTexture);
+
+        if (currentSurface) {
+            if (!currentContext->makeCurrent(currentSurface))
+                qFatal("Failed to restore OpenGL context after clean-up.");
+        }
     }
 }
 
