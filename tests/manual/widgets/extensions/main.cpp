@@ -123,7 +123,7 @@ public:
                              update();
                          });
 
-        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::,
+        QObject::connect(m_extensionManager, &QWebEngineExtensionManager::installFinished,
                          [this](QWebEngineExtensionInfo extension) {
                              if (!extension.isInstalled()) {
                                  showInfoDialog("Failed to install extension\n\nFile: "
