@@ -3,12 +3,10 @@
 
 #include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebenginescriptcollection_p_p.h"
-#include "qwebenginescriptcollection.h"
+#include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtQml/qqmlinfo.h>
-#include <QtQml/private/qqmlengine_p.h>
-#include <QtQml/private/qv4scopedvalue_p.h>
-#include <QtQml/private/qv4arrayobject_p.h>
+#include <QtQml/qqmlengine.h>
 
 /*!
     \qmltype WebEngineScriptCollection
@@ -198,15 +196,11 @@ QJSValue QQuickWebEngineScriptCollection::collection() const
     }
 
     const QList<QWebEngineScript> &list = d->toList();
-    QV4::ExecutionEngine *v4 = d->m_qmlEngine->handle();
-    QV4::Scope scope(v4);
-    QV4::Scoped<QV4::ArrayObject> scriptArray(scope, v4->newArrayObject(list.size()));
-    int i = 0;
-    for (const auto &val : list) {
-        QV4::ScopedValue sv(scope, v4->fromVariant(QVariant::fromValue(val)));
-        scriptArray->put(i++, sv);
-    }
-    return QJSValuePrivate::fromReturnedValue(scriptArray.asReturnedValue());
+    QJSValue scriptArray = d->m_qmlEngine->newArray(list.size());
+    uint32_t i = 0;
+    for (const auto &val : list)
+        scriptArray.setProperty(i++, d->m_qmlEngine->toScriptValue(val));
+    return scriptArray;
 }
 
 void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
