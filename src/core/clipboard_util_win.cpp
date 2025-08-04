@@ -1,6 +1,7 @@
 // Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // SPDX-License-Identifier: BSD-3-Clause
+// Qt-Security score:critical reason:data-parser
 
 #include <string>
 
