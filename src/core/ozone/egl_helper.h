@@ -24,8 +24,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOffscreenSurface;
-
 class EGLHelper
 {
 public:
@@ -60,7 +58,6 @@ private:
 
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     QScopedPointer<EGLFunctions> m_functions;
-    QScopedPointer<QOffscreenSurface> m_offscreenSurface;
     bool m_isDmaBufSupported = false;
 };
 
