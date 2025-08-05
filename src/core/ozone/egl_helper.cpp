@@ -5,9 +5,7 @@
 #include "ozone_util_qt.h"
 #include "web_engine_context.h"
 
-#include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
-#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -94,7 +92,6 @@ EGLHelper *EGLHelper::instance()
 EGLHelper::EGLHelper()
     : m_eglDisplay(qApp->platformNativeInterface()->nativeResourceForIntegration("egldisplay"))
     , m_functions(new EGLHelper::EGLFunctions())
-    , m_offscreenSurface(new QOffscreenSurface())
 {
     const char *extensions = m_functions->eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     if (!extensions) {
@@ -111,9 +108,6 @@ EGLHelper::EGLHelper()
         qWarning("EGL: No EGL display.");
         return;
     }
-
-    Q_ASSERT(QThread::currentThread() == qApp->thread());
-    m_offscreenSurface->create();
 
     m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported();
 
