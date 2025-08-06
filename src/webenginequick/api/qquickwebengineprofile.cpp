@@ -6,7 +6,6 @@
 #include "qquickwebenginedownloadrequest.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescriptcollection_p.h"
-#include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebengineview_p_p.h"
 
 #include "profile_adapter.h"
@@ -23,7 +22,6 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
-#include <QtQml/qqmlcontext.h>
 #include <QtQml/qqmlengine.h>
 
 using QtWebEngineCore::ProfileAdapter;
@@ -324,16 +322,12 @@ void QQuickWebEngineProfilePrivate::clearHttpCacheCompleted()
 
 QQuickWebEngineScriptCollection *QQuickWebEngineProfilePrivate::getUserScripts()
 {
-    Q_Q(QQuickWebEngineProfile);
     if (!m_scriptCollection)
         m_scriptCollection.reset(
             new QQuickWebEngineScriptCollection(
-                new QQuickWebEngineScriptCollectionPrivate(
+                new QWebEngineScriptCollection(
                     new QWebEngineScriptCollectionPrivate(
-                        m_profileAdapter->userResourceController()))));
-
-    if (!m_scriptCollection->qmlEngine())
-        m_scriptCollection->setQmlEngine(qmlEngine(q));
+                        profileAdapter()->userResourceController()))));
 
     return m_scriptCollection.data();
 }
@@ -1289,14 +1283,6 @@ QList<QWebEnginePermission> QQuickWebEngineProfile::listPermissionsForPermission
     }
 
     return d->profileAdapter()->listPermissions(QUrl(), permissionType);
-}
-
-void QQuickWebEngineProfile::ensureQmlContext(const QObject *object)
-{
-    if (!qmlContext(this)) {
-        auto engine = qmlEngine(object);
-        QQmlEngine::setContextForObject(this, new QQmlContext(engine, engine));
-    }
 }
 
 QT_END_NAMESPACE
