@@ -41,13 +41,10 @@ ExtensionLoader::LoadingInfo ExtensionLoader::loadExtensionOnFileThread(const ba
         return result;
     }
 
-    // Fixme: investigate whats the correct flag here
     int loadFlags = Extension::NO_FLAGS;
     std::string error;
-    // Fixme: currently only kComponent extension can run on custom schemes
-    // use kUnpacked once it's fixed
     scoped_refptr<Extension> extension =
-            file_util::LoadExtension(path, mojom::ManifestLocation::kComponent, loadFlags, &error);
+            file_util::LoadExtension(path, mojom::ManifestLocation::kUnpacked, loadFlags, &error);
     if (!extension.get()) {
         result.error = error;
         return result;
