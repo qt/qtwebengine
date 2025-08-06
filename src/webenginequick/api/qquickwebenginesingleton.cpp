@@ -54,13 +54,7 @@ QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
 */
 QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
 {
-    auto profile = QQuickWebEngineProfile::defaultProfile();
-
-    // MEMO first ever call to default profile will create one without context
-    // it needs something to get qml engine from (WebEngine singleton is created in qml land)
-    profile->ensureQmlContext(this);
-
-    return profile;
+    return QQuickWebEngineProfile::defaultProfile();
 }
 
 /*!
