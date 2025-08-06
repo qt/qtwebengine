@@ -336,7 +336,6 @@ void QQuickWebEngineProfilePrototype::componentComplete()
 
     d_ptr->profile.reset(new QQuickWebEngineProfile(
             new QQuickWebEngineProfilePrivate(profileAdapter), this->parent()));
-    d_ptr->profile->ensureQmlContext(this);
     d_ptr->m_isComponentComplete = true;
 }
 

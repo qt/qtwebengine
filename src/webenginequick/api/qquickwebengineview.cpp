@@ -10,7 +10,6 @@
 #include "qquickwebengineprofile.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginescriptcollection_p.h"
-#include "qquickwebenginescriptcollection_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginetouchhandleprovider_p_p.h"
 #include "qquickwebenginetouchhandle_p.h"
@@ -345,13 +344,8 @@ void QQuickWebEngineViewPrivate::initializeProfile()
         Q_ASSERT(!adapter->isInitialized());
         m_profileInitialized = true;
 
-        if (!m_profile) {
+        if (!m_profile)
             m_profile = QQuickWebEngineProfile::defaultProfile();
-
-            // MEMO first ever call to default profile will create one without context
-            // it needs something to get qml engine from (and view is created in qml land)
-            m_profile->ensureQmlContext(q_ptr);
-        }
 
         m_profile->d_ptr->addWebContentsAdapterClient(this);
         m_settings.reset(new QQuickWebEngineSettings(m_profile->settings()));
@@ -1161,16 +1155,12 @@ void QQuickWebEngineViewPrivate::updateEditActions()
 
 QQuickWebEngineScriptCollection *QQuickWebEngineViewPrivate::getUserScripts()
 {
-    Q_Q(QQuickWebEngineView);
     if (!m_scriptCollection)
         m_scriptCollection.reset(
             new QQuickWebEngineScriptCollection(
-                new QQuickWebEngineScriptCollectionPrivate(
+                new QWebEngineScriptCollection(
                     new QWebEngineScriptCollectionPrivate(
                         profileAdapter()->userResourceController(), adapter))));
-
-    if (!m_scriptCollection->qmlEngine())
-        m_scriptCollection->setQmlEngine(qmlEngine(q));
 
     return m_scriptCollection.data();
 }

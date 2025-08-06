@@ -24,7 +24,7 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qquickwebenginefaviconprovider_p_p.h
         api/qquickwebenginenewwindowrequest.cpp api/qquickwebenginenewwindowrequest_p.h
         api/qquickwebengineprofile.cpp api/qquickwebengineprofile.h api/qquickwebengineprofile_p.h
-        api/qquickwebenginescriptcollection.cpp api/qquickwebenginescriptcollection_p.h api/qquickwebenginescriptcollection_p_p.h
+        api/qquickwebenginescriptcollection.cpp api/qquickwebenginescriptcollection_p.h
         api/qquickwebenginesettings.cpp api/qquickwebenginesettings_p.h
         api/qquickwebenginesingleton.cpp api/qquickwebenginesingleton_p.h
         api/qquickwebenginetouchhandleprovider.cpp

@@ -118,10 +118,10 @@ struct ForeignWebEngineScript
 {
     Q_GADGET
     QML_FOREIGN(QWebEngineScript)
+    QML_STRUCTURED_VALUE
     QML_NAMED_ELEMENT(webEngineScript)
     QML_ADDED_IN_VERSION(1, 1)
     QML_EXTRA_VERSION(2, 0)
-    QML_UNCREATABLE("")
 };
 
 struct ForeignWebEngineHistory
