@@ -27,10 +27,6 @@ class Q_WEBENGINECORE_EXPORT QWebEngineExtensionManager : public QObject
     Q_PROPERTY(QString installPath READ installPath FINAL)
     Q_PROPERTY(QList<QWebEngineExtensionInfo> extensions READ extensions FINAL)
 public:
-    QML_NAMED_ELEMENT(WebEngineExtensionManager)
-    QML_UNCREATABLE("")
-    QML_ADDED_IN_VERSION(6, 10)
-
     ~QWebEngineExtensionManager() override;
     Q_INVOKABLE void loadExtension(const QString &path);
     Q_INVOKABLE void installExtension(const QString &path);

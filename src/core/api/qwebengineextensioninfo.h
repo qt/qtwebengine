@@ -36,9 +36,6 @@ class QWebEngineExtensionInfo
     Q_PROPERTY(bool isInstalled READ isInstalled FINAL)
 
 public:
-    QML_VALUE_TYPE(webEngineExtension)
-    QML_ADDED_IN_VERSION(6, 10)
-
     Q_WEBENGINECORE_EXPORT QWebEngineExtensionInfo();
 
     Q_WEBENGINECORE_EXPORT

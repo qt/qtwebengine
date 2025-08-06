@@ -36,6 +36,11 @@
 #include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebengineclienthints.h>
 
+#if QT_CONFIG(webengine_extensions)
+#include <QtWebEngineCore/qwebengineextensioninfo.h>
+#include <QtWebEngineCore/qwebengineextensionmanager.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 // To prevent the same type from being exported twice into qmltypes
@@ -283,6 +288,25 @@ struct ForeignWebEngineClientHints : public QObject
     QML_ADDED_IN_VERSION(6, 8)
     QML_UNCREATABLE("")
 };
+
+#if QT_CONFIG(webengine_extensions)
+struct ForeignWebEngineExtensionInfo
+{
+    Q_GADGET
+    QML_VALUE_TYPE(webEngineExtension)
+    QML_FOREIGN(QWebEngineExtensionInfo)
+    QML_ADDED_IN_VERSION(6, 10)
+};
+
+struct ForeignWebEngineExtensionManager
+{
+    Q_GADGET
+    QML_NAMED_ELEMENT(WebEngineExtensionManager)
+    QML_FOREIGN(QWebEngineExtensionManager)
+    QML_ADDED_IN_VERSION(6, 10)
+    QML_UNCREATABLE("")
+};
+#endif
 
 QT_END_NAMESPACE
 
