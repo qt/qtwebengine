@@ -162,7 +162,6 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
     QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = nullptr);
     QQuickWebEngineSettings *settings() const;
-    void ensureQmlContext(const QObject *object);
 
     friend class FaviconImageRequester;
     friend class QQuickWebEngineSingleton;
