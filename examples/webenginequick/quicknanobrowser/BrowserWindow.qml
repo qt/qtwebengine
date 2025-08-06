@@ -545,7 +545,7 @@ ApplicationWindow {
                 tabBar.removeItem(tabBar.itemAt(index));
                 tabLayout.children[index].destroy();
             } else {
-                lastTabClosing = true;
+                win.lastTabClosing = true;
                 win.close();
             }
         }
