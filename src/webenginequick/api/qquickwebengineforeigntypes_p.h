@@ -34,6 +34,7 @@
 #include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 #include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
+#include <QtWebEngineCore/qwebengineclienthints.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -272,6 +273,15 @@ struct ForeignWebEngineDesktopMediaRequest
     QML_FOREIGN(QWebEngineDesktopMediaRequest)
     QML_ANONYMOUS
     QML_ADDED_IN_VERSION(6, 10)
+};
+
+struct ForeignWebEngineClientHints : public QObject
+{
+    Q_OBJECT
+    QML_FOREIGN(QWebEngineClientHints)
+    QML_NAMED_ELEMENT(WebEngineClientHints)
+    QML_ADDED_IN_VERSION(6, 8)
+    QML_UNCREATABLE("")
 };
 
 QT_END_NAMESPACE

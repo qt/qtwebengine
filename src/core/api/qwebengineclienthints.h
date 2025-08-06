@@ -10,7 +10,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qvariantmap.h>
-#include <QtQml/qqmlregistration.h>
 
 namespace QtWebEngineCore {
 class ProfileAdapter;
@@ -35,10 +34,6 @@ class Q_WEBENGINECORE_EXPORT QWebEngineClientHints : public QObject
     Q_PROPERTY(bool isAllClientHintsEnabled READ isAllClientHintsEnabled WRITE setAllClientHintsEnabled FINAL)
 
 public:
-    QML_NAMED_ELEMENT(WebEngineClientHints)
-    QML_UNCREATABLE("")
-    QML_ADDED_IN_VERSION(6, 8)
-
     ~QWebEngineClientHints();
 
     QString arch() const;
