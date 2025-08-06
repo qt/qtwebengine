@@ -64,7 +64,7 @@ public:
 private:
     std::unique_ptr<ExtensionLoader> m_loader;
     std::unique_ptr<ExtensionInstaller> m_installer;
-    std::unique_ptr<ExtensionActionManager> m_actionManager;
+    content::BrowserContext *m_context;
 };
 } // namespace QtWebEngineCore
 
