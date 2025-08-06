@@ -10,13 +10,14 @@
 #include "api/qwebengineextensioninfo.h"
 #include "api/qwebengineextensioninfo_p.h"
 #include "api/qwebengineextensionmanager.h"
-#include "extension_action_manager.h"
 #include "extension_loader.h"
 #include "extension_installer.h"
 #include "type_conversion.h"
 
 #include "base/functional/callback.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_file_task_runner.h"
 
 using namespace extensions;
@@ -53,7 +54,7 @@ QWebEngineExtensionInfoPrivate *createWebEngineExtensionData(ExtensionManager *m
 ExtensionManager::ExtensionManager(content::BrowserContext *context)
     : m_loader(new ExtensionLoader(context, this))
     , m_installer(new ExtensionInstaller(context, this))
-    , m_actionManager(new ExtensionActionManager())
+    , m_context(context)
 {
     for (auto dir : QDirListing(installDirectory(), QDirListing::IteratorFlag::DirsOnly)) {
         loadExtension(dir.filePath());
@@ -86,7 +87,6 @@ void ExtensionManager::unloadExtension(const std::string &id)
         return;
 
     scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);
-    m_actionManager->removeExtensionAction(extension->id());
     m_loader->unloadExtension(extension->id());
     Q_Q(QWebEngineExtensionManager);
     Q_EMIT q->unloadFinished(
@@ -129,8 +129,12 @@ bool ExtensionManager::isExtensionInstalled(const std::string &id) const
 QUrl ExtensionManager::actionPopupUrl(const std::string &id) const
 {
     scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);
-    if (auto *extensionAction = m_actionManager->getExtensionAction(extension.get()))
-        return toQt(extensionAction->GetPopupUrl(-1));
+    if (extension.get()) {
+        if (auto *extensionAction =
+                    extensions::ExtensionActionManager::Get(m_context)->GetExtensionAction(
+                            *extension.get()))
+            return toQt(extensionAction->GetPopupUrl(-1));
+    }
     return QUrl();
 }
 
@@ -173,7 +177,6 @@ void ExtensionManager::onExtensionInstalled(const Extension *extension)
 void ExtensionManager::onExtensionUninstalled(const std::string &id)
 {
     scoped_refptr<const Extension> extension = m_loader->getExtensionById(id);
-    m_actionManager->removeExtensionAction(extension->id());
     m_loader->unloadExtension(extension->id());
 
     Q_Q(QWebEngineExtensionManager);

@@ -288,7 +288,6 @@ foreach(arch ${archs})
                 extensions/api/runtime_api_delegate_qt.cpp extensions/api/runtime_api_delegate_qt.h
                 extensions/api/management_api_delegate_qt.cpp extensions/api/management_api_delegate_qt.h
                 extensions/component_extension_resource_manager_qt.cpp extensions/component_extension_resource_manager_qt.h
-                extensions/extension_action_manager.cpp extensions/extension_action_manager.h
                 extensions/extension_host_delegate_qt.cpp extensions/extension_host_delegate_qt.h
                 extensions/extension_system_factory_qt.cpp extensions/extension_system_factory_qt.h
                 extensions/extension_system_qt.cpp extensions/extension_system_qt.h
