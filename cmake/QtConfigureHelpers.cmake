@@ -64,7 +64,7 @@ macro(qt_webengine_check_support)
                     TYPE WARNING
                     MESSAGE "${module_checked} won't be built. ${error_message}"
                 )
-                qt_webengine_add_error_target(${module_checked} "Delete CMakeCache.txt and try to reconfigure.")
+                qt_webengine_add_error_target(${module_checked} "Delete CMakeCache.txt, Gn stamp files in <build_dir>/src/gn/src/gn-stamp/* and try to reconfigure.")
             endif()
         endif()
     endforeach()
