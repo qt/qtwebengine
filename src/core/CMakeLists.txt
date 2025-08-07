@@ -466,7 +466,7 @@ foreach(arch ${archs})
             list(APPEND gnArgArg
                 angle_enable_gl=true
                 use_gtk=false # GTK toolkit bindings
-                use_qt=false # Qt5 toolkit bindings
+                use_qt5=false # Qt5 toolkit bindings
                 use_gio=false
                 use_bundled_fontconfig=false
                 use_glib=false
@@ -479,7 +479,7 @@ foreach(arch ${archs})
                 ozone_platform="qt"
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
             )
-            set(systemLibs libjpeg libpng freetype harfbuzz libevent libwebp libxml
+            set(systemLibs libjpeg libpng freetype harfbuzz libwebp libxml
                 opus snappy icu ffmpeg re2 lcms2 libopenjpeg2 libvpx
             )
             foreach(slib ${systemLibs})

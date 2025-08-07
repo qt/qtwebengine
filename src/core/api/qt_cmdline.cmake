@@ -27,7 +27,7 @@ function(qt_commandline_jumbo arg val nextok)
     endif()
 endfunction()
 
-set(systemLibs alsa ffmpeg freetype harfbuzz icu lcms2 libevent libjpeg
+set(systemLibs alsa ffmpeg freetype harfbuzz icu lcms2 libjpeg
     libpng libvpx libxml libwebp minizip opus pulseaudio re2 snappy zlib)
 foreach(slib ${systemLibs})
     qt_commandline_option(webengine-${slib} TYPE enum NAME webengine-system-${slib} VALUES yes no system)

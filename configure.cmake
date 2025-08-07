@@ -70,7 +70,6 @@ if(PkgConfig_FOUND)
     pkg_check_modules(GLIB glib-2.0>=${QT_CONFIGURE_CHECK_glib_version})
     pkg_check_modules(HARFBUZZ harfbuzz>=${QT_CONFIGURE_CHECK_harfbuzz_version} harfbuzz-subset>=${QT_CONFIGURE_CHECK_harfbuzz_version})
     pkg_check_modules(JPEG libjpeg IMPORTED_TARGET)
-    pkg_check_modules(LIBEVENT libevent)
     pkg_check_modules(MINIZIP minizip)
     pkg_check_modules(PNG libpng>=${QT_CONFIGURE_CHECK_libpng_version})
     pkg_check_modules(TIFF libtiff-4>=${QT_CONFIGURE_CHECK_libtiff_version})
@@ -655,10 +654,6 @@ qt_feature("webengine-system-minizip" PRIVATE
     LABEL "minizip"
     CONDITION UNIX AND MINIZIP_FOUND
 )
-qt_feature("webengine-system-libevent" PRIVATE
-    LABEL "libevent"
-    CONDITION UNIX AND LIBEVENT_FOUND
-)
 qt_feature("webengine-system-libxml" PRIVATE
     LABEL "libxml2 and libxslt"
     CONDITION UNIX AND LIBXML2_FOUND
@@ -774,7 +769,6 @@ if(UNIX)
     qt_configure_add_summary_entry(ARGS "webengine-system-glib")
     qt_configure_add_summary_entry(ARGS "webengine-system-zlib")
     qt_configure_add_summary_entry(ARGS "webengine-system-minizip")
-    qt_configure_add_summary_entry(ARGS "webengine-system-libevent")
     qt_configure_add_summary_entry(ARGS "webengine-system-libxml")
     qt_configure_add_summary_entry(ARGS "webengine-system-lcms2")
     qt_configure_add_summary_entry(ARGS "webengine-system-libpng")
