@@ -36,6 +36,9 @@ find_package_handle_standard_args(Gn
         Gn_VERSION
     REQUIRED_VARS
         Gn_EXECUTABLE
+    FAIL_MESSAGE
+        "Could NOT find Gn. Building internal one instead."
+
 )
 
 if(Gn_FOUND AND NOT TARGET Gn::gn AND NOT CMAKE_SCRIPT_MODE_FILE)
