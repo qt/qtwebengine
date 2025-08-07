@@ -1,6 +1,7 @@
 // Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:provides-trusted-directory-paths
 
 #include "qtwebenginecoreglobal_p.h"
 #include "web_engine_library_info.h"
