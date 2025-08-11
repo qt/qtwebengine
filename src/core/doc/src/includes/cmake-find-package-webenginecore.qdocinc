@@ -1,0 +1,6 @@
+The command is defined in the \c WebEngineCore component of the \c Qt6 package, which
+can be loaded like so:
+
+\badcode
+find_package(Qt6 REQUIRED COMPONENTS WebEngineCore)
+\endcode
