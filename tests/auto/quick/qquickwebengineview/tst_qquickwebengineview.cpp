@@ -578,7 +578,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     // Send temporary text, which makes the editor has composition 'x'
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event("x", attributes);
-    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_VERIFY(input = qobject_cast<QQuickItem *>(qApp->focusObject()));
     QGuiApplication::sendEvent(input, &event);
     QTRY_COMPARE(evaluateJavaScriptSync(view, "document.getElementById('input1').value").toString(), QStringLiteral("x"));
 
@@ -602,7 +602,7 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
     // Check the composition text has been committed
     runJavaScript("document.getElementById('input1').focus();");
     QTRY_COMPARE(evaluateJavaScriptSync(view, "document.activeElement.id").toString(), QStringLiteral("input1"));
-    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_VERIFY(input = qobject_cast<QQuickItem *>(qApp->focusObject()));
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QStringLiteral("x"));
 }
 
@@ -776,7 +776,7 @@ void tst_QQuickWebEngineView::inputMethodHints()
     // Input hints should not be set from this shadow tree node but from the input element itself.
     runJavaScript("document.getElementById('emailInputField').focus();");
     QTRY_COMPARE(activeElementId(view), QStringLiteral("emailInputField"));
-    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_VERIFY(input = qobject_cast<QQuickItem *>(qApp->focusObject()));
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("a@b.com"));
     QVERIFY(input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
@@ -793,7 +793,7 @@ void tst_QQuickWebEngineView::inputMethodHints()
     // right element without breaking.
     runJavaScript("document.getElementById('editableDiv').focus();");
     QTRY_COMPARE(activeElementId(view), QStringLiteral("editableDiv"));
-    input = qobject_cast<QQuickItem *>(qApp->focusObject());
+    QTRY_VERIFY(input = qobject_cast<QQuickItem *>(qApp->focusObject()));
     QTRY_COMPARE(input->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("bla"));
     QVERIFY(input->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
     QVERIFY(view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
