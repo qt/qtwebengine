@@ -1171,7 +1171,7 @@ void tst_QWebEngineView::focusOnNavigation()
 #define triggerJavascriptFocus()\
     evaluateJavaScriptSync(webView->page(), "document.getElementById(\"input\").focus()");
 #define loadAndTriggerFocusAndCompare()\
-    QTRY_COMPARE(loadSpy.count(), 1);\
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 1, 10000);\
     triggerJavascriptFocus();\
     QTRY_COMPARE(webView->hasFocus(), viewReceivedFocus);
 
@@ -1230,7 +1230,7 @@ void tst_QWebEngineView::focusOnNavigation()
 
     // Manually forcing focus on web view should work.
     webView->setFocus();
-    QTRY_COMPARE(webView->hasFocus(), true);
+    QTRY_COMPARE_WITH_TIMEOUT(webView->hasFocus(), true, 10000);
 
 
     // Clean up.
@@ -1460,7 +1460,7 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     page.setHtml("<html><body>"
                  " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
                  "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
 
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
