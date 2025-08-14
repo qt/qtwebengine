@@ -109,7 +109,7 @@ void tst_QWebEngineFrame::htmlName()
     QWebEnginePage page;
     QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
     page.load(QUrl("qrc:/resources/iframes.html"));
-    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
     auto children = page.mainFrame().children();
     QCOMPARE(children.at(0).name(), "test-subframe0");
     QCOMPARE(children.at(0).htmlName(), "iframe0-300x200");

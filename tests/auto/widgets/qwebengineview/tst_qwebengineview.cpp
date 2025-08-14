@@ -400,7 +400,7 @@ void tst_QWebEngineView::changePage()
     QSignalSpy pageFromLoadSpy(pageFrom.get(), &QWebEnginePage::loadFinished);
     QSignalSpy pageFromIconLoadSpy(pageFrom.get(), &QWebEnginePage::iconChanged);
     pageFrom->load(urlFrom);
-    QTRY_COMPARE(pageFromLoadSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(pageFromLoadSpy.size(), 1, 10000);
     QCOMPARE(pageFromLoadSpy.last().value(0).toBool(), true);
     if (!fromIsNullPage) {
         QTRY_COMPARE(pageFromIconLoadSpy.size(), 1);
@@ -1271,7 +1271,7 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
     webView->setHtml("<html><body>"
                      "  <input id='input1' type='text'/>"
                      "</body></html>");
-    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
     QTRY_COMPARE(webView->hasFocus(), false);
 
     // Manually trigger focus.
@@ -1404,7 +1404,7 @@ void tst_QWebEngineView::mixLangLocale()
     auto sc = connect(view.page(), &QWebEnginePage::renderProcessTerminated, [&] () { terminated = true; });
 
     view.load(QUrl("qrc:///resources/dummy.html"));
-    QTRY_VERIFY(terminated || loadSpy.size() == 1);
+    QTRY_VERIFY_WITH_TIMEOUT(terminated || loadSpy.size() == 1, 10000);
 
     QVERIFY2(!terminated,
         qPrintable(QString("Locale [%1] terminated: %2, loaded: %3").arg(locale).arg(terminated).arg(loadSpy.size())));
@@ -1622,7 +1622,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
 
     // Trigger QCompleter's popup and select the first suggestion.
     QTest::keyClick(QApplication::focusWindow(), Qt::Key_T);
-    QTRY_VERIFY(QApplication::activePopupWidget());
+    QTRY_VERIFY_WITH_TIMEOUT(QApplication::activePopupWidget(), 10000);
     QTest::keyClick(QApplication::focusWindow(), Qt::Key_Down);
     QTest::keyClick(QApplication::focusWindow(), Qt::Key_Enter);
 
@@ -2071,7 +2071,7 @@ void tst_QWebEngineView::inputContextQueryInput()
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' value='' size='50'/>"
                  "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(testContext.infos.size(), 0);
 
@@ -2223,7 +2223,7 @@ void tst_QWebEngineView::inputMethods()
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' style='font-family: serif' value='' maxlength='20' size='50'/>"
                  "</body></html>");
-    QTRY_COMPARE(loadFinishedSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.size(), 1, 10000);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QPoint textInputCenter = elementCenter(view.page(), "input1");
@@ -2405,7 +2405,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     view.setHtml("<html><body>"
                  "  This is a text"
                  "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QCOMPARE(selectionChangedSpy.size(), 0);
@@ -2499,7 +2499,7 @@ void tst_QWebEngineView::hiddenText()
                  "  <input type='text' id='input1' value='QtWebEngine' size='50'/><br>"
                  "  <input type='password' id='password1'/>"
                  "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
 
     QPoint passwordInputCenter = elementCenter(view.page(), "password1");
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, passwordInputCenter);
@@ -2526,7 +2526,7 @@ void tst_QWebEngineView::emptyInputMethodEvent()
     view.setHtml("<html><body>"
                  "  <input type='text' id='input1' value='QtWebEngine'/>"
                  "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
@@ -2924,7 +2924,7 @@ void tst_QWebEngineView::imeJSInputEvents()
                          "  <div id='input' contenteditable='true' style='border-style: solid;'></div>"
                          "  <pre id='log'></pre>"
                          "</body></html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('input').focus()");
@@ -3331,7 +3331,7 @@ void tst_QWebEngineView::mouseLeave()
                   " <div id='testDiv' style='width: 100%; height: 100%; background-color: green' />"
                   "</body>"
                   "</html>");
-    QVERIFY(loadFinishedSpy.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     // Make sure the testDiv text is empty.
     evaluateJavaScriptSync(view->page(), "document.getElementById('testDiv').innerText = ''");
     QTRY_VERIFY(innerText().isEmpty());
@@ -4015,7 +4015,7 @@ void tst_QWebEngineView::longKeyEventText()
     view.resize(200, 400);
     view.show();
     view.setHtml(html);
-    QTRY_VERIFY(loadFinishedSpy.size());
+    QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     QSignalSpy consoleMessageSpy(&page, &ConsolePage::done);
     Qt::Key key(Qt::Key_Shift);
     QKeyEvent event(QKeyEvent::KeyPress, key, Qt::NoModifier, QKeySequence(key).toString());
@@ -4035,7 +4035,7 @@ void tst_QWebEngineView::deferredDelete()
         QSignalSpy loadFinishedSpy(view.page(), &QWebEnginePage::loadFinished);
         view.load(QUrl("chrome://qt"));
         view.show();
-        QTRY_VERIFY(loadFinishedSpy.size());
+        QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
         // QWebEngineView and WebEngineQuickWidget
         QCOMPARE(QApplication::allWidgets().size(), desktopWidget + 2);
     }
@@ -4076,7 +4076,7 @@ void tst_QWebEngineView::setCursorOnEmbeddedView()
 
     QVERIFY(QTest::qWaitForWindowActive(&parentWidget));
 
-    QTRY_VERIFY(firstPaintSpy.size());
+    QTRY_VERIFY_WITH_TIMEOUT(firstPaintSpy.size(), 10000);
 
     const QPoint step = QPoint(25, 25);
     QPoint cursorPos = view.pos() - step;

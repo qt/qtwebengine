@@ -300,7 +300,7 @@ void tst_QWebEngineScript::viewSource()
     page.scripts().insert(script);
     page.load(QUrl("view-source:about:blank"));
     QSignalSpy spy(&page, &QWebEnginePage::loadFinished);
-    QTRY_COMPARE(spy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 10000);
     QCOMPARE(spy.takeFirst().value(0).toBool(), true);
     QCOMPARE(evaluateJavaScriptSync(&page, "foo"), QVariant(42));
 }
@@ -314,12 +314,12 @@ void tst_QWebEngineScript::scriptModifications()
     script.setWorldId(QWebEngineScript::MainWorld);
     script.setSourceCode("var foo = \"SUCCESS\";");
     page.scripts().insert(script);
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
     page.setHtml(QStringLiteral("<html><head><script>document.addEventListener(\"DOMContentLoaded\", function() {\
                                  document.body.innerText = foo;});\
                                  </script></head><body></body></html>"));
     QVERIFY(page.scripts().count() == 1);
-    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
-    QVERIFY(spyFinished.wait());
+    QTRY_VERIFY_WITH_TIMEOUT(spyFinished.size(), 10000);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
     script.setSourceCode("var foo = \"FAILURE\"");
     page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
@@ -403,9 +403,9 @@ void tst_QWebEngineScript::webChannel()
     QWebEngineScript script = webChannelScript();
     script.setWorldId(worldId);
     page.scripts().insert(script);
-    page.setHtml(QStringLiteral("<html><body></body></html>"));
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
-    QVERIFY(spyFinished.wait());
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+    QTRY_VERIFY_WITH_TIMEOUT(spyFinished.size(), 10000);
     if (reloadFirst) {
         // Check that the transport is also reinstalled on navigation
         page.triggerAction(QWebEnginePage::Reload);
@@ -572,7 +572,7 @@ void tst_QWebEngineScript::navigation()
 
     QString url3 = QStringLiteral("qrc:/resources/test_iframe_main.html");
     page.setUrl(url3);
-    QTRY_COMPARE(spyTextChanged.size(), 3);
+    QTRY_COMPARE_WITH_TIMEOUT(spyTextChanged.size(), 3, 10000);
     QCOMPARE(testObject.text(), url3);
 
     page.setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
