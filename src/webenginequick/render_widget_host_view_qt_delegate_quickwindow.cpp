@@ -31,7 +31,8 @@ RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWi
         RenderWidgetHostViewQtDelegateItem *realDelegate, QWindow *parent)
     : QQuickWindow(), m_realDelegate(realDelegate), m_virtualParent(nullptr), m_transformed(false)
 {
-    setFlags(Qt::Tool | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+    setFlags(Qt::Popup | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint
+             | Qt::WindowDoesNotAcceptFocus);
     realDelegate->setParentItem(contentItem());
     setTransientParent(parent);
 }
