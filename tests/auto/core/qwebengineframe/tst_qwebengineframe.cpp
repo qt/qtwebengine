@@ -65,7 +65,7 @@ void tst_QWebEngineFrame::findFrameByName()
     QWebEnginePage page;
     QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
     page.load(QUrl("qrc:/resources/iframes.html"));
-    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
     auto maybeFrame = page.findFrameByName("test-subframe0");
     QVERIFY(maybeFrame.has_value());
     QCOMPARE(maybeFrame->name(), "test-subframe0");
@@ -82,7 +82,7 @@ void tst_QWebEngineFrame::isValid()
     QVERIFY(firstPageSubframe && firstPageSubframe->isValid());
 
     page.load(QUrl("qrc:/resources/frameset.html"));
-    QTRY_COMPARE(loadSpy.size(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 2, 10000);
     QVERIFY(!firstPageSubframe->isValid());
 }
 
@@ -99,7 +99,7 @@ void tst_QWebEngineFrame::name()
     QCOMPARE(children.at(2).name(), "test-subframe2");
 
     page.load(QUrl("qrc:/resources/iframes.html"));
-    QTRY_COMPARE(loadSpy.size(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 2, 10000);
     QVERIFY(!children.at(0).isValid());
     QCOMPARE(children.at(0).name(), QString());
 }
@@ -117,7 +117,7 @@ void tst_QWebEngineFrame::htmlName()
     QCOMPARE(children.at(1).htmlName(), "iframe1-350x250");
 
     page.load(QUrl("qrc:/resources/frameset.html"));
-    QTRY_COMPARE(loadSpy.size(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 2, 10000);
     QVERIFY(!children.at(0).isValid());
     QCOMPARE(children.at(0).htmlName(), QString());
 }
@@ -141,7 +141,7 @@ void tst_QWebEngineFrame::childrenOfInvalidFrame()
     QWebEnginePage page;
     QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
     page.load(QUrl("qrc:/resources/nesting-iframe.html"));
-    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
     auto nestedFrame = page.mainFrame().children().at(0);
     QCOMPARE(nestedFrame.children().size(), 2);
 

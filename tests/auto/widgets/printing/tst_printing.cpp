@@ -149,8 +149,9 @@ void tst_Printing::printFromPdfViewer()
     QTRY_COMPARE(savePdfSpy.size(), 1);
 
     // Open the new file with the PDF viewer plugin
+    spy.clear();
     view.load(QUrl::fromLocalFile(path));
-    QTRY_COMPARE(spy.size(), 2);
+    QTRY_COMPARE(spy.size(), 1);
 
     // Print from the plugin
     // loadFinished signal is not reliable when loading a PDF file, because it has multiple phases.
