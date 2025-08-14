@@ -114,8 +114,8 @@ public:
         QBuffer *buf = new QBuffer(job);
         QVERIFY2(buf->open(QBuffer::ReadWrite), qPrintable(buf->errorString()));
         buf->write(requestBody);
-        job->reply(QByteArrayLiteral("text/plain"), buf);
         buf->close();
+        job->reply(QByteArrayLiteral("text/plain"), buf);
     }
 
     static void registerUrlScheme()
