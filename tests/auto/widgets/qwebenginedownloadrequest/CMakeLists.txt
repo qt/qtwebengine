@@ -9,6 +9,7 @@ qt_internal_add_test(tst_qwebenginedownloadrequest
         tst_qwebenginedownloadrequest.cpp
     LIBRARIES
         Qt::WebEngineWidgets
+        Qt::GuiPrivate
         Test::HttpServer
         Test::Util
 )

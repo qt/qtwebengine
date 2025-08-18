@@ -1,5 +1,6 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
@@ -141,6 +142,56 @@ GLXFBConfig GetFBConfig(Display *display)
 } // namespace
 #endif // BUILDFLAG(IS_OZONE_X11)
 
+class ScopedGLContextForCleanup
+{
+public:
+    ScopedGLContextForCleanup(QOpenGLContext *createContext, QSurface *createSurface)
+        : m_createContext(createContext), m_currentContext(QOpenGLContext::currentContext())
+    {
+        if (m_createContext == m_currentContext)
+            return;
+
+        if (!m_createContext->isValid()) {
+            skipCleanup = true;
+            return;
+        }
+
+        if (m_currentContext)
+            m_currentSurface = m_currentContext->surface();
+
+        if (!createContext->makeCurrent(createSurface)) {
+            skipCleanup = true;
+            qWarning("Failed to make OpenGL context current for clean-up, OpenGL resources will "
+                     "not be destroyed.");
+        }
+    }
+
+    ~ScopedGLContextForCleanup()
+    {
+        if (!m_currentContext || m_createContext == m_currentContext || skipCleanup)
+            return;
+
+        if (!m_currentContext->makeCurrent(m_currentSurface))
+            qFatal("Failed to restore OpenGL context after clean-up.");
+    }
+
+    void deleteTexture(GLuint glTexture)
+    {
+        if (skipCleanup)
+            return;
+
+        auto *glFun = m_createContext->functions();
+        Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
+        glFun->glDeleteTextures(1, &glTexture);
+    }
+
+private:
+    QOpenGLContext *m_createContext;
+    QOpenGLContext *m_currentContext;
+    QSurface *m_currentSurface = nullptr;
+    bool skipCleanup = false;
+};
+
 NativeSkiaOutputDeviceOpenGL::NativeSkiaOutputDeviceOpenGL(
         scoped_refptr<gpu::SharedContextState> contextState, bool requiresAlpha,
         gpu::MemoryTracker *memoryTracker, viz::SkiaOutputSurfaceDependency *dependency,
@@ -275,9 +326,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             glXBindTexImageEXT(display, glxPixmap, GLX_FRONT_LEFT_EXT, nullptr);
             glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
-            m_frontBuffer->textureCleanupCallback = [glFun, glTexture, display, glxPixmap,
-                                                     pixmapId]() {
-                glFun->glDeleteTextures(1, &glTexture);
+            QSurface *createSurface = glContext->surface();
+            m_frontBuffer->textureCleanupCallback = [glContext, createSurface, glFun, glTexture,
+                                                     display, glxPixmap, pixmapId]() {
+                ScopedGLContextForCleanup cleanupContext(glContext, createSurface);
+                cleanupContext.deleteTexture(glTexture);
                 glXDestroyGLXPixmap(display, glxPixmap);
                 FreeXPixmap(pixmapId);
             };
@@ -327,8 +380,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             imageTargetTexture(GL_TEXTURE_2D, eglImage);
             glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
-            m_frontBuffer->textureCleanupCallback = [glFun, eglFun, glTexture, eglImage]() {
-                glFun->glDeleteTextures(1, &glTexture);
+            QSurface *createSurface = glContext->surface();
+            m_frontBuffer->textureCleanupCallback = [glContext, createSurface, glFun, eglFun,
+                                                     glTexture, eglImage]() {
+                ScopedGLContextForCleanup cleanupContext(glContext, createSurface);
+                cleanupContext.deleteTexture(glTexture);
                 eglFun->eglDestroyImage(GLContextHelper::getEGLDisplay(), eglImage);
             };
         }
@@ -389,19 +445,16 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                              glMemoryObject, 0);
         glFun->glBindTexture(GL_TEXTURE_2D, 0);
 
-        m_frontBuffer->textureCleanupCallback = [glTexture, glMemoryObject]() {
-            QOpenGLContext *glContext = QOpenGLContext::currentContext();
-            if (!glContext)
-                return;
-            auto glFun = glContext->functions();
-            Q_ASSERT(glFun->glGetError() == GL_NO_ERROR);
-
+        QSurface *createSurface = glContext->surface();
+        m_frontBuffer->textureCleanupCallback = [glContext, createSurface, glTexture,
+                                                 glMemoryObject]() {
+            ScopedGLContextForCleanup cleanupContext(glContext, createSurface);
             static PFNGLDELETEMEMORYOBJECTSEXTPROC glDeleteMemoryObjectsEXT =
                     (PFNGLDELETEMEMORYOBJECTSEXTPROC)glContext->getProcAddress(
                             "glDeleteMemoryObjectsEXT");
 
             glDeleteMemoryObjectsEXT(1, &glMemoryObject);
-            glFun->glDeleteTextures(1, &glTexture);
+            cleanupContext.deleteTexture(glTexture);
         };
 #else
         Q_UNREACHABLE();
@@ -419,12 +472,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     uint32_t glTexture = makeCGLTexture(win, ioSurface.get(), size());
     texture = QNativeInterface::QSGOpenGLTexture::fromNative(glTexture, win, size(), texOpts);
 
-    m_frontBuffer->textureCleanupCallback = [glTexture]() {
-        auto *glContext = QOpenGLContext::currentContext();
-        if (!glContext)
-            return;
-        auto glFun = glContext->functions();
-        glFun->glDeleteTextures(1, &glTexture);
+    QOpenGLContext *glContext = QOpenGLContext::currentContext();
+    QSurface *createSurface = glContext->surface();
+    m_frontBuffer->textureCleanupCallback = [glContext, createSurface, glTexture]() {
+        ScopedGLContextForCleanup cleanupContext(glContext, createSurface);
+        cleanupContext.deleteTexture(glTexture);
     };
 #endif // defined(USE_OZONE)
 

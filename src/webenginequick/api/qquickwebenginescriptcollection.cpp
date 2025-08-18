@@ -3,12 +3,10 @@
 
 #include "qquickwebenginescriptcollection_p.h"
 #include "qquickwebenginescriptcollection_p_p.h"
-#include "qwebenginescriptcollection.h"
+#include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
 #include <QtQml/qqmlinfo.h>
-#include <QtQml/private/qqmlengine_p.h>
-#include <QtQml/private/qv4scopedvalue_p.h>
-#include <QtQml/private/qv4arrayobject_p.h>
+#include <QtQml/qqmlengine.h>
 
 /*!
     \qmltype WebEngineScriptCollection
@@ -61,7 +59,7 @@
             webEngineView.userScripts.insert(list)
          \endcode
      \endlist
-     \sa WebEngineScript WebEngineScriptCollection
+     \sa webEngineScript WebEngineScriptCollection
 
 */
 
@@ -117,7 +115,7 @@ QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(QQuickWebEngine
 QQuickWebEngineScriptCollection::~QQuickWebEngineScriptCollection() { }
 
 /*!
-    \qmlmethod bool WebEngineScriptCollection::contains(WebEngineScript script)
+    \qmlmethod bool WebEngineScriptCollection::contains(webEngineScript script)
     \since QtWebEngine 6.2
     Returns \c true if the specified \a script is in the collection, \c false
     otherwise.
@@ -130,7 +128,7 @@ bool QQuickWebEngineScriptCollection::contains(const QWebEngineScript &value) co
 }
 
 /*!
-    \qmlmethod list<WebEngineScript> WebEngineScriptCollection::find(string name)
+    \qmlmethod list<webEngineScript> WebEngineScriptCollection::find(string name)
     \since QtWebEngine 6.2
     Returns a list of all user script objects with the given \a name.
     \sa contains()
@@ -141,7 +139,7 @@ QList<QWebEngineScript> QQuickWebEngineScriptCollection::find(const QString &nam
 }
 
 /*!
-    \qmlmethod void WebEngineScriptCollection::insert(WebEngineScript script)
+    \qmlmethod void WebEngineScriptCollection::insert(webEngineScript script)
     \since QtWebEngine 6.2
     Inserts a single \a script into the collection.
     \sa remove()
@@ -152,9 +150,9 @@ void QQuickWebEngineScriptCollection::insert(const QWebEngineScript &s)
 }
 
 /*!
-    \qmlmethod void WebEngineScriptCollection::insert(list<WebEngineScript> list)
+    \qmlmethod void WebEngineScriptCollection::insert(list<webEngineScript> list)
     \since QtWebEngine 6.2
-    Inserts a \a list of WebEngineScript values into the user script collection.
+    Inserts a \a list of webEngineScript values into the user script collection.
     \sa remove()
 */
 void QQuickWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
@@ -163,7 +161,7 @@ void QQuickWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list
 }
 
 /*!
-    \qmlmethod bool WebEngineScriptCollection::remove(WebEngineScript script)
+    \qmlmethod bool WebEngineScriptCollection::remove(webEngineScript script)
     \since QtWebEngine 6.2
     Returns \c true if a given \a script is removed from the collection.
     \sa insert()
@@ -184,11 +182,11 @@ void QQuickWebEngineScriptCollection::clear()
 }
 
 /*!
-    \qmlproperty list<WebEngineScript> WebEngineScriptCollection::collection
+    \qmlproperty list<webEngineScript> WebEngineScriptCollection::collection
     \since QtWebEngine 6.2
 
     This property holds a JavaScript array of user script objects. The array can
-    take WebEngineScript basic type or a JavaScript dictionary as values.
+    take webEngineScript basic type or a JavaScript dictionary as values.
 */
 QJSValue QQuickWebEngineScriptCollection::collection() const
 {
@@ -198,15 +196,11 @@ QJSValue QQuickWebEngineScriptCollection::collection() const
     }
 
     const QList<QWebEngineScript> &list = d->toList();
-    QV4::ExecutionEngine *v4 = QQmlEnginePrivate::getV4Engine(d->m_qmlEngine);
-    QV4::Scope scope(v4);
-    QV4::Scoped<QV4::ArrayObject> scriptArray(scope, v4->newArrayObject(list.size()));
-    int i = 0;
-    for (const auto &val : list) {
-        QV4::ScopedValue sv(scope, v4->fromVariant(QVariant::fromValue(val)));
-        scriptArray->put(i++, sv);
-    }
-    return QJSValuePrivate::fromReturnedValue(scriptArray.asReturnedValue());
+    QJSValue scriptArray = d->m_qmlEngine->newArray(list.size());
+    uint32_t i = 0;
+    for (const auto &val : list)
+        scriptArray.setProperty(i++, d->m_qmlEngine->toScriptValue(val));
+    return scriptArray;
 }
 
 void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
