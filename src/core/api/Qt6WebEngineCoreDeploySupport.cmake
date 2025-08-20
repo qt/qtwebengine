@@ -125,34 +125,69 @@ function(_qt_internal_deploy_webenginecore_binary)
     endif()
 endfunction()
 
+# Finds resource files for given active deployment configuration,
+# however it also adds a fallback in case user application
+# build does not match installed qt build type.
+function(_qt_internal_webenginecore_find_resources out_var)
+
+    set(no_value_options "")
+    set(single_value_options RESOURCES_DIR)
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    set(data_files "")
+    set(debug_data_files
+        icudtl.dat
+        qtwebengine_devtools_resources.debug.pak
+        qtwebengine_resources.debug.pak
+        qtwebengine_resources_100p.debug.pak
+        qtwebengine_resources_200p.debug.pak
+    )
+    set(release_data_files
+        icudtl.dat
+        qtwebengine_devtools_resources.pak
+        qtwebengine_resources.pak
+        qtwebengine_resources_100p.pak
+        qtwebengine_resources_200p.pak
+    )
+    if(__QT_DEPLOY_ACTIVE_CONFIG STREQUAL "Debug")
+        set(data_files ${debug_data_files})
+        set(candidate_data_files ${release_data_files})
+    else()
+        set(data_files ${release_data_files})
+        set(candidate_data_files ${debug_data_files})
+    endif()
+
+    foreach(resource IN LISTS data_files)
+        if(NOT EXISTS "${resources_dir}/${resource}")
+            # assume candidate data files exist, otherwise there is
+            # sth wrong with installation
+            set(data_files ${candidate_data_files})
+            break()
+        endif()
+    endforeach()
+    set("${out_var}" "${data_files}" PARENT_SCOPE)
+endfunction()
+
 function(_qt_internal_deploy_webenginecore_data)
     # used for deployment on Linux, using the CMake deployment API.
     _qt_internal_webenginecore_status_message("Deploying the WebEngineCore data files")
-    if(__QT_DEPLOY_ACTIVE_CONFIG STREQUAL "Debug")
-        set(data_files
-            icudtl.dat
-            qtwebengine_devtools_resources.debug.pak
-            qtwebengine_resources.debug.pak
-            qtwebengine_resources_100p.debug.pak
-            qtwebengine_resources_200p.debug.pak
-        )
-    else()
-        set(data_files
-            icudtl.dat
-            qtwebengine_devtools_resources.pak
-            qtwebengine_resources.pak
-            qtwebengine_resources_100p.pak
-            qtwebengine_resources_200p.pak
-        )
-    endif()
+
     get_filename_component(resources_dir "resources" ABSOLUTE
         BASE_DIR "${__QT_DEPLOY_QT_INSTALL_PREFIX}/${__QT_DEPLOY_QT_INSTALL_DATA}"
     )
 
+    _qt_internal_webenginecore_find_resources(
+        data_files
+        RESOURCES_DIR "${resources_dir}"
+    )
     _qt_internal_webenginecore_find_v8_context_snapshot(
         snapshot_file
         RESOURCES_DIR "${resources_dir}"
     )
+
     if(NOT snapshot_file STREQUAL "")
         list(APPEND data_files "${snapshot_file}")
     endif()
@@ -184,8 +219,7 @@ function(_qt_internal_webenginecore_find_v8_context_snapshot out_var)
         v8_context_snapshot.bin
         v8_context_snapshot.debug.bin
     )
-    if(__QT_DEPLOY_QT_IS_MULTI_CONFIG_BUILD_WITH_DEBUG
-            AND __QT_DEPLOY_ACTIVE_CONFIG STREQUAL "Debug")
+    if(__QT_DEPLOY_ACTIVE_CONFIG STREQUAL "Debug")
         # Favor the debug version of the snapshot.
         list(REVERSE candidates)
     endif()
