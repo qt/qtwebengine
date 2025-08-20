@@ -20,6 +20,7 @@
 */
 
 #include <widgetutil.h>
+#include <visualutil.h>
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
@@ -3439,13 +3440,19 @@ void tst_QWebEnginePage::mouseButtonTranslation()
 
 void tst_QWebEnginePage::mouseMovementProperties()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Can't manipulating the mouse cursor in auto test.");
+
     QWebEngineView view;
     ConsolePage page;
     view.setPage(&page);
     view.resize(640, 480);
     QTest::mouseMove(&view, QPoint(10, 10));
     view.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    view.window()->windowHandle()->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral(
