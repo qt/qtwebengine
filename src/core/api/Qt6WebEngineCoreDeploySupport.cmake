@@ -103,7 +103,7 @@ function(_qt_internal_deploy_webenginecore_binary)
     endif()
 
     if(NOT __QT_DEPLOY_SYSTEM_NAME STREQUAL "Windows")
-        qt6_deploy_qt_conf("${install_destination}/qt.conf"
+        qt6_deploy_qt_conf("${destdir_destination}/qt.conf"
             PREFIX "${QT_DEPLOY_PREFIX}"
             BIN_DIR "${QT_DEPLOY_BIN_DIR}"
             LIB_DIR "${QT_DEPLOY_LIB_DIR}"
