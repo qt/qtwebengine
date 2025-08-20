@@ -3,6 +3,7 @@
 
 #include "testwindow.h"
 #include "quickutil.h"
+#include "visualutil.h"
 
 #include <QScopedPointer>
 #include <QtQml/QQmlEngine>
@@ -107,11 +108,14 @@ void tst_UIDelegates::javaScriptDialog_data()
 
 void tst_UIDelegates::javaScriptDialog()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QFETCH(QString, javaScriptCode);
     QFETCH(QString, expectedObjectName);
 
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -124,8 +128,11 @@ void tst_UIDelegates::javaScriptDialog()
 
 void tst_UIDelegates::fileDialog()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -140,8 +147,11 @@ void tst_UIDelegates::fileDialog()
 
 void tst_UIDelegates::contextMenu()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -154,8 +164,11 @@ void tst_UIDelegates::contextMenu()
 
 void tst_UIDelegates::tooltip()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -177,8 +190,11 @@ void tst_UIDelegates::tooltip()
 
 void tst_UIDelegates::colorDialog()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
 
     view->loadHtml("<html><body>"
@@ -209,6 +225,8 @@ void tst_UIDelegates::authenticationDialog_data()
 
 void tst_UIDelegates::authenticationDialog()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QFETCH(QUrl, url);
     QFETCH(QByteArray, response);
 
@@ -218,7 +236,8 @@ void tst_UIDelegates::authenticationDialog()
     QVERIFY(server.start());
 
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickWebEngineView *view = webEngineView();
     view->loadHtml("<html><body>"
                    "</body></html>");
