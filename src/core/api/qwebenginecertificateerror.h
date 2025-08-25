@@ -28,7 +28,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineCertificateError
     Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL REVISION(6, 8))
 
 public:
-    QWebEngineCertificateError() = default;
+    QWebEngineCertificateError();
     QWebEngineCertificateError(const QWebEngineCertificateError &other);
     QWebEngineCertificateError &operator=(const QWebEngineCertificateError &other);
     ~QWebEngineCertificateError();

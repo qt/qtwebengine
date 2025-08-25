@@ -47,6 +47,9 @@ QT_BEGIN_NAMESPACE
    \value Directory
 */
 
+QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest()
+    = default;
+
 QWebEngineFileSystemAccessRequest::QWebEngineFileSystemAccessRequest(
         const QWebEngineFileSystemAccessRequest &other) = default;
 QWebEngineFileSystemAccessRequest &QWebEngineFileSystemAccessRequest::operator=(

@@ -26,6 +26,10 @@ QWebEngineCertificateError::QWebEngineCertificateError(
 {
 }
 
+QWebEngineCertificateError::QWebEngineCertificateError()
+    = default;
+
+
 QWebEngineCertificateError::QWebEngineCertificateError(const QWebEngineCertificateError &) = default;
 
 QWebEngineCertificateError& QWebEngineCertificateError::operator=(const QWebEngineCertificateError &) = default;

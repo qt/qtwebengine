@@ -25,7 +25,7 @@ class Q_WEBENGINECORE_EXPORT QWebEngineFileSystemAccessRequest
     Q_PROPERTY(AccessFlags accessFlags READ accessFlags CONSTANT FINAL)
 
 public:
-    QWebEngineFileSystemAccessRequest() = default;
+    QWebEngineFileSystemAccessRequest();
     QWebEngineFileSystemAccessRequest(const QWebEngineFileSystemAccessRequest &other);
     QWebEngineFileSystemAccessRequest &operator=(const QWebEngineFileSystemAccessRequest &other);
     QWebEngineFileSystemAccessRequest(QWebEngineFileSystemAccessRequest &&other) noexcept = default;
