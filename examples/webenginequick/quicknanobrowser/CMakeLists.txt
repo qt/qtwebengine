@@ -82,6 +82,11 @@ if (APPLE)
     endif()
 endif()
 
+install(TARGETS quicknanobrowser
+    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
+    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+)
 qt_generate_deploy_qml_app_script(
     TARGET quicknanobrowser
     OUTPUT_SCRIPT deploy_script
