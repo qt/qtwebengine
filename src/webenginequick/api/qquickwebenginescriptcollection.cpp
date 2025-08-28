@@ -138,8 +138,8 @@ void QQuickWebEngineScriptCollection::clear()
     \qmlproperty list<webEngineScript> WebEngineScriptCollection::collection
     \since QtWebEngine 6.2
 
-    This property holds a JavaScript array of user script objects. The array can
-    take webEngineScript basic type or a JavaScript dictionary as values.
+    This property holds a QML list of user webEngineScript values. The list can
+    take webEngineScript value type or a JavaScript dictionary as values.
 */
 QList<QWebEngineScript> QQuickWebEngineScriptCollection::collection() const
 {
