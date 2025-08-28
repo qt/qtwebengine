@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype WebEngineScript
+    \qmlvaluetype webEngineScript
     \nativetype QWebEngineScript
     \brief Enables the programmatic injection of scripts in the JavaScript engine.
     \since QtWebEngine 1.1
     \ingroup qmlvaluetypes
     \inqmlmodule QtWebEngine
 
-    The WebEngineScript type enables the programmatic injection of so called \e {user scripts} in
-    the JavaScript engine at different points, determined by injectionPoint, during the loading of
-    web content.
+    The webEngineScript value type enables the programmatic injection of so called
+    \e {user scripts} in the JavaScript engine at different points, determined by
+    injectionPoint, during the loading of web content.
 
     Scripts can be executed either in the main JavaScript \e world, along with the rest of the
     JavaScript coming from the web contents, or in their own isolated world. While the DOM of the
@@ -26,14 +26,14 @@
 */
 
 /*!
-    \qmlproperty string WebEngineScript::name
+    \qmlproperty string webEngineScript::name
 
     The name of the script. Can be useful to retrieve a particular script from
     \l{WebEngineScriptCollection::find}{WebEngineScriptCollection.find} method.
 */
 
 /*!
-    \qmlproperty url WebEngineScript::sourceUrl
+    \qmlproperty url webEngineScript::sourceUrl
 
     This property holds the remote source location of the user script (if any).
 
@@ -48,7 +48,7 @@
 */
 
 /*!
-    \qmlproperty string WebEngineScript::sourceCode
+    \qmlproperty string webEngineScript::sourceCode
 
     This property holds the JavaScript source code of the user script.
 
@@ -56,7 +56,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebEngineScript::injectionPoint
+    \qmlproperty enumeration webEngineScript::injectionPoint
 
     The point in the loading process at which the script will be executed.
     The default value is \c Deferred.
@@ -73,7 +73,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebEngineScript::worldId
+    \qmlproperty enumeration webEngineScript::worldId
 
     The world ID defining which isolated world the script is executed in.
 
@@ -90,7 +90,7 @@
 */
 
 /*!
-    \qmlproperty bool WebEngineScript::runsOnSubFrames
+    \qmlproperty bool webEngineScript::runsOnSubFrames
 
     Set this property to \c true if the script is executed on every frame in the page, or \c false
     if it is only ran for the main frame.
