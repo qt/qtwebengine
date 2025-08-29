@@ -75,7 +75,6 @@ std::unique_ptr<WebUIController> NewWebUI(WebUI *web_ui, const GURL & /*url*/)
 WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, const GURL &url)
 {
     Q_UNUSED(web_ui);
-    Q_UNUSED(profile);
     // This will get called a lot to check all URLs, so do a quick check of other
     // schemes to filter out most URLs.
     if (!content::HasWebUIScheme(url))
@@ -111,8 +110,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //        return &NewWebUI<CertificateViewerUI>;
 //#endif  // USE_NSS_CERTS && USE_AURA
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (url.host_piece() == chrome::kChromeUIExtensionsHost)
+    if (url.host_piece() == chrome::kChromeUIExtensionsHost) {
+        if (profile->IsIncognitoProfile()) {
+            qWarning("chrome://extensions is not supported with an off-the-record profile.");
+            return nullptr;
+        }
         return &NewWebUI<ExtensionsUIQt>;
+    }
 #endif
 //#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 //    if (url.host_piece() == chrome::kChromeUIPrintHost &&
