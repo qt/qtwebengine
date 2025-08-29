@@ -249,7 +249,6 @@ void tst_QWebEnginePermission::triggerFromJavascript()
         // Catch expected failures and skip test
         QSKIP(("Skipping test. Reason: " + evaluateJavaScriptSync(&page, QStringLiteral("skipReason")).toString()).toStdString().c_str());
     }
-    qWarning() << evaluateJavaScriptSync(&page, QStringLiteral("data"));
 
     QVERIFY(evaluateJavaScriptSync(&page, QStringLiteral("testFunc()")).toBool());
     QCOMPARE(permission.state(), QWebEnginePermission::State::Granted);
