@@ -12,6 +12,7 @@ qt_webengine_set_version(python3 3.8)
 qt_webengine_set_version(nodejs 14.9)
 qt_webengine_set_version(nss 3.26)
 qt_webengine_set_version(gcc 10.0)
+qt_webengine_set_version(clang 17.0)
 qt_webengine_set_version(gcc-pdf 9.0)
 qt_webengine_set_version(glib 2.32.0)
 qt_webengine_set_version(glibc 2.16)
@@ -367,30 +368,30 @@ qt_webengine_configure_check("pkg-config"
     MODULES QtWebEngine QtPdf
     CONDITION NOT LINUX OR PkgConfig_FOUND
     MESSAGE "A pkg-config support is required."
-    DOCUMENTATION "A pkg-config binary on Linux."
+    DOCUMENTATION "A pkg-config binary."
     TAGS LINUX_PLATFORM
 )
 qt_webengine_configure_check("glibc"
     MODULES QtWebEngine
     CONDITION NOT LINUX OR TEST_glibc
     MESSAGE "A suitable version >= ${QT_CONFIGURE_CHECK_glibc_version} of glibc is required."
-    DOCUMENTATION "glibc library at least ${QT_CONFIGURE_CHECK_glibc_version} version or later."
+    DOCUMENTATION "Glibc library at least ${QT_CONFIGURE_CHECK_glibc_version} version or later."
     TAGS LINUX_PLATFORM
 )
 qt_webengine_configure_check("glib"
     MODULES QtWebEngine
     CONDITION NOT UNIX OR GLIB_FOUND
     MESSAGE "No glib library at least ${QT_CONFIGURE_CHECK_glib_version} version or later. Using build-in one"
-    DOCUMENTATION "glib library at least ${QT_CONFIGURE_CHECK_glib_version} version or later."
-    TAGS PLATFROM_MACOS PLATFORM_LINUX
+    DOCUMENTATION "Glib library at least ${QT_CONFIGURE_CHECK_glib_version} version or later."
+    TAGS MACOS_PLATFORM LINUX_PLATFORM
     OPTIONAL
 )
 qt_webengine_configure_check("harfbuzz"
     MODULES QtWebEngine QtPdf
     CONDITION NOT UNIX OR HARFBUZZ_FOUND
     MESSAGE "No harfbuzz library at least ${QT_CONFIGURE_CHECK_harfbuzz_version} version or later. Using build-in one"
-    DOCUMENTATION "harfbuzz library at least ${QT_CONFIGURE_CHECK_harfbuzz_version} version or later."
-    TAGS PLATFORM_MACOS PLATFORM_LINUX
+    DOCUMENTATION "Harfbuzz library at least ${QT_CONFIGURE_CHECK_harfbuzz_version} version or later."
+    TAGS MACOS_PLATFORM LINUX_PLATFORM
     OPTIONAL
 )
 qt_webengine_configure_check("mesa-headers"
@@ -425,8 +426,8 @@ qt_webengine_configure_check("libudev"
     MODULES QtWebEngine
     CONDITION NOT UNIX OR LIBUDEV_FOUND
     MESSAGE "No libudev found."
-    DOCUMENTATION "libudev library."
-    TAGS PLATFROM_MACOS PLATFORM_LINUX
+    DOCUMENTATION "Libudev library."
+    TAGS MACOS_PLATFORM LINUX_PLATFORM
     OPTIONAL
 )
 
@@ -498,8 +499,17 @@ qt_webengine_configure_check("gcc"
     MODULES QtWebEngine
     CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
               NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_gcc_version}
-    MESSAGE "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc_version}"
-    DOCUMENTATION "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc_version}"
+    MESSAGE "Gcc version must be at least ${QT_CONFIGURE_CHECK_gcc_version}"
+    DOCUMENTATION "Gcc version must be at least ${QT_CONFIGURE_CHECK_gcc_version} to compile QtWebEngine."
+    TAGS LINUX_PLATFORM
+)
+
+qt_webengine_configure_check("clang"
+    MODULES QtWebEngine
+    CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "CLANG" OR
+              NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_calng_version}
+    MESSAGE "Clang version must be at least ${QT_CONFIGURE_CHECK_clang_version}"
+    DOCUMENTATION "Clang version must be at least ${QT_CONFIGURE_CHECK_clang_version} to compile QtWebEngine."
     TAGS LINUX_PLATFORM
 )
 
@@ -507,8 +517,8 @@ qt_webengine_configure_check("gcc-pdf"
     MODULES QtPdf
     CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
               NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_gcc-pdf_version}
-    MESSAGE "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}"
-    DOCUMENTATION "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}"
+    MESSAGE "Gcc version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}"
+    DOCUMENTATION "Gcc version must be at least ${QT_CONFIGURE_CHECK_gcc-pdf_version}."
     TAGS LINUX_PLATFORM
 )
 

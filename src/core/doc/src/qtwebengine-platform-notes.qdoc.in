@@ -55,7 +55,12 @@
 
     \section2 Linux
 
-    On Linux, Clang or GCC version 9 or later is required.
+    On Linux, the following additional tools are required:
+
+    \list
+        @DOCUMENTATION_LINUX_PLATFORM@
+    \endlist
+
 
     \QWE requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:
