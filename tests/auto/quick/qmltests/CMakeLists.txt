@@ -66,6 +66,7 @@ set(testList
     tst_viewSource.qml
     tst_save.qml
     tst_profilePrototype.qml
+    tst_frames.qml
 )
 
 # QTBUG-128652
