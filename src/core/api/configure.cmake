@@ -156,6 +156,8 @@ qt_feature("webengine-full-debug-info" PRIVATE
     AUTODETECT OFF
     CONDITION CMAKE_BUILD_TYPE STREQUAL Debug OR Debug IN_LIST CMAKE_CONFIGURATION_TYPES OR
               CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo OR RelWithDebInfo IN_LIST CMAKE_CONFIGURATION_TYPES
+    # The PDB format has practical size limits that we can't work around, so this option is disabled on Windows
+    DISABLE WIN32
 )
 qt_feature("webengine-sanitizer" PRIVATE
     SECTION "WebEngine"
