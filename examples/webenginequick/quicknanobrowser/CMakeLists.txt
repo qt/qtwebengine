@@ -8,8 +8,6 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/quicknanobrowser")
-
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick WebEngineQuick)
 
 qt_standard_project_setup(REQUIRES 6.8)
@@ -83,10 +81,11 @@ if (APPLE)
 endif()
 
 install(TARGETS quicknanobrowser
-    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
-    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
-    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
 qt_generate_deploy_qml_app_script(
     TARGET quicknanobrowser
     OUTPUT_SCRIPT deploy_script
