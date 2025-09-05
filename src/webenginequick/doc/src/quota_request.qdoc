@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype QuotaRequest
+    \qmlvaluetype webEngineQuotaRequest
     \nativetype QWebEngineQuotaRequest
+    \ingroup qmlvaluetypes
     \inqmlmodule QtWebEngine
+
     \since QtWebEngine 1.7
     \deprecated [6.5] Requesting host quota is no longer supported by Chromium.
 
@@ -17,20 +19,20 @@
 */
 
 /*!
-    \qmlproperty url QuotaRequest::origin
+    \qmlproperty url webEngineQuotaRequest::origin
     \readonly
 */
 
 /*!
-    \qmlproperty qint64 QuotaRequest::requestedSize
+    \qmlproperty qint64 webEngineQuotaRequest::requestedSize
     \readonly
 */
 
 /*!
-    \qmlmethod void QuotaRequest::accept()
+    \qmlmethod void webEngineQuotaRequest::accept()
 */
 
 /*!
-    \qmlmethod void QuotaRequest::reject()
+    \qmlmethod void webEngineQuotaRequest::reject()
 */
 

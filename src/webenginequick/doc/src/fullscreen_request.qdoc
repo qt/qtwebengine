@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype FullScreenRequest
+    \qmlvaluetype fullScreenRequest
     \nativetype QWebEngineFullScreenRequest
+    \ingroup qmlvaluetypes
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
@@ -13,13 +14,13 @@
 */
 
 /*!
-    \qmlproperty url FullScreenRequest::origin
+    \qmlproperty url fullScreenRequest::origin
     \readonly
     The URL of the web page that issued the fullscreen request.
 */
 
 /*!
-    \qmlproperty bool FullScreenRequest::toggleOn
+    \qmlproperty bool fullScreenRequest::toggleOn
     \readonly
 
     Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
@@ -28,7 +29,7 @@
 */
 
 /*!
-    \qmlmethod void FullScreenRequest::accept()
+    \qmlmethod void fullScreenRequest::accept()
 
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
     property to be equal to toggleOn.
@@ -52,7 +53,7 @@
 */
 
 /*!
-    \qmlmethod void FullScreenRequest::reject()
+    \qmlmethod void fullScreenRequest::reject()
     Rejects a fullscreen request.
 */
 

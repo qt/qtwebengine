@@ -2,39 +2,40 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype RegisterProtocolHandlerRequest
+    \qmlvaluetype registerProtocolHandlerRequest
     \nativetype QWebEngineRegisterProtocolHandlerRequest
     \inqmlmodule QtWebEngine
+    \ingroup qmlvaluetypes
     \since QtWebEngine 1.7
-    \brief The RegisterProtocolHandlerRequest type enables accepting
+    \brief The registerProtocolHandlerRequest type enables accepting
     or rejecting requests from the \l registerProtocolHandler API.
 
     \sa WebEngineView::registerProtocolHandlerRequested()
 */
 
 /*!
-    \qmlproperty url RegisterProtocolHandlerRequest::origin
+    \qmlproperty url registerProtocolHandlerRequest::origin
     \brief The URL template for the protocol handler.
 
     This is the second parameter from the \l registerProtocolHandler call.
 */
 
 /*!
-    \qmlproperty string RegisterProtocolHandlerRequest::scheme
+    \qmlproperty string registerProtocolHandlerRequest::scheme
     \brief The URL scheme for the protocol handler.
 
     This is the first parameter from the \l registerProtocolHandler call.
 */
 
 /*!
-    \qmlmethod void RegisterProtocolHandlerRequest::accept()
+    \qmlmethod void registerProtocolHandlerRequest::accept()
     \brief Accepts the request.
 
     Subsequent calls to accept() and reject() are ignored.
 */
 
 /*!
-    \qmlmethod void RegisterProtocolHandlerRequest::reject()
+    \qmlmethod void registerProtocolHandlerRequest::reject()
     \brief Accepts the request.
 
     Subsequent calls to accept() and reject() are ignored.

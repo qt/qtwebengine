@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype WebEngineCertificateError
+    \qmlvaluetype webEngineCertificateError
     \nativetype QWebEngineCertificateError
+    \ingroup qmlvaluetypes
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
@@ -26,30 +27,30 @@
     \sa WebEngineView::certificateError
 */
 /*!
-  \qmlmethod void WebEngineCertificateError::defer()
+  \qmlmethod void webEngineCertificateError::defer()
 
   This function should be called when there is a need to postpone the decision whether to ignore a
   certificate error, for example, while waiting for user input. When called, the function pauses the
   URL request until acceptCertificate() or rejectCertificate() is called.
  */
 /*!
-  \qmlmethod void WebEngineCertificateError::acceptCertificate()
+  \qmlmethod void webEngineCertificateError::acceptCertificate()
 
   The certificate error is ignored, and the web engine view continues to load the requested URL.
  */
 /*!
-  \qmlmethod void WebEngineCertificateError::rejectCertificate()
+  \qmlmethod void webEngineCertificateError::rejectCertificate()
 
   The certificate is rejected, and the web engine view stops loading the requested URL.
  */
 /*!
-    \qmlproperty url WebEngineCertificateError::url
+    \qmlproperty url webEngineCertificateError::url
     \readonly
 
     The URL that triggered the error.
  */
 /*!
-    \qmlproperty enumeration WebEngineCertificateError::type
+    \qmlproperty enumeration webEngineCertificateError::type
     \readonly
 
     The type of the error.
@@ -95,13 +96,13 @@
 
 */
 /*!
-    \qmlproperty string WebEngineCertificateError::description
+    \qmlproperty string webEngineCertificateError::description
     \readonly
 
     A short localized human-readable description of the error.
 */
 /*!
-    \qmlproperty bool WebEngineCertificateError::overridable
+    \qmlproperty bool webEngineCertificateError::overridable
     \readonly
 
     A boolean that indicates whether the certificate error can be overridden and ignored.

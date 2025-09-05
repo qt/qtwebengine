@@ -5,6 +5,7 @@
     \qmlvaluetype webEnginePermission
     \nativetype QWebEnginePermission
     \inqmlmodule QtWebEngine
+    \ingroup qmlvaluetypes
     \since 6.8
     \brief An object used to access and modify the state of a single permission that's been
     granted or denied to a specific origin URL.

@@ -1262,7 +1262,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::quotaRequested(QuotaRequest request)
+    \qmlsignal WebEngineView::quotaRequested(webEngineQuotaRequest request)
     \since QtWebEngine 1.7
     \deprecated [6.5] This signal is no longer emitted.
 
@@ -1272,7 +1272,7 @@
 
     For further details, see https://crbug.com/1233525
 
-    \sa QuotaRequest
+    \sa webEngineQuotaRequest
 */
 
 /*!
@@ -1467,9 +1467,10 @@
 */
 
 /*!
-    \qmltype FindTextResult
+    \qmlvaluetype findTextResult
     \nativetype QWebEngineFindTextResult
     \inqmlmodule QtWebEngine
+    \ingroup qmlvaluetypes
     \since QtWebEngine 1.10
 
     \brief A utility type for encapsulating the result of a string search on a page.
@@ -1478,27 +1479,27 @@
 */
 
 /*!
-    \qmlproperty int FindTextResult::numberOfMatches
+    \qmlproperty int findTextResult::numberOfMatches
     \readonly
 
     \brief The number of matches found.
 */
 
 /*!
-    \qmlproperty int FindTextResult::activeMatch
+    \qmlproperty int findTextResult::activeMatch
     \readonly
 
     \brief The index of the currently highlighted match.
 */
 
 /*!
-    \qmlsignal WebEngineView::findTextFinished(FindTextResult result)
+    \qmlsignal WebEngineView::findTextFinished(findTextResult result)
     \since QtWebEngine 1.10
 
     This signal is emitted when a string search on a page is completed. \a result is
     the result of the string search.
 
-    \sa findText(), FindTextResult
+    \sa findText(), findTextResult
 */
 
 /*!
