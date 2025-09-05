@@ -17,23 +17,25 @@
 //
 
 #include <QtQml/qqml.h>
-#include <QtWebEngineCore/qwebenginedownloadrequest.h>
-#include <QtWebEngineCore/qwebenginenavigationrequest.h>
-#include <QtWebEngineCore/qwebenginescript.h>
-#include <QtWebEngineCore/qwebenginenewwindowrequest.h>
-#include <QtWebEngineCore/qwebengineloadinginfo.h>
-#include <QtWebEngineCore/qwebenginehistory.h>
-#include <QtWebEngineCore/qwebenginequotarequest.h>
-#include <QtWebEngineCore/qwebenginenotification.h>
-#include <QtWebEngineCore/qwebenginefindtextresult.h>
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
-#include <QtWebEngineCore/qwebenginefullscreenrequest.h>
-#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
-#include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
-#include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
-#include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
-#include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineCore/qwebengineclienthints.h>
+#include <QtWebEngineCore/qwebenginecontextmenurequest.h>
+#include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
+#include <QtWebEngineCore/qwebenginedownloadrequest.h>
+#include <QtWebEngineCore/qwebenginefindtextresult.h>
+#include <QtWebEngineCore/qwebenginefilesystemaccessrequest.h>
+#include <QtWebEngineCore/qwebengineframe.h>
+#include <QtWebEngineCore/qwebenginefullscreenrequest.h>
+#include <QtWebEngineCore/qwebenginehistory.h>
+#include <QtWebEngineCore/qwebengineloadinginfo.h>
+#include <QtWebEngineCore/qwebenginenavigationrequest.h>
+#include <QtWebEngineCore/qwebenginenewwindowrequest.h>
+#include <QtWebEngineCore/qwebenginenotification.h>
+#include <QtWebEngineCore/qwebenginequotarequest.h>
+#include <QtWebEngineCore/qwebenginepermission.h>
+#include <QtWebEngineCore/qwebengineregisterprotocolhandlerrequest.h>
+#include <QtWebEngineCore/qwebenginescript.h>
+#include <QtWebEngineCore/qwebenginewebauthuxrequest.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -273,6 +275,14 @@ struct ForeignWebEngineClientHints : public QObject
     QML_NAMED_ELEMENT(WebEngineClientHints)
     QML_ADDED_IN_VERSION(6, 8)
     QML_UNCREATABLE("")
+};
+
+struct ForeignWebEngineFrame
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEngineFrame)
+    QML_VALUE_TYPE(webEngineFrame)
+    QML_ADDED_IN_VERSION(6, 8)
 };
 
 QT_END_NAMESPACE
