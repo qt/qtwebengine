@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 #define LOCK_ADAPTER(adapter_variable, return_value)                                               \
     auto adapter = m_adapter.lock();                                                               \
     if (!adapter)                                                                                  \
-    return return_value
+        return return_value
 
 /*!
     \class QWebEngineFrame
@@ -45,6 +45,13 @@ QWebEngineFrame::QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapte
     : m_adapter(std::move(adapter)), m_id(id)
 {
 }
+
+QWebEngineFrame::QWebEngineFrame() = default;
+QWebEngineFrame::~QWebEngineFrame() = default;
+QWebEngineFrame::QWebEngineFrame(QWebEngineFrame &&other) = default;
+QWebEngineFrame::QWebEngineFrame(const QWebEngineFrame &other) = default;
+QWebEngineFrame &QWebEngineFrame::operator=(QWebEngineFrame &&other) = default;
+QWebEngineFrame &QWebEngineFrame::operator=(const QWebEngineFrame &other) = default;
 
 /*!
     Returns \c{true} if this object represents an existing frame; \c{false} otherwise.

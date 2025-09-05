@@ -6,7 +6,6 @@
 #define QWEBENGINEFRAME_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtQml/qqmlregistration.h>
 #include <QtQml/qjsvalue.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/QList>
@@ -33,8 +32,12 @@ class QWebEngineFrame
     Q_PROPERTY(bool isMainFrame READ isMainFrame FINAL)
 
 public:
-    QML_VALUE_TYPE(webEngineFrame)
-    QML_ADDED_IN_VERSION(6, 8)
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame();
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame(const QWebEngineFrame &other);
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame &operator=(const QWebEngineFrame &other);
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame(QWebEngineFrame &&other);
+    Q_WEBENGINECORE_EXPORT QWebEngineFrame &operator=(QWebEngineFrame &&other);
+    Q_WEBENGINECORE_EXPORT ~QWebEngineFrame();
 
     Q_WEBENGINECORE_EXPORT bool isValid() const;
     Q_WEBENGINECORE_EXPORT QString name() const;
