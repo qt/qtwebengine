@@ -163,5 +163,13 @@ QList<QWebEngineExtensionInfo> QWebEngineExtensionManager::extensions() const
     return d_ptr->extensions();
 }
 
+/*!
+    \reimp
+*/
+bool QWebEngineExtensionManager::event(QEvent *e)
+{
+    return QObject::event(e);
+}
+
 QT_END_NAMESPACE
 #endif // QT_CONFIG(webengine_extensions)

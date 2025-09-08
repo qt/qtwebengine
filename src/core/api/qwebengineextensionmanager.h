@@ -43,6 +43,9 @@ Q_SIGNALS:
     void unloadFinished(const QWebEngineExtensionInfo &extension);
     void uninstallFinished(const QWebEngineExtensionInfo &extension);
 
+protected:
+    bool event(QEvent *e) override;
+
 private:
     friend class QtWebEngineCore::ProfileAdapter;
     Q_DISABLE_COPY(QWebEngineExtensionManager)
