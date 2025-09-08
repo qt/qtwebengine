@@ -24,7 +24,7 @@ qt_add_executable(multipage
 )
 
 qt_add_qml_module(multipage
-    URI MultiPage
+    URI MultiPageModule
     QML_FILES
         Viewer.qml
     RESOURCES

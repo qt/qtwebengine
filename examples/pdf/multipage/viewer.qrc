@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/qt/qml/MultiPage">
+    <qresource prefix="/qt/qml/MultiPageModule">
         <file>Viewer.qml</file>
         <file>qmldir</file>
         <file>resources/document-open.svg</file>
