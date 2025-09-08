@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     PdfApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    engine.loadFromModule("MultiPage", "Viewer");
+    engine.loadFromModule("MultiPageModule", "Viewer");
     app.setFileOpener(engine.rootObjects().constFirst());
     if (app.arguments().count() > 1) {
         // alternatively, use QUrl::fromLocalFile(): network loading is not supported yet
