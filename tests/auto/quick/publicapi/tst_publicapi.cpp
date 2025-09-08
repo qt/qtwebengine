@@ -27,7 +27,6 @@
 #include <QtWebEngineCore/QWebEngineScript>
 #include <QtWebEngineCore/QWebEngineLoadingInfo>
 #include <QtWebEngineCore/QWebEngineWebAuthUxRequest>
-#include <QtWebEngineCore/QWebEngineFrame>
 #include <QtWebEngineCore/QWebEnginePermission>
 #include <QtWebEngineQuick/QQuickWebEngineDownloadRequest>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
@@ -40,6 +39,7 @@
 #include <private/qquickwebenginesingleton_p.h>
 #include <private/qquickwebenginetouchselectionmenurequest_p.h>
 #include <private/qquickwebengineprofileprototype_p.h>
+#include <private/qquickwebengineframe_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -84,6 +84,7 @@ static const QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *
     << &QWebEngineWebAuthUxRequest::staticMetaObject
     << &QWebEngineWebAuthPinRequest::staticMetaObject
     << &QWebEngineFrame::staticMetaObject
+    << &QQuickWebEngineFrame::staticMetaObject
     << &QWebEngineClientHints::staticMetaObject
     << &QQuickWebEngineProfilePrototype::staticMetaObject
 #if QT_CONFIG(webengine_extensions)
@@ -818,7 +819,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,QQuickWebEngineView::Feature) --> void"
     << "QQuickWebEngineView.fileDialogRequested(QQuickWebEngineFileDialogRequest*) --> void"
     << "QQuickWebEngineView.fileSystemAccessRequested(QWebEngineFileSystemAccessRequest) --> void"
-    << "QQuickWebEngineView.findFrameByName(QString) --> QWebEngineFrame"
+    << "QQuickWebEngineView.findFrameByName(QString) --> QQuickWebEngineFrame"
     << "QQuickWebEngineView.findText(QString) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags) --> void"
     << "QQuickWebEngineView.findText(QString,FindFlags,QJSValue) --> void"
@@ -850,7 +851,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadingChanged(QWebEngineLoadingInfo) --> void"
-    << "QQuickWebEngineView.mainFrame --> QWebEngineFrame"
+    << "QQuickWebEngineView.mainFrame --> QQuickWebEngineFrame"
     << "QQuickWebEngineView.navigationRequested(QWebEngineNavigationRequest*) --> void"
     << "QQuickWebEngineView.newWindowRequested(QQuickWebEngineNewWindowRequest*) --> void"
     << "QQuickWebEngineView.AcceptRequest --> NavigationRequestAction"
@@ -869,7 +870,7 @@ static const QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.permissionRequested(QWebEnginePermission) --> void"
     << "QQuickWebEngineView.pdfPrintingFinished(QString,bool) --> void"
     << "QQuickWebEngineView.printRequested() --> void"
-    << "QQuickWebEngineView.printRequestedByFrame(QWebEngineFrame) --> void"
+    << "QQuickWebEngineView.printRequestedByFrame(QQuickWebEngineFrame) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId,PrintedPageOrientation) --> void"
@@ -1001,6 +1002,9 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFrame.runJavaScript(QString,uint,QJSValue) --> void"
     << "QWebEngineFrame.size --> QSizeF"
     << "QWebEngineFrame.url --> QUrl"
+    << "QQuickWebEngineFrame.printToPdf(QJSValue) --> void"
+    << "QQuickWebEngineFrame.runJavaScript(QString,QJSValue) --> void"
+    << "QQuickWebEngineFrame.runJavaScript(QString,uint,QJSValue) --> void"
     << "QQuickWebEngineProfilePrototype.storageName --> QString"
     << "QQuickWebEngineProfilePrototype.persistentStoragePath --> QString"
     << "QQuickWebEngineProfilePrototype.cachePath --> QString"

@@ -309,14 +309,6 @@ struct ForeignWebEngineExtensionManager
 };
 #endif
 
-struct ForeignWebEngineFrame
-{
-    Q_GADGET
-    QML_FOREIGN(QWebEngineFrame)
-    QML_VALUE_TYPE(webEngineFrame)
-    QML_ADDED_IN_VERSION(6, 8)
-};
-
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEFOREIGNTYPES_H

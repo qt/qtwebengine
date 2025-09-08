@@ -40,6 +40,8 @@ qt_internal_add_qml_module(WebEngineQuick
         api/qtwebenginequickglobal_p.h
         api/qquickwebengineprofileprototype.cpp api/qquickwebengineprofileprototype_p.h
         api/qquickwebengineprofileprototype_p_p.h
+        api/qquickwebengineframe_p.h
+        api/qquickwebengineframe.cpp
         render_widget_host_view_qt_delegate_quickwindow.cpp render_widget_host_view_qt_delegate_quickwindow_p.h
         ui_delegates_manager.cpp ui_delegates_manager_p.h
     DEFINES

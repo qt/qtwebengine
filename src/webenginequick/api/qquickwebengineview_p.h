@@ -20,9 +20,9 @@
 #include <QtWebEngineCore/qwebenginequotarequest.h>
 #include <QtWebEngineCore/qwebenginedesktopmediarequest.h>
 #include <QtWebEngineCore/qwebenginedownloadrequest.h>
-#include <QtWebEngineCore/qwebengineframe.h>
 #include <QtWebEngineCore/qwebenginepermission.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
+#include <QtWebEngineQuick/private/qquickwebengineframe_p.h>
 #include <QtGui/qcolor.h>
 #include <QtQml/qqmlregistration.h>
 #include <QtQuick/qquickitem.h>
@@ -94,7 +94,7 @@ class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qint64 renderProcessPid READ renderProcessPid NOTIFY renderProcessPidChanged FINAL REVISION(1,11))
     Q_PROPERTY(QQmlComponent *touchHandleDelegate READ touchHandleDelegate WRITE
                        setTouchHandleDelegate NOTIFY touchHandleDelegateChanged REVISION(0) FINAL)
-    Q_PROPERTY(QWebEngineFrame mainFrame READ mainFrame FINAL REVISION(6, 8))
+    Q_PROPERTY(QQuickWebEngineFrame mainFrame READ mainFrame FINAL REVISION(6, 8))
     QML_NAMED_ELEMENT(WebEngineView)
     QML_ADDED_IN_VERSION(1, 0)
     QML_EXTRA_VERSION(2, 0)
@@ -477,8 +477,8 @@ QT_WARNING_POP
     QQmlComponent *touchHandleDelegate() const;
     void setTouchHandleDelegate(QQmlComponent *delegagte);
 
-    QWebEngineFrame mainFrame();
-    Q_REVISION(6, 8) Q_INVOKABLE QWebEngineFrame findFrameByName(const QString &name);
+    QQuickWebEngineFrame mainFrame();
+    Q_REVISION(6, 8) Q_INVOKABLE QQuickWebEngineFrame findFrameByName(const QString &name);
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
@@ -572,7 +572,7 @@ Q_SIGNALS:
     Q_REVISION(6,4) void fileSystemAccessRequested(const QWebEngineFileSystemAccessRequest &request);
     Q_REVISION(6, 7) void webAuthUxRequested(QWebEngineWebAuthUxRequest *request);
     Q_REVISION(6,7) void desktopMediaRequested(const QWebEngineDesktopMediaRequest &request);
-    Q_REVISION(6, 8) void printRequestedByFrame(QWebEngineFrame frame);
+    Q_REVISION(6, 8) void printRequestedByFrame(QQuickWebEngineFrame frame);
     Q_REVISION(6,8) void permissionRequested(QWebEnginePermission permissionRequest);
 
 protected:
