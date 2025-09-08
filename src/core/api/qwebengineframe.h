@@ -6,7 +6,6 @@
 #define QWEBENGINEFRAME_H
 
 #include <QtWebEngineCore/qtwebenginecoreglobal.h>
-#include <QtQml/qjsvalue.h>
 #include <QtCore/qcompare.h>
 #include <QtCore/QList>
 #include <QtCore/QSizeF>
@@ -19,6 +18,7 @@ class WebContentsAdapter;
 }
 
 QT_BEGIN_NAMESPACE
+class QJSValue;
 
 class QWebEngineFrame
 {
