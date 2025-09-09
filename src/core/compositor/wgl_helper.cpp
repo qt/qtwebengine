@@ -99,7 +99,7 @@ D3DSharedTexture::D3DSharedTexture(WGLHelper::WGLFunctions *wglFun, ID3D11Device
     hr = device1->OpenSharedResource1(dxgiSharedHandle, IID_PPV_ARGS(&srcTexture));
     if (FAILED(hr)) {
         qWarning("WGL: Failed to share D3D11 texture (%ls). This will result in failed rendering. "
-                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu",
                  qUtf16Printable(QSystemError::windowsComString(hr)));
         return;
     }
