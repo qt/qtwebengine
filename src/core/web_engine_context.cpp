@@ -1208,12 +1208,20 @@ bool WebEngineContext::isGbmSupported()
             return false;
         }
 
+#if !BUILDFLAG(IS_OZONE_X11)
+        if (OzoneUtilQt::usingGLX()) {
+            qWarning("GLX: Disable GBM because Ozone X11 is not available. "
+                     "Possibly caused by missing libraries for qpa-xcb support.");
+            return false;
+        }
+#endif
+
         return true;
     }();
 
     return supported;
 }
-#endif
+#endif // BUILDFLAG(IS_OZONE)
 
 void WebEngineContext::registerMainThreadFactories()
 {
