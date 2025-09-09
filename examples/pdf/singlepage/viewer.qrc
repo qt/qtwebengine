@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/qt/qml/SinglePage">
+    <qresource prefix="/qt/qml/SinglePageModule">
         <file>Viewer.qml</file>
         <file>qmldir</file>
         <file>resources/document-open.svg</file>
