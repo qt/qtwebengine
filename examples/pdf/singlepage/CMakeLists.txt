@@ -22,7 +22,7 @@ qt_add_executable(singlepage
 )
 
 qt_add_qml_module(singlepage
-    URI SinglePage
+    URI SinglePageModule
     QML_FILES
         Viewer.qml
     RESOURCES
