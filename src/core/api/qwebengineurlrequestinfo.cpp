@@ -155,15 +155,15 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypeXhr  An XMLHttpRequest.
     \value ResourceTypePing  A ping request for <a ping>.
     \value ResourceTypeServiceWorker  The main resource of a service worker.
-    \value ResourceTypeCspReport  A report of Content Security Policy (CSP)
+    \value [since 5.7] ResourceTypeCspReport  A report of Content Security Policy (CSP)
            violations. CSP reports are in JSON format and they are delivered by
-           HTTP POST requests to specified servers. (Added in Qt 5.7)
-    \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
-    \value ResourceTypeNavigationPreloadMainFrame  A main-frame service worker navigation preload request. (Added in Qt 5.14)
-    \value ResourceTypeNavigationPreloadSubFrame  A sub-frame service worker navigation preload request. (Added in Qt 5.14)
-    \value ResourceTypeWebSocket  A WebSocket request. (Added in Qt 6.4)
-    \value ResourceTypeUnknown  Unknown request type.
-    \value ResourceTypeJson A JSON module. (Added in Qt 6.8)
+           HTTP POST requests to specified servers.
+    \value [since 5.7] ResourceTypePluginResource  A resource requested by a plugin.
+    \value [since 5.14] ResourceTypeNavigationPreloadMainFrame  A main-frame service worker navigation preload request.
+    \value [since 5.14] ResourceTypeNavigationPreloadSubFrame  A sub-frame service worker navigation preload request.
+    \value [since 6.4] ResourceTypeWebSocket  A WebSocket request.
+    \value [since 6.9] ResourceTypeJson  A JSON module.
+    \value ResourceTypeUnknown Unknown request type.
 
     \note For forward compatibility all values not matched should be treated as unknown,
     not just \c ResourceTypeUnknown.
@@ -190,7 +190,7 @@ QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() 
     \value NavigationTypeFormSubmitted Navigation submits a form.
     \value NavigationTypeBackForward Navigation initiated by a history action.
     \value NavigationTypeReload Navigation initiated by refreshing the page.
-    \value NavigationTypeRedirect Navigation triggered automatically by page content or remote server. (Added in Qt 5.14)
+    \value NavigationTypeRedirect [since 5.14] Navigation triggered automatically by page content or remote server.
     \value NavigationTypeOther None of the above.
 */
 

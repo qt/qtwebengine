@@ -157,7 +157,7 @@ public:
   Indicates that accesses to this scheme should bypass all
   Content-Security-Policy checks.
 
-  \value CorsEnabled
+  \value [since 5.14] CorsEnabled
   Enables cross-origin resource sharing (CORS) for this scheme. This flag is
   required in order for content to be loaded by documents of a different origin,
   this includes access from other schemes. The appropriate CORS headers are
