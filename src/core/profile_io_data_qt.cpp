@@ -236,6 +236,7 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
 
     m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params);
 
+#if QT_CONFIG(ssl)
     const auto additionalCertificates = m_profileAdapter->additionalTrustedCertificates();
     if (!additionalCertificates.isEmpty()) {
         auto additionalVerifiedCertificates = cert_verifier::mojom::AdditionalCertificates::New();
@@ -249,6 +250,7 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
         cert_verifier_creation_params->initial_additional_certificates =
                 std::move(additionalVerifiedCertificates);
     }
+#endif
 }
 
 // static

@@ -89,8 +89,12 @@ QWebEngineProfile *QWebEngineProfileBuilder::createProfile(const QString &storag
                             d_ptr->m_persistentCookiesPolicy),
                     d_ptr->m_httpCacheMaxSize,
                     QtWebEngineCore::ProfileAdapter::PersistentPermissionsPolicy(
-                            d_ptr->m_persistentPermissionPolicy),
-                    d_ptr->m_additionalTrustedCertificates)),
+                            d_ptr->m_persistentPermissionPolicy)
+#if QT_CONFIG(ssl)
+                            ,
+                    d_ptr->m_additionalTrustedCertificates
+#endif
+                    )),
             parent);
 }
 

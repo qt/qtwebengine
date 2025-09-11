@@ -95,22 +95,32 @@ ProfileAdapter::ProfileAdapter(const QString &storageName, const QString &dataPa
                                const QString &cachePath, HttpCacheType httpCacheType,
                                PersistentCookiesPolicy persistentCookiesPolicy,
                                int httpCacheMaximumSize,
-                               PersistentPermissionsPolicy persistentPermissionPolicy,
-                               const QList<QSslCertificate> &additionalTrustedCertificates)
+                               PersistentPermissionsPolicy persistentPermissionPolicy
+#if QT_CONFIG(ssl)
+                               ,
+                               const QList<QSslCertificate> &additionalTrustedCertificates
+#endif
+                               )
     : m_name(storageName)
     , m_offTheRecord(storageName.isEmpty())
-    , m_dataPath(dataPath.isEmpty() && !m_name.isEmpty() ? buildLocationFromStandardPath(
-                         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation), m_name)
-                                                         : dataPath)
+    , m_dataPath(dataPath.isEmpty() && !m_name.isEmpty()
+                         ? buildLocationFromStandardPath(QStandardPaths::writableLocation(
+                                                                 QStandardPaths::AppDataLocation),
+                                                         m_name)
+                         : dataPath)
     , m_downloadPath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
-    , m_cachePath(cachePath.isEmpty() && !m_name.isEmpty() ? buildLocationFromStandardPath(
-                          QStandardPaths::writableLocation(QStandardPaths::CacheLocation), m_name)
-                                                           : cachePath)
+    , m_cachePath(cachePath.isEmpty() && !m_name.isEmpty()
+                          ? buildLocationFromStandardPath(
+                                    QStandardPaths::writableLocation(QStandardPaths::CacheLocation),
+                                    m_name)
+                          : cachePath)
     , m_httpCacheType(httpCacheType)
     , m_persistentCookiesPolicy(persistentCookiesPolicy)
     , m_persistentPermissionsPolicy(persistentPermissionPolicy)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+#if QT_CONFIG(ssl)
     , m_additionalTrustedCertificates(additionalTrustedCertificates)
+#endif
     , m_clientHintsEnabled(true)
     , m_pushServiceEnabled(false)
     , m_httpCacheMaxSize(m_name.isEmpty() ? 0 : httpCacheMaximumSize)
@@ -937,12 +947,12 @@ QWebEngineClientCertificateStore *ProfileAdapter::clientCertificateStore()
         m_clientCertificateStore = new QWebEngineClientCertificateStore(m_profile->m_profileIOData->clientCertificateStoreData());
     return m_clientCertificateStore;
 }
-#endif
 
 QList<QSslCertificate> ProfileAdapter::additionalTrustedCertificates() const
 {
     return m_additionalTrustedCertificates;
 }
+#endif
 
 static void callbackOnIconAvailableForPageURL(std::function<void (const QIcon &, const QUrl &, const QUrl &)> iconAvailableCallback,
                                               const QUrl &pageUrl,

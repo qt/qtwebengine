@@ -1,15 +1,18 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <httpsserver.h>
-#include <util.h>
 #include <QtTest/QtTest>
-#include <QtTest/private/qtesthelpers_p.h>
 #include <QTemporaryDir>
 #include <QtWebEngineCore/qwebengineprofilebuilder.h>
+
+#if QT_CONFIG(ssl)
+#include <httpsserver.h>
+#include <util.h>
+#include <QtTest/private/qtesthelpers_p.h>
 #include <QtWebEngineCore/qwebenginecertificateerror.h>
 #include <QtWebEngineCore/qwebengineclientcertificatestore.h>
 #include <QtWebEngineCore/qwebenginesettings.h>
+#endif
 
 class tst_QWebEngineProfileBuilder : public QObject
 {
@@ -27,7 +30,9 @@ private Q_SLOTS:
     void httpCacheSize();
     void persistentPermissionsPolicy_data();
     void persistentPermissionsPolicy();
+#if QT_CONFIG(ssl)
     void additionalTrustedCertificates();
+#endif
     void useSameDataPathForProfiles();
 };
 
@@ -282,6 +287,7 @@ void tst_QWebEngineProfileBuilder::persistentPermissionsPolicy()
     QCOMPARE(profile->persistentStoragePath(), storagePath);
 }
 
+#if QT_CONFIG(ssl)
 void tst_QWebEngineProfileBuilder::additionalTrustedCertificates()
 {
     if (QTestPrivate::isSecureTransportBlockingTest()) {
@@ -372,6 +378,7 @@ void tst_QWebEngineProfileBuilder::additionalTrustedCertificates()
 
     QVERIFY(server.stop());
 }
+#endif // QT_CONFIG(ssl)
 
 void tst_QWebEngineProfileBuilder::useSameDataPathForProfiles()
 {
