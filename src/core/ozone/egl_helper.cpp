@@ -3,10 +3,14 @@
 // Qt-Security score:significant reason:default
 
 #include "egl_helper.h"
+
+#include "compositor/compositor.h"
 #include "ozone_util_qt.h"
 #include "web_engine_context.h"
 
+#include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -56,6 +60,84 @@ static const char *getEGLErrorString(uint32_t error)
 } // namespace
 
 QT_BEGIN_NAMESPACE
+
+class ScopedGLContext
+{
+public:
+    ScopedGLContext(QOffscreenSurface *surface, EGLHelper::EGLFunctions *eglFun)
+        : m_context(new QOpenGLContext()), m_eglFun(eglFun)
+    {
+        if ((m_previousEGLContext = m_eglFun->eglGetCurrentContext())) {
+            m_previousEGLDrawSurface = m_eglFun->eglGetCurrentSurface(EGL_DRAW);
+            m_previousEGLReadSurface = m_eglFun->eglGetCurrentSurface(EGL_READ);
+            m_previousEGLDisplay = m_eglFun->eglGetCurrentDisplay();
+        }
+
+        if (!m_context->create()) {
+            qWarning("Failed to create OpenGL context.");
+            return;
+        }
+
+        Q_ASSERT(surface->isValid());
+        if (!m_context->makeCurrent(surface)) {
+            qWarning("Failed to make OpenGL context current.");
+            return;
+        }
+    }
+
+    ~ScopedGLContext()
+    {
+        if (!m_textures.empty()) {
+            auto *glFun = m_context->functions();
+            glFun->glDeleteTextures(m_textures.size(), m_textures.data());
+        }
+
+        if (m_previousEGLContext) {
+            // Make sure the scoped context is not current when restoring the previous
+            // EGL context otherwise the QOpenGLContext destructor resets the restored
+            // current context.
+            m_context->doneCurrent();
+
+            m_eglFun->eglMakeCurrent(m_previousEGLDisplay, m_previousEGLDrawSurface,
+                                     m_previousEGLReadSurface, m_previousEGLContext);
+            if (m_eglFun->eglGetError() != EGL_SUCCESS)
+                qWarning("Failed to restore EGL context.");
+        }
+    }
+
+    bool isValid() const { return m_context->isValid() && (m_context->surface() != nullptr); }
+
+    EGLContext eglContext() const
+    {
+        QNativeInterface::QEGLContext *nativeInterface =
+                m_context->nativeInterface<QNativeInterface::QEGLContext>();
+        return nativeInterface->nativeContext();
+    }
+
+    uint createTexture(int width, int height)
+    {
+        auto *glFun = m_context->functions();
+
+        uint glTexture;
+        glFun->glGenTextures(1, &glTexture);
+        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
+        glFun->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                            NULL);
+        glFun->glBindTexture(GL_TEXTURE_2D, 0);
+
+        m_textures.push_back(glTexture);
+        return glTexture;
+    }
+
+private:
+    QScopedPointer<QOpenGLContext> m_context;
+    EGLHelper::EGLFunctions *m_eglFun;
+    EGLContext m_previousEGLContext = nullptr;
+    EGLSurface m_previousEGLDrawSurface = nullptr;
+    EGLSurface m_previousEGLReadSurface = nullptr;
+    EGLDisplay m_previousEGLDisplay = nullptr;
+    std::vector<uint> m_textures;
+};
 
 EGLHelper::EGLFunctions::EGLFunctions()
 {
@@ -117,8 +199,23 @@ EGLHelper::EGLHelper()
         const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
         m_isDmaBufSupported = strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")
                 && strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")
-                && strstr(displayExtensions, "EGL_MESA_drm_image")
                 && strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
+        m_isCreateDRMImageMesaSupported = strstr(displayExtensions, "EGL_MESA_drm_image");
+        if (!m_isDmaBufSupported) {
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "EGL: MESA extensions not found, will not use dma-buf");
+        } else if (!m_isCreateDRMImageMesaSupported) {
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "EGL: MESA extensions found but missing EGL_MESA_drm_image, will use dma-buf, "
+                    "some older graphics cards may not be supported");
+            m_offscreenSurface.reset(new QOffscreenSurface());
+            Q_ASSERT(QThread::currentThread() == qApp->thread());
+            m_offscreenSurface->create();
+        } else {
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "EGL: MESA extensions and EGL_MESA_drm_image found, will use dma-buf with GEM "
+                    "buffer allocation");
+        }
     }
 
     // Try to create dma-buf.
@@ -138,17 +235,38 @@ void EGLHelper::queryDmaBuf(const int width, const int height, int *fd, int *str
     if (!m_isDmaBufSupported)
         return;
 
-    // clang-format off
-    EGLint attribs[] = {
-        EGL_WIDTH, width,
-        EGL_HEIGHT, height,
-        EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-        EGL_DRM_BUFFER_USE_MESA, EGL_DRM_BUFFER_USE_SHARE_MESA,
-        EGL_NONE
-    };
-    // clang-format on
+    EGLImage eglImage = EGL_NO_IMAGE;
+    // Probably doesn't need to live to the end of the function, but just in case.
+    std::unique_ptr<ScopedGLContext> glContext;
+    if (m_isCreateDRMImageMesaSupported) {
+        // This approach is slightly worse for security and no longer supported in mesa 25.2,
+        // but it allows us to keep support for the Panthor driver prior to that mesa version.
+        // clang-format off
+        EGLint attribs[] = {
+            EGL_WIDTH, width,
+            EGL_HEIGHT, height,
+            EGL_DRM_BUFFER_FORMAT_MESA, EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+            EGL_DRM_BUFFER_USE_MESA, EGL_DRM_BUFFER_USE_SHARE_MESA,
+            EGL_NONE
+        };
+        // clang-format on
+        eglImage = m_functions->eglCreateDRMImageMESA(m_eglDisplay, attribs);
+    } else {
+        glContext = std::make_unique<ScopedGLContext>(m_offscreenSurface.get(), m_functions.get());
+        if (!glContext->isValid())
+            return;
 
-    EGLImage eglImage = m_functions->eglCreateDRMImageMESA(m_eglDisplay, attribs);
+        EGLContext eglContext = glContext->eglContext();
+        if (!eglContext) {
+            qWarning("EGL: No EGLContext.");
+            return;
+        }
+
+        uint64_t textureId = glContext->createTexture(width, height);
+        eglImage = m_functions->eglCreateImage(m_eglDisplay, eglContext, EGL_GL_TEXTURE_2D,
+                                                    (EGLClientBuffer)textureId, NULL);
+    }
+
     if (eglImage == EGL_NO_IMAGE) {
         qWarning("EGL: Failed to create EGLImage: %s", getLastEGLErrorString());
         return;
