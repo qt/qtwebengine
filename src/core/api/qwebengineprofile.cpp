@@ -925,8 +925,12 @@ QWebEngineClientCertificateStore *QWebEngineProfile::clientCertificateStore()
 */
 QList<QSslCertificate> QWebEngineProfile::additionalTrustedCertificates() const
 {
+#if QT_CONFIG(ssl)
     Q_D(const QWebEngineProfile);
     return d->profileAdapter()->additionalTrustedCertificates();
+#else
+    return {};
+#endif
 }
 
 /*!

@@ -331,8 +331,12 @@ void QQuickWebEngineProfilePrototype::componentComplete()
                     d_ptr->m_persistentCookiesPolicy),
             d_ptr->m_httpCacheMaxSize,
             QtWebEngineCore::ProfileAdapter::PersistentPermissionsPolicy(
-                    d_ptr->m_persistentPermissionsPolicy),
-            additionalCertificates);
+                    d_ptr->m_persistentPermissionsPolicy)
+#if QT_CONFIG(ssl)
+                    ,
+            additionalCertificates
+#endif
+    );
 
     d_ptr->profile.reset(new QQuickWebEngineProfile(
             new QQuickWebEngineProfilePrivate(profileAdapter), this->parent()));
