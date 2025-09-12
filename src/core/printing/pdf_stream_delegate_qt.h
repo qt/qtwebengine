@@ -21,6 +21,7 @@ public:
     std::optional<StreamInfo> GetStreamInfo(content::RenderFrameHost *embedder_frame) override;
     void OnPdfEmbedderSandboxed(content::FrameTreeNodeId) override;
     bool ShouldAllowPdfFrameNavigation(content::NavigationHandle*) override;
+    bool ShouldAllowPdfExtensionFrameNavigation(content::NavigationHandle*) override;
 };
 
 #endif // PDF_STREAM_DELEGATE_QT_H

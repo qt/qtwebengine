@@ -110,3 +110,8 @@ bool PdfStreamDelegateQt::ShouldAllowPdfFrameNavigation(content::NavigationHandl
     return true;
 }
 
+bool PdfStreamDelegateQt::ShouldAllowPdfExtensionFrameNavigation(content::NavigationHandle*)
+{
+    // Only for the OOPIF PDF viewer
+    return true;
+}

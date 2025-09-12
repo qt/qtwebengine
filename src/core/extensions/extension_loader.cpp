@@ -7,11 +7,13 @@
 #include "extension_manager.h"
 #include "type_conversion.h"
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/file_util.h"
@@ -23,10 +25,15 @@ static constexpr int kSupportedManifestVersion = 3;
 namespace QtWebEngineCore {
 ExtensionLoader::ExtensionLoader(content::BrowserContext *context, ExtensionManager *manager)
     : m_browserContext(context)
-    , m_extensionRegistrar(context, this)
+    , m_extensionRegistrar(ExtensionRegistrar::Get(context))
     , m_extensionRegistry(ExtensionRegistry::Get(context))
     , m_manager(manager)
 {
+    // We do not access the directories set here, and chromium doesnt use them either.
+    m_extensionRegistrar->Init(this,
+                               true /* extensions_enabled */,
+                               base::FilePath() /* install_directory */,
+                               base::FilePath() /* unzipped_install_directory */);
 }
 
 ExtensionLoader::~ExtensionLoader() { }
@@ -74,15 +81,15 @@ void ExtensionLoader::loadExtension(const base::FilePath &path)
 void ExtensionLoader::addExtension(scoped_refptr<const Extension> extension)
 {
     if (extensions().Contains(extension->id()))
-        m_extensionRegistrar.ReloadExtension(extension->id(),
-                                             ExtensionRegistrar::LoadErrorBehavior::kQuiet);
+        m_extensionRegistrar->ReloadExtension(extension->id(),
+                                              ExtensionRegistrar::LoadErrorBehavior::kQuiet);
     else
         m_extensionRegistry->AddDisabled(extension);
 }
 
 void ExtensionLoader::reloadExtension(const std::string &id)
 {
-    m_extensionRegistrar.ReloadExtension(id, ExtensionRegistrar::LoadErrorBehavior::kQuiet);
+    m_extensionRegistrar->ReloadExtension(id, ExtensionRegistrar::LoadErrorBehavior::kQuiet);
 }
 
 void ExtensionLoader::loadExtensionFinished(const LoadingInfo &loadingInfo)
@@ -101,7 +108,7 @@ void ExtensionLoader::loadExtensionFinished(const LoadingInfo &loadingInfo)
 
 void ExtensionLoader::unloadExtension(const std::string &id)
 {
-    m_extensionRegistrar.RemoveExtension(id, UnloadedExtensionReason::UNINSTALL);
+    m_extensionRegistrar->RemoveExtension(id, UnloadedExtensionReason::UNINSTALL);
 }
 
 ExtensionSet ExtensionLoader::extensions() const
@@ -112,13 +119,13 @@ ExtensionSet ExtensionLoader::extensions() const
 void ExtensionLoader::disableExtension(const std::string &id)
 {
     if (isExtensionLoaded(id) && isExtensionEnabled(id))
-        m_extensionRegistrar.DisableExtension(id, extensions::disable_reason::DISABLE_USER_ACTION);
+        m_extensionRegistrar->DisableExtension(id, {extensions::disable_reason::DISABLE_USER_ACTION});
 }
 
 void ExtensionLoader::enableExtension(const std::string &id)
 {
     if (isExtensionLoaded(id) && !isExtensionEnabled(id))
-        m_extensionRegistrar.EnableExtension(id);
+        m_extensionRegistrar->EnableExtension(id);
 }
 
 bool ExtensionLoader::isExtensionEnabled(const std::string &id)

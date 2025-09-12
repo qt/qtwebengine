@@ -4,8 +4,6 @@
 
 #include "qtwebenginecoreglobal.h"
 
-#include "ui/accessibility/platform/browser_accessibility_manager.h"
-
 #include <QtCore/qdebug.h>
 #include <QtGui/qtguiglobal.h>
 

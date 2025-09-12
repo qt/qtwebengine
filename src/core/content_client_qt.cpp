@@ -400,7 +400,8 @@ void ContentClientQt::AddContentDecryptionModules(std::vector<content::CdmInfo> 
             capability = media::CdmCapability(
                     {}, {}, { media::EncryptionScheme::kCenc, media::EncryptionScheme::kCbcs },
                     { media::CdmSessionType::kTemporary,
-                      media::CdmSessionType::kPersistentLicense });
+                      media::CdmSessionType::kPersistentLicense },
+                    base::Version("0.1.0.0"));
 
             // Register media::kExternalClearKeyDifferentCdmTypeTestKeySystem first separately.
             // Otherwise, it'll be treated as a sub-key-system of normal

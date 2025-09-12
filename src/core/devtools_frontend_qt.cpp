@@ -209,6 +209,11 @@ void DevToolsFrontendQt::InspectedContentsClosing()
     web_contents()->ClosePage();
 }
 
+content::WebContents* DevToolsFrontendQt::GetInspectedWebContents()
+{
+    return m_inspectedContents;
+}
+
 std::string DevToolsFrontendQt::GetId(content::WebContents *inspectedContents)
 {
     return content::DevToolsAgentHost::GetOrCreateFor(inspectedContents)->GetId();

@@ -627,9 +627,8 @@ void RenderWidgetHostViewQt::ImeCancelComposition()
     qApp->inputMethod()->reset();
 }
 
-void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range &,
-                                                        const std::optional<std::vector<gfx::Rect>> &,
-                                                        const std::optional<std::vector<gfx::Rect>> &)
+void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range &range,
+                                                        const std::optional<std::vector<gfx::Rect>> &character_bounds)
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
@@ -1157,11 +1156,6 @@ ui::Compositor *RenderWidgetHostViewQt::GetCompositor()
 std::optional<content::DisplayFeature> RenderWidgetHostViewQt::GetDisplayFeature()
 {
     return std::nullopt;
-}
-
-void RenderWidgetHostViewQt::SetDisplayFeatureForTesting(const content::DisplayFeature *)
-{
-    NOTIMPLEMENTED();
 }
 
 } // namespace QtWebEngineCore

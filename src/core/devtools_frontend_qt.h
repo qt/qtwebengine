@@ -60,6 +60,7 @@ private:
     void OpenInNewTab(const std::string &url) override;
     void InspectedContentsClosing() override;
     void OnLoadCompleted() override;
+    content::WebContents* GetInspectedWebContents() override;
 
     void InspectElementCompleted() override {}
     void CloseWindow() override;

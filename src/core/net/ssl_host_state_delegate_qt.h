@@ -36,8 +36,8 @@ public:
     void AllowCert(const std::string &, const net::X509Certificate &cert, int error, content::StoragePartition *storage_partition) override;
     void Clear(base::RepeatingCallback<bool(const std::string&)> host_filter) override;
     CertJudgment QueryPolicy(const std::string &host, const net::X509Certificate &cert, int error, content::StoragePartition *web_contents) override;
-    void HostRanInsecureContent(const std::string &host, int child_id, InsecureContentType content_type) override;
-    bool DidHostRunInsecureContent(const std::string &host, int child_id, InsecureContentType content_type) override;
+    void HostRanInsecureContent(const std::string &host, InsecureContentType content_type) override;
+    bool DidHostRunInsecureContent(const std::string &host, InsecureContentType content_type) override;
     void AllowHttpForHost(const std::string &host, content::StoragePartition *web_contents) override;
     bool IsHttpAllowedForHost(const std::string &host, content::StoragePartition *web_contents) override;
     void SetHttpsEnforcementForHost(const std::string &host, bool enforce,

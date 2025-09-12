@@ -49,6 +49,7 @@ def isInChromiumBlacklist(file_path):
           and not file_path.startswith('chrome/VERSION')
           and not file_path.startswith('chrome/app/resources/')
           and not file_path.startswith('chrome/app/theme/')
+          and not file_path.startswith('chrome/app/vector_icons/')
           and not file_path.startswith('chrome/browser/chrome_notification_types.h')
           and not file_path.startswith('chrome/browser/accessibility/')
           and not file_path.startswith('chrome/browser/custom_handlers/')

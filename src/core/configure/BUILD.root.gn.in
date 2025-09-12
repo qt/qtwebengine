@@ -261,6 +261,8 @@ source_set("devtools_sources") {
      "//chrome/browser/devtools/devtools_eye_dropper.h",
      "//chrome/browser/devtools/devtools_file_helper.cc",
      "//chrome/browser/devtools/devtools_file_helper.h",
+     "//chrome/browser/devtools/devtools_file_storage.cc",
+     "//chrome/browser/devtools/devtools_file_storage.h",
      "//chrome/browser/devtools/devtools_file_system_indexer.cc",
      "//chrome/browser/devtools/devtools_file_system_indexer.h",
      "//chrome/browser/devtools/devtools_file_watcher.cc",
@@ -435,6 +437,7 @@ source_set("qtwebengine_sources") {
       "//chrome/common/extensions/api:extensions_features",
       "//components/crx_file",
       "//components/crx_file:crx_creator",
+      "//components/services/unzip:lib",
       "//components/spellcheck:buildflags",
       "//extensions/buildflags:buildflags",
       "//extensions/common",
@@ -465,8 +468,6 @@ source_set("qtwebengine_sources") {
       "//extensions/browser/zipfile_installer.h",
       "//components/update_client/update_query_params.cc",
       "//components/update_client/update_query_params.h",
-      "//components/services/unzip/unzipper_impl.cc",
-      "//components/services/unzip/unzipper_impl.h",
     ]
   } else {
     sources += [

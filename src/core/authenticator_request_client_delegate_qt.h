@@ -37,14 +37,16 @@ public:
     void SetRelyingPartyId(const std::string &rp_id) override;
     bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
     void RegisterActionCallbacks(
-        base::OnceClosure cancel_callback,
-        base::RepeatingClosure start_over_callback,
-        AccountPreselectedCallback account_preselected_callback,
-        device::FidoRequestHandlerBase::RequestCallback request_callback,
-        base::RepeatingClosure bluetooth_adapter_power_on_callback,
-        base::RepeatingCallback<
-            void(device::FidoRequestHandlerBase::BlePermissionCallback)>
-            request_ble_permission_callback) override;
+            base::OnceClosure cancel_callback,
+            base::OnceClosure immediate_not_found_callback,
+            base::RepeatingClosure start_over_callback,
+            AccountPreselectedCallback account_preselected_callback,
+            PasswordSelectedCallback password_selected_callback,
+            device::FidoRequestHandlerBase::RequestCallback request_callback,
+            base::RepeatingClosure bluetooth_adapter_power_on_callback,
+            base::RepeatingCallback<
+                    void(device::FidoRequestHandlerBase::BlePermissionCallback)>
+                    request_ble_permission_callback) override;
     void SelectAccount(
             std::vector<device::AuthenticatorGetAssertionResponse> responses,
             base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)> callback) override;
