@@ -18,7 +18,6 @@ ApplicationWindow {
     required property ApplicationRoot applicationRoot
     property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
-    property int createdTabs: 0
     property bool lastTabClosing: false
 
     width: 1300
@@ -524,8 +523,9 @@ ApplicationWindow {
         Component.onCompleted: createTab(win.applicationRoot.defaultProfilePrototype.instance())
 
         function createTab(profile, focusOnNewTab = true, url = undefined) {
-            var webview = tabComponent.createObject(tabLayout, {index: tabBar.count , profile: profile});
+            var webview = tabComponent.createObject(tabLayout, {profile: profile});
             var newTabButton = tabButtonComponent.createObject(tabBar, {tabTitle: Qt.binding(function () { return webview.title; })});
+            webview.index = Qt.binding(function () { return newTabButton.TabBar.index; })
             tabBar.addItem(newTabButton);
             if (focusOnNewTab) {
                 tabBar.setCurrentIndex(tabBar.count - 1);
@@ -554,7 +554,7 @@ ApplicationWindow {
             id: tabComponent
             WebEngineView {
                 id: webEngineView
-                property int index;
+                property int index: 0
                 focus: true
 
                 onLinkHovered: function(hoveredUrl) {
