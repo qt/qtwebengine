@@ -1,0 +1,10 @@
+module BrowserUtils
+prefer :/BrowserUtils/
+ApplicationRoot 1.0 ApplicationRoot.qml
+BrowserDialog 1.0 BrowserDialog.qml
+BrowserWindow 1.0 BrowserWindow.qml
+DownloadView 1.0 DownloadView.qml
+FindBar 1.0 FindBar.qml
+FullScreenNotification 1.0 FullScreenNotification.qml
+WebAuthDialog 1.0 WebAuthDialog.qml
+depends QtQuick
