@@ -40,7 +40,9 @@ void DelegatedFrameHostClientQt::InvalidateLocalSurfaceIdOnEviction()
 
 viz::FrameEvictorClient::EvictIds DelegatedFrameHostClientQt::CollectSurfaceIdsForEviction()
 {
-    return viz::FrameEvictorClient::EvictIds(p->host()->CollectSurfaceIdsForEviction(), viz::SurfaceId());
+    viz::FrameEvictorClient::EvictIds ids;
+    ids.embedded_ids = p->host()->CollectSurfaceIdsForEviction();
+    return ids;
 }
 
 bool DelegatedFrameHostClientQt::ShouldShowStaleContentOnEviction()

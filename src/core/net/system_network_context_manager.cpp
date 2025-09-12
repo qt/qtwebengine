@@ -274,7 +274,6 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(network::mojom::Networ
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(network::mojom::NetworkContextParams *network_context_params)
 {
     network_context_params->initial_ssl_config = network::mojom::SSLConfig::New();
-    network_context_params->initial_ssl_config->symantec_enforcement_disabled = true;
 }
 
 void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::mojom::NetworkContextParams *network_context_params,
@@ -348,6 +347,7 @@ void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
                     ? net::DnsOverHttpsConfig()
                     : net::DnsOverHttpsConfig::FromString(dnsOverHttpsTemplates);
             networkService->ConfigureStubHostResolver(insecureDnsClientEnabled,
+                                                      base::FeatureList::IsEnabled(net::features::kHappyEyeballsV3),
                                                       net::SecureDnsMode(dnsMode), *dohConfig,
                                                       additionalInsecureDnsTypesEnabled);
         }

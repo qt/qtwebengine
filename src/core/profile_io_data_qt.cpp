@@ -61,7 +61,7 @@ void ProfileIODataQt::shutdownOnUIThread()
         removeBrowsingDataRemoverObserver();
     }
 
-    bool posted = content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, this);
+    bool posted = content::GetIOThreadTaskRunner()->DeleteSoon(FROM_HERE, this);
     if (!posted) {
         qWarning("Could not delete ProfileIODataQt on io thread !");
         delete this;

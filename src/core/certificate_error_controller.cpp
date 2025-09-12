@@ -39,8 +39,6 @@ ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateValidityTooLong,
                    net::ERR_CERT_VALIDITY_TOO_LONG)
 ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateTransparencyRequired,
                    net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
-ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateSymantecLegacy,
-                   net::ERR_CERT_SYMANTEC_LEGACY)
 ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateKnownInterceptionBlocked,
                    net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED)
 // net::ERR_SSL_OBSOLETE_VERSION was removed again in Chromium 98
@@ -62,7 +60,6 @@ static int IsCertErrorFatal(int cert_error)
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_CERT_VALIDITY_TOO_LONG:
     case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
-    case net::ERR_CERT_SYMANTEC_LEGACY:
     case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
         return false;
     case net::ERR_CERT_CONTAINS_ERRORS:

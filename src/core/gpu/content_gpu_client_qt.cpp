@@ -141,8 +141,6 @@ static QString windowsInfo(const gpu::GPUInfo &gpuInfo)
     info += "  Direct Composition: "_L1;
     if (gpuInfo.overlay_info.direct_composition)
         info += "enabled\n"_L1;
-    else if (gl::GetGlWorkarounds().disable_direct_composition)
-        info += "disabled by workaround\n"_L1;
     else
         info += "disabled\n"_L1;
 

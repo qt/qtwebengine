@@ -131,7 +131,7 @@ public:
     }
 };
 #endif
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 std::unique_ptr<display::Screen::ScreenSaverSuspender> DesktopScreenQt::SuspendScreenSaver()
 {
 #if defined(USE_XSCREENSAVER)

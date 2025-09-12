@@ -83,9 +83,9 @@ public:
     input::CursorManager *GetCursorManager() override;
     void SetIsLoading(bool) override;
     void ImeCancelComposition() override;
-    void ImeCompositionRangeChanged(const gfx::Range &,
-                                    const std::optional<std::vector<gfx::Rect>> &,
-                                    const std::optional<std::vector<gfx::Rect>> &) override;
+    void ImeCompositionRangeChanged(
+        const gfx::Range &range,
+        const std::optional<std::vector<gfx::Rect>> &character_bounds) override;
     void RenderProcessGone() override;
     bool TransformPointToCoordSpaceForView(const gfx::PointF &point,
                                            input::RenderWidgetHostViewInput *target_view,
@@ -120,7 +120,8 @@ public:
     std::unique_ptr<content::SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
     ui::Compositor *GetCompositor() override;
     std::optional<content::DisplayFeature> GetDisplayFeature() override;
-    void SetDisplayFeatureForTesting(const content::DisplayFeature*) override;
+    void DisableDisplayFeatureOverrideForEmulation() override {}
+    void OverrideDisplayFeatureForEmulation(const content::DisplayFeature*) override {}
     content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 #if BUILDFLAG(IS_MAC)
     void ShowSharePicker(

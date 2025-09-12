@@ -162,7 +162,7 @@ public:
                         const GURL &url, scoped_refptr<net::HttpResponseHeaders> response_headers,
                         bool first_auth_attempt,
                         content::GuestPageHolder *guest_page_holder,
-                        LoginAuthRequiredCallback auth_required_callback) override;
+                        content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback) override;
 
     bool HandleExternalProtocol(
             const GURL &url, base::RepeatingCallback<content::WebContents *()> web_contents_getter,

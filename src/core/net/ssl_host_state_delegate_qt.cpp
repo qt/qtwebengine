@@ -74,12 +74,12 @@ content::SSLHostStateDelegate::CertJudgment SSLHostStateDelegateQt::QueryPolicy(
 }
 
 // Records that a host has run insecure content.
-void SSLHostStateDelegateQt::HostRanInsecureContent(const std::string &host, int pid, InsecureContentType content_type)
+void SSLHostStateDelegateQt::HostRanInsecureContent(const std::string &host, InsecureContentType content_type)
 {
 }
 
 // Returns whether the specified host ran insecure content.
-bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, int pid, InsecureContentType content_type)
+bool SSLHostStateDelegateQt::DidHostRunInsecureContent(const std::string &host, InsecureContentType content_type)
 {
     return false;
 }

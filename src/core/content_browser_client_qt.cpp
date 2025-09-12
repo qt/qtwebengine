@@ -36,7 +36,6 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/user_agent.h"
 #include "base/version_info/version_info.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "extensions/buildflags/buildflags.h"
@@ -964,7 +963,7 @@ std::unique_ptr<content::LoginDelegate> ContentBrowserClientQt::CreateLoginDeleg
         bool /*is_main_frame*/, bool /*is_request_for_navigation*/, const GURL &url,
         scoped_refptr<net::HttpResponseHeaders> /*response_headers*/, bool first_auth_attempt,
         content::GuestPageHolder * /*guest_page_holder*/,
-        LoginAuthRequiredCallback auth_required_callback)
+        content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback)
 {
     auto loginDelegate = std::make_unique<LoginDelegateQt>(authInfo, web_contents, url, first_auth_attempt, std::move(auth_required_callback));
     return loginDelegate;
@@ -1041,9 +1040,9 @@ void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserCont
 std::string ContentBrowserClientQt::getUserAgent()
 {
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    return content::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
-                                              + " Chrome/" + version_info::GetMajorVersionNumber()
-                                              + ".0.0.0");
+    return embedder_support::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
+                                                        + " Chrome/" + version_info::GetMajorVersionNumber()
+                                                        + ".0.0.0");
 }
 
 std::string ContentBrowserClientQt::GetUserAgentBasedOnPolicy(content::BrowserContext *context)

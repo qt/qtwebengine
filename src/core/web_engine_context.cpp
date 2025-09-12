@@ -44,7 +44,7 @@
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_helper.h"
-#include "content/browser/utility_process_host.h"
+#include "content/browser/service_host/utility_process_host.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/public/app/content_main.h"
@@ -70,12 +70,13 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_switches.h"
-#include "ui/native_theme/native_theme_features.h"
+#include "ui/native_theme/features/native_theme_features.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_switches.h"
 #include "url/url_features.h"
@@ -767,6 +768,10 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
 const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
 
+bool ShouldAllowSystemTracingConsumer() {
+    return false;
+}
+
 static void initializeFeatureList(base::CommandLine &commandLine,
                                   std::vector<std::string> enableFeatures,
                                   std::vector<std::string> disableFeatures)
@@ -1048,7 +1053,9 @@ WebEngineContext::WebEngineContext()
     }
     m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
-    tracing::InitTracingPostThreadPoolStartAndFeatureList(false);
+    tracing::PerfettoTracedProcess::Get().SetAllowSystemTracingConsumerCallback(
+            base::BindRepeating(&ShouldAllowSystemTracingConsumer));
+    tracing::InitTracingPostFeatureList(/*enable_consumer=*/true);
     base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource());
     content::ProcessVisibilityTracker::GetInstance();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();

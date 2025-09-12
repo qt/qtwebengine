@@ -32,7 +32,7 @@ AccessibilityActivationObserver::AccessibilityActivationObserver()
     if (isAccessibilityEnabled()) {
         QAccessible::installActivationObserver(this);
         if (QAccessible::isActive())
-            content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+            content::BrowserAccessibilityStateImpl::GetInstance()->EnableProcessAccessibility();
     }
 }
 
@@ -44,9 +44,9 @@ AccessibilityActivationObserver::~AccessibilityActivationObserver()
 void AccessibilityActivationObserver::accessibilityActiveChanged(bool active)
 {
     if (active)
-        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+        content::BrowserAccessibilityStateImpl::GetInstance()->EnableProcessAccessibility();
     else
-        content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
+        content::BrowserAccessibilityStateImpl::GetInstance()->DisableProcessAccessibility();
 }
 
 } // namespace QtWebEngineCore

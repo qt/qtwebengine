@@ -4,4 +4,8 @@
 
 #include "display_info_provider_qt.h"
 
+namespace extensions {
+
 DisplayInfoProviderQt::DisplayInfoProviderQt() = default;
+
+}

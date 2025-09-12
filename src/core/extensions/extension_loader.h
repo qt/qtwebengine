@@ -76,9 +76,10 @@ private:
     bool CanEnableExtension(const extensions::Extension *extension) override { return true; }
     bool CanDisableExtension(const extensions::Extension *extension) override { return true; }
     bool ShouldBlockExtension(const extensions::Extension *extension) override { return false; }
+    void GrantActivePermissions(const extensions::Extension *extension) override { }
 
     raw_ptr<content::BrowserContext> m_browserContext;
-    extensions::ExtensionRegistrar m_extensionRegistrar;
+    extensions::ExtensionRegistrar *m_extensionRegistrar;
     extensions::ExtensionRegistry *m_extensionRegistry;
     ExtensionManager *m_manager;
     base::WeakPtrFactory<ExtensionLoader> m_weakFactory{ this };

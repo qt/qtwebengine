@@ -5,12 +5,16 @@
 #ifndef DISPLAY_INFO_PROVIDER_QT_H_
 #define DISPLAY_INFO_PROVIDER_QT_H_
 
-#include "extensions/browser/api/system_display/display_info_provider.h"
+#include "extensions/browser/display_info_provider_base.h"
 
-class DisplayInfoProviderQt : public extensions::DisplayInfoProvider
+namespace extensions {
+
+class DisplayInfoProviderQt : public DisplayInfoProviderBase
 {
 public:
     DisplayInfoProviderQt();
 };
+
+}  // namespace extensions
 
 #endif // DISPLAY_INFO_PROVIDER_QT_H_
