@@ -425,6 +425,14 @@ static std::string getGLType(bool enableGLSoftwareRendering, bool disableGpu)
 
     switch (sharedFormat.renderableType()) {
     case QSurfaceFormat::OpenGL:
+#if !BUILDFLAG(IS_OZONE_X11)
+        if (GLContextHelper::getGlxPlatformInterface()) {
+            qWarning("--use-gl=desktop-gl is not supported because Ozone X11 is not available. "
+                     "Possibly caused by missing libraries for qpa-xcb support. "
+                     "Fallback to software rendering.");
+            return gl::kGLImplementationDisabledName;
+        }
+#endif
         if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
             qWarning("An OpenGL Core Profile was requested, but it is not supported "
                      "on the current platform. Falling back to a non-Core profile. "
