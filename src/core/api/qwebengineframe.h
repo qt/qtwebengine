@@ -32,12 +32,12 @@ class QWebEngineFrame
     Q_PROPERTY(bool isMainFrame READ isMainFrame FINAL)
 
 public:
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame();
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame(const QWebEngineFrame &other);
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame &operator=(const QWebEngineFrame &other);
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame(QWebEngineFrame &&other);
-    Q_WEBENGINECORE_EXPORT QWebEngineFrame &operator=(QWebEngineFrame &&other);
-    Q_WEBENGINECORE_EXPORT ~QWebEngineFrame();
+    QWebEngineFrame() = default;
+    QWebEngineFrame(const QWebEngineFrame &other) = default;
+    QWebEngineFrame &operator=(const QWebEngineFrame &other) = default;
+    QWebEngineFrame(QWebEngineFrame &&other) = default;
+    QWebEngineFrame &operator=(QWebEngineFrame &&other) = default;
+    ~QWebEngineFrame() = default;
 
     Q_WEBENGINECORE_EXPORT bool isValid() const;
     Q_WEBENGINECORE_EXPORT QString name() const;
