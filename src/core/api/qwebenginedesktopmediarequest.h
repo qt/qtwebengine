@@ -28,6 +28,7 @@ class QWebEngineDesktopMediaRequest
     Q_PROPERTY(QAbstractListModel *windowsModel READ windowsModel FINAL)
 
 public:
+    Q_WEBENGINECORE_EXPORT QWebEngineDesktopMediaRequest();
     Q_WEBENGINECORE_EXPORT ~QWebEngineDesktopMediaRequest();
 
     Q_WEBENGINECORE_EXPORT
