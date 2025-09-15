@@ -30,6 +30,7 @@ class QWebEngineFrame
     Q_PROPERTY(QUrl url READ url FINAL)
     Q_PROPERTY(QSizeF size READ size FINAL)
     Q_PROPERTY(bool isMainFrame READ isMainFrame FINAL)
+    Q_PROPERTY(QList<QWebEngineFrame> children READ children)
 
 public:
     QWebEngineFrame() = default;

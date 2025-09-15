@@ -111,6 +111,8 @@ static const QStringList hardcodedTypes = QStringList()
     << "QQmlComponent*"
     << "QMultiMap<QByteArray,QByteArray>"
     << "QList<QWebEnginePermission>"
+    << "QList<QWebEngineFrame>"
+    << "QList<QQuickWebEngineFrame>"
 #if QT_CONFIG(webengine_extensions)
     << "QList<QWebEngineExtensionInfo>"
 #endif
@@ -995,6 +997,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFrame.isValid --> bool"
     << "QWebEngineFrame.name --> QString"
     << "QWebEngineFrame.printToPdf(QJSValue) --> void"
+    << "QWebEngineFrame.children --> QList<QWebEngineFrame>"
     << "QWebEngineFrame.printToPdf(QString) --> void"
     << "QWebEngineFrame.runJavaScript(QString) --> void"
     << "QWebEngineFrame.runJavaScript(QString,uint) --> void"
@@ -1002,6 +1005,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineFrame.runJavaScript(QString,uint,QJSValue) --> void"
     << "QWebEngineFrame.size --> QSizeF"
     << "QWebEngineFrame.url --> QUrl"
+    << "QQuickWebEngineFrame.children --> QList<QQuickWebEngineFrame>"
     << "QQuickWebEngineFrame.printToPdf(QJSValue) --> void"
     << "QQuickWebEngineFrame.runJavaScript(QString,QJSValue) --> void"
     << "QQuickWebEngineFrame.runJavaScript(QString,uint,QJSValue) --> void"

@@ -73,6 +73,14 @@
 */
 
 /*!
+    \qmlproperty list<webEngineFrame> webEngineFrame::children
+    \since QtWebEngine 6.10
+    Returns a list of the frame's children in an arbitrary order.
+
+    If the frame could not be found, returns an empty list.
+*/
+
+/*!
     \qmlmethod void webEngineFrame::runJavaScript(string script, variant callback)
     \qmlmethod void webEngineFrame::runJavaScript(string script, uint worldId, variant callback)
 
