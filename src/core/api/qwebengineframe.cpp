@@ -46,13 +46,6 @@ QWebEngineFrame::QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapte
 {
 }
 
-QWebEngineFrame::QWebEngineFrame() = default;
-QWebEngineFrame::~QWebEngineFrame() = default;
-QWebEngineFrame::QWebEngineFrame(QWebEngineFrame &&other) = default;
-QWebEngineFrame::QWebEngineFrame(const QWebEngineFrame &other) = default;
-QWebEngineFrame &QWebEngineFrame::operator=(QWebEngineFrame &&other) = default;
-QWebEngineFrame &QWebEngineFrame::operator=(const QWebEngineFrame &other) = default;
-
 /*!
     Returns \c{true} if this object represents an existing frame; \c{false} otherwise.
 
