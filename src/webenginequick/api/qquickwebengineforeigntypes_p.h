@@ -113,14 +113,6 @@ struct ForeignWebEngineWebAuthUxRequest
     QML_UNCREATABLE("")
 };
 
-struct ForeignWebEngineDesktopMediaRequest
-{
-    Q_GADGET
-    QML_FOREIGN(QWebEngineDesktopMediaRequest)
-    QML_ANONYMOUS
-    QML_ADDED_IN_VERSION(6, 10)
-};
-
 struct ForeignWebEngineClientHints : public QObject
 {
     Q_OBJECT
@@ -142,6 +134,14 @@ struct ForeignWebEngineExtensionManager
 #endif
 
 // QML value types
+
+struct ForeignWebEngineDesktopMediaRequest
+{
+    Q_GADGET
+    QML_FOREIGN(QWebEngineDesktopMediaRequest)
+    QML_VALUE_TYPE(webEngineDesktopMediaRequest)
+    QML_ADDED_IN_VERSION(6, 10)
+};
 
 CREATE_DERIVED_FOREIGN_NAMESPACE(QWebEngineLoadingInfo)
 

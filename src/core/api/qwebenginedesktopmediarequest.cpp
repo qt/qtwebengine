@@ -145,6 +145,7 @@ QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
 {
 }
 
+QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest() = default;
 QWebEngineDesktopMediaRequest::~QWebEngineDesktopMediaRequest() = default;
 
 QWebEngineDesktopMediaRequest::QWebEngineDesktopMediaRequest(
