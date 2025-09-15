@@ -23,6 +23,17 @@ QQuickWebEngineFrame::QQuickWebEngineFrame(
 {
 }
 
+QList<QQuickWebEngineFrame> QQuickWebEngineFrame::children() const
+{
+    auto adapter = m_adapter.lock();
+    if (!adapter)
+        return QList<QQuickWebEngineFrame>();
+    QList<QQuickWebEngineFrame> result;
+    for (auto childId : adapter->frameChildren(m_id))
+        result.push_back(QQuickWebEngineFrame{ m_adapter, childId });
+    return result;
+}
+
 void QQuickWebEngineFrame::runJavaScript(const QString &script, const QJSValue &callback)
 {
     QWebEngineFrame::runJavaScript(script, QWebEngineScript::MainWorld, callback);

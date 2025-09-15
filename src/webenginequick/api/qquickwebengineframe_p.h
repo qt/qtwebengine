@@ -26,6 +26,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineFrame : public QWebEngineFrame
 {
     Q_GADGET_EXPORT(Q_WEBENGINEQUICK_EXPORT)
+    Q_PROPERTY(QList<QQuickWebEngineFrame> children READ children CONSTANT REVISION(6, 10) FINAL)
     QML_VALUE_TYPE(webEngineFrame)
     QML_ADDED_IN_VERSION(6, 8)
     QML_FOREIGN(QWebEngineFrame)
@@ -38,6 +39,7 @@ public:
     Q_WEBENGINEQUICK_EXPORT Q_INVOKABLE void runJavaScript(const QString &script, quint32 worldId,
                                                            const QJSValue &callback);
     Q_WEBENGINEQUICK_EXPORT Q_INVOKABLE void printToPdf(const QJSValue &callback);
+    QList<QQuickWebEngineFrame> children() const;
 
 private:
     friend class QQuickWebEngineView;
