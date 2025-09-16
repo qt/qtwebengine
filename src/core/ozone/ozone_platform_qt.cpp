@@ -47,6 +47,8 @@
 extern void *GetQtXDisplay();
 #endif
 
+#include <mutex>
+
 namespace ui {
 
 namespace {
@@ -112,12 +114,11 @@ OzonePlatformQt::~OzonePlatformQt() {}
 const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformProperties()
 {
     static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
-    static bool initialized = false;
-    if (!initialized) {
+    static std::once_flag flag;
+    std::call_once(flag, [this]() {
         DCHECK(m_supportsNativePixmaps);
         properties->fetch_buffer_formats_for_gmb_on_gpu = m_supportsNativePixmaps.value();
-        initialized = true;
-    }
+    });
 
     return *properties;
 }

@@ -27,8 +27,6 @@ void *getXDisplay()
 
 QOpenGLContext *getQOpenGLContext()
 {
-    static QOpenGLContext *tmpGLContext = nullptr;
-
 #if QT_CONFIG(opengl)
     if (auto *shareContext = QOpenGLContext::globalShareContext())
         return shareContext;
@@ -36,44 +34,45 @@ QOpenGLContext *getQOpenGLContext()
     if (auto *currentContext = QOpenGLContext::currentContext())
         return currentContext;
 
-    if (!tmpGLContext) {
-        tmpGLContext = new QOpenGLContext();
+    static QOpenGLContext *tmpGLContext = []() {
+        auto tmpGLContext = new QOpenGLContext();
         tmpGLContext->create();
-        QObject::connect(qGuiApp, &QGuiApplication::aboutToQuit, []() { delete tmpGLContext; });
-    }
-#endif
+        QObject::connect(qGuiApp, &QGuiApplication::aboutToQuit, [=]() { delete tmpGLContext; });
+        return tmpGLContext;
+    }();
 
     return tmpGLContext;
+#else
+    return nullptr;
+#endif
 }
 
 bool usingGLX()
 {
-    static std::optional<bool> result;
-
 #if QT_CONFIG(opengl) && QT_CONFIG(xcb_glx_plugin)
-    if (result.has_value())
-        return result.value();
+    static bool result = []() {
+        QOpenGLContext *context = getQOpenGLContext();
+        return context->nativeInterface<QNativeInterface::QGLXContext>() != nullptr;
+    }();
 
-    QOpenGLContext *context = getQOpenGLContext();
-    result = (context->nativeInterface<QNativeInterface::QGLXContext>() != nullptr);
+    return result;
+#else
+    return false;
 #endif
-
-    return result.value_or(false);
 }
 
 bool usingEGL()
 {
-    static std::optional<bool> result;
-
 #if QT_CONFIG(opengl) && QT_CONFIG(egl)
-    if (result.has_value())
-        return result.value();
+    static bool result = []() {
+        QOpenGLContext *context = getQOpenGLContext();
+        return context->nativeInterface<QNativeInterface::QEGLContext>() != nullptr;
+    }();
 
-    QOpenGLContext *context = getQOpenGLContext();
-    result = (context->nativeInterface<QNativeInterface::QEGLContext>() != nullptr);
+    return result;
+#else
+    return false;
 #endif
-
-    return result.value_or(false);
 }
 } // namespace OzoneUtilQt
 
