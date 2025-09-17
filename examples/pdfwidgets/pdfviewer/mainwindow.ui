@@ -54,7 +54,7 @@
        <item>
         <widget class="QSplitter" name="splitter">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <widget class="QTabWidget" name="tabWidget">
           <property name="sizePolicy">
@@ -64,7 +64,7 @@
            </sizepolicy>
           </property>
           <property name="tabPosition">
-           <enum>QTabWidget::West</enum>
+           <enum>QTabWidget::TabPosition::West</enum>
           </property>
           <property name="currentIndex">
            <number>0</number>
@@ -139,13 +139,13 @@
                </size>
               </property>
               <property name="movement">
-               <enum>QListView::Static</enum>
+               <enum>QListView::Movement::Static</enum>
               </property>
               <property name="resizeMode">
-               <enum>QListView::Adjust</enum>
+               <enum>QListView::ResizeMode::Adjust</enum>
               </property>
               <property name="viewMode">
-               <enum>QListView::IconMode</enum>
+               <enum>QListView::ViewMode::IconMode</enum>
               </property>
              </widget>
             </item>
@@ -174,7 +174,7 @@
             <item>
              <widget class="QListView" name="searchResultsView">
               <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAlwaysOff</enum>
+               <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
               </property>
              </widget>
             </item>
@@ -202,7 +202,7 @@
      <x>0</x>
      <y>0</y>
      <width>700</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -393,7 +393,7 @@
   </action>
   <action name="actionFindNext">
    <property name="icon">
-    <iconset theme="go-down" resource=".rcc/resources.qrc">
+    <iconset theme="go-down" resource="resources.qrc">
      <normaloff>:/icons/images/go-down-search.svgz</normaloff>:/icons/images/go-down-search.svgz</iconset>
    </property>
    <property name="text">
@@ -408,7 +408,7 @@
   </action>
   <action name="actionFindPrevious">
    <property name="icon">
-    <iconset theme="go-up" resource=".rcc/resources.qrc">
+    <iconset theme="go-up" resource="resources.qrc">
      <normaloff>:/icons/images/go-up-search.svgz</normaloff>:/icons/images/go-up-search.svgz</iconset>
    </property>
    <property name="text">
