@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \qmltype WebEngineDesktopMediaRequest
+    \qmlvaluetype webEngineDesktopMediaRequest
     \nativetype QWebEngineDesktopMediaRequest
     \inqmlmodule QtWebEngine
+    \ingroup qmlvaluetypes
     \since 6.7
     \brief A request for populating a dialog with available sources for screen capturing.
 
@@ -14,7 +15,7 @@
 
     If a web application requests access to the contents of a display,
     WebEngineView::desktopMediaRequested will be emitted with a
-    WebEngineDesktopMediaRequest instance as an argument which holds references to
+    webEngineDesktopMediaRequest value as an argument which holds references to
     \l {ListModel}{ListModels} for available windows and screens that can be captured.
 
     The data model's \e DisplayRole specifies the name of the source which is the title of a
@@ -29,7 +30,7 @@
 */
 
 /*!
-    \qmlproperty ListModel WebEngineDesktopMediaRequest::screensModel
+    \qmlproperty ListModel webEngineDesktopMediaRequest::screensModel
 
     A ListModel containing a list of available screens.
 
@@ -37,7 +38,7 @@
 */
 
 /*!
-    \qmlproperty ListModel WebEngineDesktopMediaRequest::windowsModel
+    \qmlproperty ListModel webEngineDesktopMediaRequest::windowsModel
 
     A ListModel containing a list of available windows.
 
@@ -45,23 +46,23 @@
 */
 
 /*!
-    \qmlmethod void WebEngineDesktopMediaRequest::selectWindow(QModelIndex index)
+    \qmlmethod void webEngineDesktopMediaRequest::selectWindow(QModelIndex index)
 
     Selects the window at the \a index to be captured.
 
-    \sa WebEngineDesktopMediaRequest::selectScreen()
+    \sa webEngineDesktopMediaRequest::selectScreen()
 */
 
 /*!
-    \qmlmethod void WebEngineDesktopMediaRequest::selectScreen(QModelIndex index)
+    \qmlmethod void webEngineDesktopMediaRequest::selectScreen(QModelIndex index)
 
     Selects the screen at the \a index to be captured.
 
-    \sa WebEngineDesktopMediaRequest::selectWindow()
+    \sa webEngineDesktopMediaRequest::selectWindow()
 */
 
 /*!
-    \qmlmethod void WebEngineDesktopMediaRequest::cancel()
+    \qmlmethod void webEngineDesktopMediaRequest::cancel()
 
     Rejects a request. Screen capturing will be aborted.
 */
