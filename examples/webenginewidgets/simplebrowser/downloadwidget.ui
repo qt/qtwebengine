@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>DownloadWidget</class>
  <widget class="QFrame" name="DownloadWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>136</width>
+    <height>101</height>
+   </rect>
+  </property>
   <property name="styleSheet">
    <string notr="true">#DownloadWidget {
   background: palette(button);
@@ -11,7 +19,7 @@
   </property>
   <layout class="QGridLayout" name="m_topLevelLayout">
    <property name="sizeConstraint">
-    <enum>QLayout::SetMinAndMaxSize</enum>
+    <enum>QLayout::SizeConstraint::SetMinAndMaxSize</enum>
    </property>
    <item row="0" column="0">
     <widget class="QLabel" name="m_dstName">
@@ -27,7 +35,10 @@
    <item row="0" column="1">
     <widget class="QPushButton" name="m_cancelButton">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed"/>
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton {
