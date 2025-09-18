@@ -124,7 +124,7 @@ QString QWebEngineExtensionInfo::name() const
     represent the same underlying extension.
 
     The id is generated from the filesystem path where the extension was loaded from
-    and the extensions manfiest file. Loading the same extension from the same path
+    and the extensions manifest file. Loading the same extension from the same path
     always have the same id.
 
     Empty if the load failed.

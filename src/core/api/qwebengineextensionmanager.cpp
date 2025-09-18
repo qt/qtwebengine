@@ -73,8 +73,8 @@ void QWebEngineExtensionManager::loadExtension(const QString &path)
     QWebEngineExtensionInfo::isInstalled() will return true, otherwise \l
     QWebEngineExtensionInfo::error() will contain information how the install process failed.
 
-    Extensions are loaded in disabled state after the install succeded.
-    Installed extensions are automatically loaded at every starutup in disabled state.
+    Extensions are loaded in disabled state after the install succeeded.
+    Installed extensions are automatically loaded at every startup in disabled state.
     The install path can be queried with \l installPath().
 
     The installer is capable of installing zipped or unpacked extensions.
