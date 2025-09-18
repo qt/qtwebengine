@@ -346,7 +346,7 @@ QWebEngineWebAuthPinRequest QWebEngineWebAuthUxRequest::pinRequest() const
     \brief The WebAuth request's current UX state.
 
     \l stateChanged() is emitted when the current state changes.
-    Update the WebAuth dialog in reponse to the changes in state.
+    Update the WebAuth dialog in response to the changes in state.
 */
 QWebEngineWebAuthUxRequest::WebAuthUxState QWebEngineWebAuthUxRequest::state() const
 {
