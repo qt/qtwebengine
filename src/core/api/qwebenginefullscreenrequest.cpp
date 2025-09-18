@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
     the user wants to leave the full screen mode (that is, through the
     QWebEnginePage::ExitFullScreen context menu action). In this case,
     toggleOn() will return \c false, and the signal handler again needs to
-    accept() or reject() the request. If it is accepted, the applicaton needs to
+    accept() or reject() the request. If it is accepted, the application needs to
     make sure that the global window state is restored.
 */
 

@@ -25,7 +25,7 @@ QT_BEGIN_NAMESPACE
     The class instance can be obtained with the QWebEngineProfile::clientCertificateStore() method.
 
     \code
-    QFile certFile(":/resouces/certificate.crt");
+    QFile certFile(":/resources/certificate.crt");
     certFile.open(QIODevice::ReadOnly);
     const QSslCertificate cert(certFile.readAll(), QSsl::Pem);
 
