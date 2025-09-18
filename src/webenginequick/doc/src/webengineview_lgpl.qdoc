@@ -1605,7 +1605,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::save(string filePath, WebEngineDownloadRequest::SavePageFormat format)
+    \qmlmethod void WebEngineView::save(string filePath, WebEngineDownloadRequest.SavePageFormat format)
     \since QtWebEngine 6.6
 
     Save the current web page to disk.
@@ -1620,7 +1620,7 @@
 
     This function issues an asynchronous download request for the web page and returns immediately.
 
-    \sa WebEngineDownloadRequest::SavePageFormat
+    \sa WebEngineDownloadRequest::savePageFormat
 */
 
 /*!
