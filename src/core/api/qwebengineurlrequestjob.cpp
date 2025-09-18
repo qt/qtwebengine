@@ -146,7 +146,7 @@ void QWebEngineUrlRequestJob::setAdditionalResponseHeaders(
 
     The user has to be aware that \a device will be used on another thread
     until the job is deleted. In case simultaneous access from the main thread
-    is desired, the user is reponsible for making access to \a device thread-safe
+    is desired, the user is responsible for making access to \a device thread-safe
     (for example, by using QMutex). Note that the \a device object is not owned by
     the web engine. Therefore, the signal QObject::destroyed() of
     QWebEngineUrlRequestJob must be monitored.
