@@ -951,19 +951,33 @@ WebEngineContext::WebEngineContext()
             qWarning("--use-gl=%s is set with --disable-gpu. Expect troubles!", glType.c_str());
     }
 
-#if BUILDFLAG(IS_OZONE) && QT_CONFIG(webengine_vulkan)
+#if BUILDFLAG(IS_OZONE)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
         const bool disableGpu = parsedCommandLine.HasSwitch(switches::kDisableGpu);
         const bool usingVulkan = isFeatureEnabled(features::kVulkan.name, parsedCommandLine);
         if (!disableGpu && !usingVulkan && !isGbmSupported()) {
-            qWarning("GBM is not supported with the current configuration. "
-                     "Fallback to Vulkan rendering in Chromium.");
-            parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
-                                                switches::kVulkanImplementationNameNative);
-            enableFeatures.push_back(features::kVulkan.name);
+#if QT_CONFIG(webengine_vulkan)
+            QVulkanInstance vulkanInstance;
+            vulkanInstance.setApiVersion(QVersionNumber(1, 1));
+            QRhiVulkanInitParams params;
+            params.inst = &vulkanInstance;
+
+            if (vulkanInstance.create() && QRhi::probe(QRhi::Vulkan, &params)) {
+                qWarning("GBM is not supported with the current configuration. "
+                         "Fallback to Vulkan rendering in Chromium.");
+                parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
+                                                    switches::kVulkanImplementationNameNative);
+                enableFeatures.push_back(features::kVulkan.name);
+            } else
+#endif
+            {
+                qWarning("GBM is not supported with the current configuration and Vulkan is not "
+                         "available. Fallback to software rendering.");
+                parsedCommandLine.AppendSwitch(switches::kDisableGpu);
+            }
         }
     }
-
+#if QT_CONFIG(webengine_vulkan)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan && usingSupportedSGBackend()) {
         // TODO: Try not to force Chromium's Vulkan backend on Linux.
         //       Currently we force it because OzoneImageBackingFactory does not support to create
@@ -993,7 +1007,8 @@ WebEngineContext::WebEngineContext()
             qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
         }
     }
-#endif // BUILDFLAG(IS_OZONE) && QT_CONFIG(webengine_vulkan)
+#endif // QT_CONFIG(webengine_vulkan)
+#endif // BUILDFLAG(IS_OZONE)
 
 #if defined(Q_OS_WIN)
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::Direct3D11
