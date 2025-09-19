@@ -12,11 +12,15 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "content/gpu/gpu_child_thread.h"
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/supported_audio_codecs.h"
@@ -29,6 +33,7 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QLibraryInfo>
+#include <QRegularExpression>
 #include <QString>
 #include <QSysInfo>
 #include <QThread>
@@ -493,9 +498,6 @@ blink::OriginTrialPolicy *ContentClientQt::GetOriginTrialPolicy()
 
 void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
 {
-    if (Q_LIKELY(!lcWebEngineCompositor().isDebugEnabled()))
-        return;
-
     base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
     const bool isBrowserProcess = !commandLine->HasSwitch(switches::kProcessType);
     const bool isMainThread = QThread::currentThread() == qApp->thread();
@@ -506,7 +508,7 @@ void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
 
     if (!gpu_info.IsInitialized()) {
         // This is probably not an issue but suspicious.
-        qCDebug(lcWebEngineCompositor, "Failed to initialize GPUInfo.");
+        qWarning("Failed to initialize GPUInfo.");
         return;
     }
 
@@ -518,6 +520,29 @@ void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
     if (m_gpuInfo && m_gpuInfo->gpu.device_string == primary.device_string)
         return;
     m_gpuInfo = gpu_info;
+
+    auto *gpuChannelManager = content::GpuChildThread::instance()->gpu_channel_manager();
+    const gpu::GpuFeatureStatus gpuCompositingStatus =
+            gpuChannelManager->gpu_feature_info()
+                    .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_GL];
+
+#if BUILDFLAG(IS_OZONE)
+    if (gpuCompositingStatus == gpu::kGpuFeatureStatusEnabled) {
+        // See entry 3 in //gpu/config/software_rendering_list.json
+        QRegularExpression filter(u"software|llvmpipe|softpipe"_s,
+                                  QRegularExpression::CaseInsensitiveOption);
+        if (filter.match(QLatin1StringView(gpu_info.gl_renderer)).hasMatch()) {
+            qWarning("Hardware rendering is enabled but it is not supported with Mesa software "
+                     "rasterizer. Expect troubles.");
+
+            if (gpuChannelManager->gpu_preferences().ignore_gpu_blocklist)
+                qWarning("Rendering may fail because --ignore-gpu-blocklist is set.");
+        }
+    }
+#endif
+
+    if (Q_LIKELY(!lcWebEngineCompositor().isDebugEnabled()))
+        return;
 
     auto deviceToString = [](const gpu::GPUInfo::GPUDevice &device) -> QString {
         if (device.vendor_id == 0x0)
@@ -570,14 +595,38 @@ void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
     };
 
     QString log;
+
+    log = "GPU Compositing: ";
+    switch (gpuCompositingStatus) {
+    case gpu::kGpuFeatureStatusEnabled:
+        log += "Enabled"_L1;
+        break;
+    case gpu::kGpuFeatureStatusBlocklisted:
+        log += "Blocklisted"_L1;
+        break;
+    case gpu::kGpuFeatureStatusDisabled:
+        log += "Disabled"_L1;
+        break;
+    case gpu::kGpuFeatureStatusSoftware:
+        log += "Software"_L1;
+        break;
+    case gpu::kGpuFeatureStatusUndefined:
+        log += "Undefined"_L1;
+        break;
+    case gpu::kGpuFeatureStatusMax:
+        log += "Max"_L1;
+        break;
+    }
+    qCDebug(lcWebEngineCompositor, "%ls", qUtf16Printable(log));
+
     if (gpu_info.gl_vendor.empty() || gpu_info.gl_vendor == "Disabled") {
-        log += "ANGLE is disabled:\n"_L1;
+        log = "ANGLE is disabled:\n"_L1;
         log += "  GL Renderer: "_L1 + QLatin1StringView(gpu_info.gl_renderer) + u'\n';
         log += "  Software Renderer: "_L1 + (primary.IsSoftwareRenderer() ? "yes"_L1 : "no"_L1)
                 + u'\n';
         log += "  Primary GPU: "_L1 + deviceToString(primary) + u'\n';
     } else {
-        log += QLatin1StringView(gpu_info.display_type) + " display is initialized:\n"_L1;
+        log = QLatin1StringView(gpu_info.display_type) + " display is initialized:\n"_L1;
         log += "  GL Renderer: "_L1 + QLatin1StringView(gpu_info.gl_renderer) + u'\n';
         log += "  "_L1 + QString::number(gpu_info.GpuCount()) + " GPU(s) detected:\n"_L1;
         log += "    "_L1 + deviceToString(primary) + u'\n';
