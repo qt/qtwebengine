@@ -33,8 +33,6 @@ ContentSettingsManager::StorageType ConvertToMojoStorageType(
         ContentSettingsObserverQt::StorageType storage_type)
 {
     switch (storage_type) {
-    case ContentSettingsObserverQt::StorageType::kDatabase:
-        return ContentSettingsManager::StorageType::DATABASE;
     case ContentSettingsObserverQt::StorageType::kIndexedDB:
         return ContentSettingsManager::StorageType::INDEXED_DB;
     case ContentSettingsObserverQt::StorageType::kCacheStorage:

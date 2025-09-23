@@ -96,11 +96,11 @@ std::string GetPDFPlaceholderHTML(const GURL &pdf_url)
 
 // static
 std::unique_ptr<content::NavigationThrottle>
-PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(content::NavigationHandle *handle)
+PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(content::NavigationThrottleRegistry &registry)
 {
-    if (handle->IsInMainFrame())
+    if (registry.GetNavigationHandle().IsInMainFrame())
         return nullptr;
-    return std::make_unique<PDFIFrameNavigationThrottleQt>(handle);
+    return std::make_unique<PDFIFrameNavigationThrottleQt>(&registry.GetNavigationHandle());
 }
 
 PDFIFrameNavigationThrottleQt::PDFIFrameNavigationThrottleQt(content::NavigationHandle *handle)

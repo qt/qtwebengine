@@ -88,7 +88,7 @@ void WebContentsViewQt::CreateView(gfx::NativeView context)
 
 gfx::NativeView WebContentsViewQt::GetNativeView() const
 {
-    return nullptr;
+    return {};
 }
 
 gfx::Rect WebContentsViewQt::GetContainerBounds() const

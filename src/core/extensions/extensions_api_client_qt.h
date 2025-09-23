@@ -24,7 +24,7 @@ public:
     ExtensionsAPIClientQt();
 
     // ExtensionsAPIClient implementation.
-    AppViewGuestDelegate *CreateAppViewGuestDelegate() const override;
+    std::unique_ptr<AppViewGuestDelegate> CreateAppViewGuestDelegate() const override;
     FileSystemDelegate *GetFileSystemDelegate() override;
     std::unique_ptr<guest_view::GuestViewManagerDelegate>
     CreateGuestViewManagerDelegate() const override;

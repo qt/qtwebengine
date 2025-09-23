@@ -22,6 +22,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/api/core_extensions_browser_api_provider.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/file_system/file_system_delegate.h"
+#include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_delegate.h"
@@ -242,16 +244,22 @@ public:
 };
 
 ExtensionsBrowserClientQt::ExtensionsBrowserClientQt()
-    : api_client_(new ExtensionsAPIClientQt)
-    , resource_manager_(new ComponentExtensionResourceManagerQt)
 {
-    AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
-    AddAPIProvider(std::make_unique<ChromeExtensionsBrowserAPIProvider>());
-    AddAPIProvider(std::make_unique<QtWebEngineExtensionsBrowserAPIProvider>());
 }
 
 ExtensionsBrowserClientQt::~ExtensionsBrowserClientQt()
 {
+}
+
+void ExtensionsBrowserClientQt::Init()
+{
+    Q_ASSERT(!api_client_);
+    api_client_ = std::make_unique<ExtensionsAPIClientQt>();
+    resource_manager_ = std::make_unique<ComponentExtensionResourceManagerQt>();
+
+    AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<ChromeExtensionsBrowserAPIProvider>());
+    AddAPIProvider(std::make_unique<QtWebEngineExtensionsBrowserAPIProvider>());
 }
 
 bool ExtensionsBrowserClientQt::IsShuttingDown()

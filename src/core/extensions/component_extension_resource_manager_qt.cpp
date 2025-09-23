@@ -32,10 +32,9 @@ namespace extensions {
 
 ComponentExtensionResourceManagerQt::ComponentExtensionResourceManagerQt()
 {
-    AddComponentResourceEntries(kComponentExtensionResources,
-                                kComponentExtensionResourcesSize);
+    AddComponentResourceEntries(kComponentExtensionResources, std::size(kComponentExtensionResources));
 #if BUILDFLAG(ENABLE_PLUGINS)
-    AddComponentResourceEntries(kPdfResources, kPdfResourcesSize);
+    AddComponentResourceEntries(kPdfResources, std::size(kPdfResources));
 #endif
 #if BUILDFLAG(ENABLE_PDF)
     base::Value::Dict dict;

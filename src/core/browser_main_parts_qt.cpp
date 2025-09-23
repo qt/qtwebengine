@@ -245,6 +245,7 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
     extensions::ExtensionsClient::Set(new extensions::ExtensionsClientQt());
     extensions::ExtensionsBrowserClient::Set(new extensions::ExtensionsBrowserClientQt());
     extensions::ExtensionSystemFactoryQt::GetInstance();
+    extensions::ExtensionsBrowserClient::Get()->Init();
     storage_monitor::StorageMonitor::Create();
 
 #if BUILDFLAG(ENABLE_PLUGINS)

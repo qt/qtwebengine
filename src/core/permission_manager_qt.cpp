@@ -8,6 +8,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_descriptor_util.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
@@ -82,6 +83,7 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::AUTOMATIC_FULLSCREEN:
     case blink::PermissionType::HAND_TRACKING:
     case blink::PermissionType::WEB_APP_INSTALLATION:
+    case blink::PermissionType::LOCAL_NETWORK_ACCESS:
         break;
     }
     return QWebEnginePermission::PermissionType::Unsupported;
@@ -404,7 +406,9 @@ void PermissionManagerQt::setPermissionImpl(
                 if (inTransientStore)
                     permissionStatus = toBlink(getPermissionState(url, toQt(currentPermissionType), frameToken));
                 else
-                    permissionStatus = GetPermissionStatus(currentPermissionType, gorigin, GURL());
+                    permissionStatus =
+                            GetPermissionStatus(content::PermissionDescriptorUtil::CreatePermissionDescriptorForPermissionType(currentPermissionType),
+                                                gorigin, GURL());
 
                 if (permissionStatus == permissionStateBlink) {
                     if (permissionStatus == blink::mojom::PermissionStatus::ASK) {
@@ -450,8 +454,12 @@ QWebEnginePermission::State PermissionManagerQt::getPermissionState(
     QWebEnginePermission::State returnState = QWebEnginePermission::State::Invalid;
     for (auto type : types) {
         QWebEnginePermission::State state = rfh
-            ? toQt(GetPermissionStatusForCurrentDocument(toBlink(type), rfh, false))
-            : toQt(GetPermissionStatus(toBlink(type), toGurl(origin), GURL()));
+            ? toQt(GetPermissionStatusForCurrentDocument(
+                        content::PermissionDescriptorUtil::CreatePermissionDescriptorForPermissionType(toBlink(type)),
+                        rfh, false))
+            : toQt(GetPermissionStatus(
+                        content::PermissionDescriptorUtil::CreatePermissionDescriptorForPermissionType(toBlink(type)),
+                        toGurl(origin), GURL()));
 
         if (returnState == QWebEnginePermission::State::Invalid)
             returnState = state;
@@ -534,7 +542,9 @@ void PermissionManagerQt::requestMediaPermissions(
         }
     }
 
-    content::PermissionRequestDescription description(permissionTypesBlink, false, render_frame_host->GetLastCommittedOrigin().GetURL());
+    content::PermissionRequestDescription description(
+            content::PermissionDescriptorUtil::CreatePermissionDescriptorForPermissionTypes(permissionTypesBlink),
+            false, render_frame_host->GetLastCommittedOrigin().GetURL());
 
     RequestPermissions(render_frame_host, description, base::BindOnce([](
                 std::vector<blink::PermissionType> permissionTypesBlink,
@@ -612,7 +622,8 @@ void PermissionManagerQt::RequestPermissions(
     bool answerable = true;
     std::vector<content::PermissionStatus> result;
     result.reserve(requestDescription.permissions.size());
-    for (const blink::PermissionType permissionTypeBlink : requestDescription.permissions) {
+    for (const auto &permissionDesc : requestDescription.permissions) {
+        const blink::PermissionType permissionTypeBlink = blink::PermissionDescriptorToPermissionType(permissionDesc);
         const QWebEnginePermission::PermissionType permissionTypeQt = toQt(permissionTypeBlink);
         if (permissionTypeQt == QWebEnginePermission::PermissionType::Unsupported) {
             result.push_back(blink::mojom::PermissionStatus::DENIED);
@@ -641,7 +652,7 @@ void PermissionManagerQt::RequestPermissions(
                 // Fall through to check if permission was pre-granted (and thus landed in the permanent store)
             }
 
-            permissionStatusBlink = GetPermissionStatus(permissionTypeBlink, rorigin, rorigin);
+            permissionStatusBlink = GetPermissionStatus(permissionDesc, rorigin, rorigin);
 
             if (inTransientStore && permissionStatusBlink != blink::mojom::PermissionStatus::ASK) {
                 // Move the pre-granted permission to the transient store and associate it with a frame token
@@ -670,8 +681,11 @@ void PermissionManagerQt::RequestPermissions(
 
     int request_id = ++m_requestIdCount;
     const auto requestOrigin = toQt(requestDescription.requesting_origin);
-    m_multiRequests.push_back({ request_id, requestDescription.permissions, requestOrigin, std::move(callback) });
-    auto qtPermissions = toQt(requestDescription.permissions);
+    m_multiRequests.push_back(MultiRequest{ request_id,
+                                            blink::PermissionDescriptorToPermissionTypes(requestDescription.permissions),
+                                            requestOrigin,
+                                            std::move(callback) });
+    auto qtPermissions = toQt(blink::PermissionDescriptorToPermissionTypes(requestDescription.permissions));
     for (const QWebEnginePermission::PermissionType permissionTypeQt : qtPermissions) {
         contentsDelegate->requestFeaturePermission(permissionTypeQt, requestOrigin, frameToken);
     }
@@ -686,10 +700,13 @@ void PermissionManagerQt::RequestPermissionsFromCurrentDocument(
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
-    blink::PermissionType permissionTypeBlink,
+    const blink::mojom::PermissionDescriptorPtr &permission_descriptor,
     const GURL& requesting_origin,
     const GURL& /*embedding_origin*/)
 {
+    blink::PermissionType permissionTypeBlink =
+            blink::PermissionDescriptorToPermissionType(permission_descriptor);
+
     const QWebEnginePermission::PermissionType permissionTypeQt = toQt(permissionTypeBlink);
     if (permissionTypeQt == QWebEnginePermission::PermissionType::Unsupported)
         return blink::mojom::PermissionStatus::DENIED;
@@ -712,10 +729,12 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurrentDocument(
-        blink::PermissionType permissionTypeBlink,
+        const blink::mojom::PermissionDescriptorPtr &permission_descriptor,
         content::RenderFrameHost *render_frame_host, bool)
 {
     Q_ASSERT(render_frame_host);
+    blink::PermissionType permissionTypeBlink =
+            blink::PermissionDescriptorToPermissionType(permission_descriptor);
 
     if (permissionTypeBlink == blink::PermissionType::CLIPBOARD_READ_WRITE ||
         permissionTypeBlink == blink::PermissionType::CLIPBOARD_SANITIZED_WRITE) {
@@ -746,7 +765,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurren
         // Fall through to check if permission was pre-granted (and thus landed in the permanent store)
     }
 
-    status = GetPermissionStatus(permissionTypeBlink, origin, origin);
+    status = GetPermissionStatus(permission_descriptor, origin, origin);
 
     if (inTransientStore && status != blink::mojom::PermissionStatus::ASK) {
         // Move the pre-granted permission to the transient store and associate it with the rfh
@@ -759,7 +778,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForCurren
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker(
-        blink::PermissionType permission,
+        const blink::mojom::PermissionDescriptorPtr &permission,
         content::RenderProcessHost *render_process_host,
         const GURL &url)
 {
@@ -768,7 +787,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForWorker
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForEmbeddedRequester(
-        blink::PermissionType permission,
+        const blink::mojom::PermissionDescriptorPtr &permission,
         content::RenderFrameHost *render_frame_host,
         const url::Origin &requesting_origin)
 {
@@ -777,7 +796,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatusForEmbedd
 }
 
 content::PermissionResult PermissionManagerQt::GetPermissionResultForOriginWithoutContext(
-        blink::PermissionType permission,
+        const blink::mojom::PermissionDescriptorPtr &permission,
         const url::Origin &requesting_origin,
         const url::Origin &embedding_origin)
 {

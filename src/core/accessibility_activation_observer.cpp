@@ -10,30 +10,30 @@ using namespace Qt::StringLiterals;
 
 namespace QtWebEngineCore {
 
-namespace {
+// namespace {
 
-bool isAccessibilityEnabled() {
-    // On Linux accessibility can be disabled due to performance issues by setting the
-    // QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment variable to 0. For details,
-    // see QTBUG-59922.
-#ifdef Q_OS_LINUX
-    static bool accessibility_enabled =
-            qEnvironmentVariable("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", u"1"_s) == "1"_L1;
-#else
-    const bool accessibility_enabled = true;
-#endif
-    return accessibility_enabled;
-}
+// bool isAccessibilityEnabled() {
+//     // On Linux accessibility can be disabled due to performance issues by setting the
+//     // QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY environment variable to 0. For details,
+//     // see QTBUG-59922.
+// #ifdef Q_OS_LINUX
+//     static bool accessibility_enabled =
+//             qEnvironmentVariable("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", u"1"_s) == "1"_L1;
+// #else
+//     const bool accessibility_enabled = true;
+// #endif
+//     return accessibility_enabled;
+// }
 
-} // namespace
+// } // namespace
 
 AccessibilityActivationObserver::AccessibilityActivationObserver()
 {
-    if (isAccessibilityEnabled()) {
+    // if (isAccessibilityEnabled()) {
         QAccessible::installActivationObserver(this);
         if (QAccessible::isActive())
-            content::BrowserAccessibilityStateImpl::GetInstance()->EnableProcessAccessibility();
-    }
+            content::BrowserAccessibilityStateImpl::GetInstance()->SetActivationFromPlatformEnabled(true);
+    // }
 }
 
 AccessibilityActivationObserver::~AccessibilityActivationObserver()
@@ -44,9 +44,11 @@ AccessibilityActivationObserver::~AccessibilityActivationObserver()
 void AccessibilityActivationObserver::accessibilityActiveChanged(bool active)
 {
     if (active)
-        content::BrowserAccessibilityStateImpl::GetInstance()->EnableProcessAccessibility();
+        content::BrowserAccessibilityStateImpl::GetInstance()->SetActivationFromPlatformEnabled(true);
+        // content::BrowserAccessibilityStateImpl::GetInstance()->EnableProcessAccessibility();
     else
-        content::BrowserAccessibilityStateImpl::GetInstance()->DisableProcessAccessibility();
+        content::BrowserAccessibilityStateImpl::GetInstance()->SetActivationFromPlatformEnabled(false);
+        // content::BrowserAccessibilityStateImpl::GetInstance()->DisableProcessAccessibility();
 }
 
 } // namespace QtWebEngineCore

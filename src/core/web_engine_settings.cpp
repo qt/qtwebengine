@@ -374,7 +374,6 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
             testAttribute(QWebEngineSettings::JavascriptCanAccessClipboard);
     prefs->tabs_to_links = testAttribute(QWebEngineSettings::LinksIncludedInFocusChain);
     prefs->local_storage_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
-    prefs->databases_enabled = testAttribute(QWebEngineSettings::LocalStorageEnabled);
     prefs->allow_remote_access_from_local_urls =
             testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
     prefs->spatial_navigation_enabled = testAttribute(QWebEngineSettings::SpatialNavigationEnabled);

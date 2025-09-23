@@ -205,12 +205,6 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
         extension_registry_->TriggerOnReady(extension);
 }
 
-bool ExtensionSystemQt::FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately)
-{
-    // TODO mibrunin
-    return false;
-}
-
 void ExtensionSystemQt::Shutdown()
 {
     if (content_verifier_.get())

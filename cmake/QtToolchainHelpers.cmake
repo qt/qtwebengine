@@ -469,6 +469,7 @@ macro(append_compiler_linker_sdk_setup)
                 mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 mac_sdk_min="${macSdkVersion}"
                 use_libcxx=true
+                use_llvm_libatomic=false
             )
             _qt_internal_get_apple_sdk_version(apple_sdk_version)
             if (apple_sdk_version LESS 13.2)
@@ -476,20 +477,19 @@ macro(append_compiler_linker_sdk_setup)
                     use_sck=false
                 )
             endif()
-        endif()
-        if(IOS)
+        elseif(IOS)
             list(APPEND gnArgArg
                 use_system_xcode=true
                 enable_ios_bitcode=true
                 ios_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 ios_enable_code_signing=false
                 use_libcxx=true
+                use_llvm_libatomic=false
             )
-        endif()
-        if(DEFINED QT_FEATURE_stdlib_libcpp AND LINUX)
-            extend_gn_list(gnArgArg ARGS use_libcxx
-                CONDITION QT_FEATURE_stdlib_libcpp
-            )
+        else()
+            extend_gn_list(gnArgArg
+                           ARGS use_libcxx use_llvm_libatomic
+                           CONDITION QT_FEATURE_stdlib_libcpp)
         endif()
         if(ANDROID)
             list(APPEND gnArgArg
@@ -510,6 +510,7 @@ macro(append_compiler_linker_sdk_setup)
                 fatal_linker_warnings=false
             )
         endif()
+        list(APPEND gnArgArg use_llvm_libatomic=false)
     endif()
 
     if(MSVC)

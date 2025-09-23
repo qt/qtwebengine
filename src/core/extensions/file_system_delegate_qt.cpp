@@ -37,7 +37,7 @@ FileEntryPickerQt::FileEntryPickerQt(
         this, std::make_unique<QtWebEngineCore::SelectFilePolicyQt>(web_contents));
     m_selectFileDialog->SelectFile(
         picker_type, std::u16string(), suggested_name, file_type_info, 0,
-        base::FilePath::StringType(), nullptr, &caller);
+        base::FilePath::StringType(), {}, &caller);
 }
 
 FileEntryPickerQt::~FileEntryPickerQt() = default;

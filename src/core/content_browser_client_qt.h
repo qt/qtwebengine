@@ -116,17 +116,20 @@ public:
             const GURL &scope,
             const net::SiteForCookies &site_for_cookies,
             const std::optional<url::Origin> &top_frame_origin,
+            const blink::StorageKey &storage_key,
             const GURL &script_url,
             content::BrowserContext *context) override;
 
     void AllowWorkerFileSystem(const GURL &url,
                                content::BrowserContext *context,
                                const std::vector<content::GlobalRenderFrameHostId> &render_frames,
+                               const blink::StorageKey &storage_key,
                                base::OnceCallback<void(bool)> callback) override;
 
     bool AllowWorkerIndexedDB(const GURL &url,
                               content::BrowserContext *context,
-                              const std::vector<content::GlobalRenderFrameHostId> &render_frames) override;
+                              const std::vector<content::GlobalRenderFrameHostId> &render_frames,
+                              const blink::StorageKey &storage_key) override;
     AllowWebBluetoothResult AllowWebBluetooth(content::BrowserContext *browser_context,
                                               const url::Origin &requesting_origin,
                                               const url::Origin &embedding_origin) override;
@@ -140,14 +143,15 @@ public:
     bool ShouldUseProcessPerSite(content::BrowserContext *browser_context, const GURL &effective_url) override;
     bool DoesSiteRequireDedicatedProcess(content::BrowserContext *browser_context,
                                          const GURL &effective_site_url) override;
-    std::optional<SpareProcessRefusedByEmbedderReason>
-    ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL& site_url) override;
+    bool ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context, const GURL &site_url,
+                                         std::optional<SpareProcessRefusedByEmbedderReason> &refused_reason) override;
     bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(std::string_view scheme,
                                                       bool is_embedded_origin_secure) override;
     bool DoesSchemeAllowCrossOriginSharedWorker(const std::string &scheme) override;
     void OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
                                         const url::Origin &origin,
                                         bool is_for_isolated_world,
+                                        bool is_for_service_worker,
                                         network::mojom::URLLoaderFactoryParams *factory_params) override;
 #if defined(Q_OS_LINUX)
     void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::PosixFileDescriptorInfo* mappings) override;
@@ -182,8 +186,7 @@ public:
                              content::FrameTreeNodeId frame_tree_node_id,
                              std::optional<int64_t> navigation_id) override;
 
-    std::vector<std::unique_ptr<content::NavigationThrottle>> CreateThrottlesForNavigation(
-            content::NavigationHandle *navigation_handle) override;
+    void CreateThrottlesForNavigation(content::NavigationThrottleRegistry &registry) override;
 
     bool IsHandledURL(const GURL &url) override;
     bool HasErrorPage(int http_status_code, content::WebContents *contents) override;

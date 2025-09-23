@@ -43,8 +43,8 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
         gpu::SharedImageFactory *shared_image_factory,
         gpu::SharedImageRepresentationFactory *shared_image_representation_factory,
         DidSwapBufferCompleteCallback didSwapBufferCompleteCallback)
-    : SkiaOutputDevice(contextState->gr_context(), contextState->graphite_context(), memoryTracker,
-                       didSwapBufferCompleteCallback)
+    : SkiaOutputDevice(contextState->gr_context(), contextState->graphite_shared_context(),
+                       memoryTracker, didSwapBufferCompleteCallback)
     , Compositor(Type::Native)
     , m_contextState(contextState)
     , m_requiresAlpha(requiresAlpha)

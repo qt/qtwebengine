@@ -7,6 +7,7 @@
 #include "extension_manager.h"
 #include "type_conversion.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/sequenced_task_runner.h"
@@ -32,6 +33,7 @@ ExtensionLoader::ExtensionLoader(content::BrowserContext *context, ExtensionMana
     // We do not access the directories set here, and chromium doesnt use them either.
     m_extensionRegistrar->Init(this,
                                true /* extensions_enabled */,
+                               base::CommandLine::ForCurrentProcess(),
                                base::FilePath() /* install_directory */,
                                base::FilePath() /* unzipped_install_directory */);
 }
@@ -81,15 +83,14 @@ void ExtensionLoader::loadExtension(const base::FilePath &path)
 void ExtensionLoader::addExtension(scoped_refptr<const Extension> extension)
 {
     if (extensions().Contains(extension->id()))
-        m_extensionRegistrar->ReloadExtension(extension->id(),
-                                              ExtensionRegistrar::LoadErrorBehavior::kQuiet);
+        m_extensionRegistrar->ReloadExtensionWithQuietFailure(extension->id());
     else
         m_extensionRegistry->AddDisabled(extension);
 }
 
 void ExtensionLoader::reloadExtension(const std::string &id)
 {
-    m_extensionRegistrar->ReloadExtension(id, ExtensionRegistrar::LoadErrorBehavior::kQuiet);
+    m_extensionRegistrar->ReloadExtensionWithQuietFailure(id);
 }
 
 void ExtensionLoader::loadExtensionFinished(const LoadingInfo &loadingInfo)
