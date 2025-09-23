@@ -365,54 +365,69 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
     }
 }
 
-class CleanupJob : public QRunnable
+class CleanupJob : public QRunnable, public Compositor::Observer
 {
 public:
-    CleanupJob(Compositor::Handle<Compositor> compositor) : m_compositor(std::move(compositor)) { }
+    CleanupJob() = default;
 
-    ~CleanupJob()
+    ~CleanupJob() override
     {
-        if (m_compositor->hasResources()) {
-            qWarning("Failed to release graphics resources because the clean-up render job was "
-                     "deleted.");
+        {
+            auto comp = compositor();
+            if (comp && comp->hasResources()) {
+                qWarning("Failed to release graphics resources because the clean-up render job was "
+                         "deleted.");
+            }
         }
+        unbind();
     }
-
-    void run() override { m_compositor->releaseResources(); }
-
-private:
-    Compositor::Handle<Compositor> m_compositor;
+    void readyToSwap() override { };
+    void run() override
+    {
+        auto comp = compositor();
+        if (comp)
+            comp->releaseResources();
+    }
 };
 
 void RenderWidgetHostViewQtDelegateItem::releaseResources()
 {
-    auto comp = compositor();
-    if (!comp || comp->type() != Compositor::Type::Native || !comp->hasResources())
-        return;
+    {
+        auto comp = compositor();
+        if (!comp || comp->type() != Compositor::Type::Native || !comp->hasResources())
+            return;
 
-    comp->releaseTexture();
+        comp->releaseTexture();
 
+        QQuickWindow *win = QQuickItem::window();
+        if (!win) {
+            qWarning("Failed to release graphics resources because QQuickWindow is not available.");
+            return;
+        }
+
+        QRhi *rhi = win->rhi();
+        if (!rhi) {
+            qWarning("Failed to release graphics resources because RHI is not available.");
+            return;
+        }
+
+        // Do not schedule clean-up if the resources were created on the current thread.
+        if (QThread::currentThread() == rhi->thread()) {
+            comp->releaseResources();
+            return;
+        }
+        // make sure we release compositor handle before
+    }
     QQuickWindow *win = QQuickItem::window();
-    if (!win) {
-        qWarning("Failed to release graphics resources because QQuickWindow is not available.");
-        return;
-    }
-
-    QRhi *rhi = win->rhi();
-    if (!rhi) {
-        qWarning("Failed to release graphics resources because RHI is not available.");
-        return;
-    }
-
-    // Do not schedule clean-up if the resources were created on the current thread.
-    if (QThread::currentThread() == rhi->thread()) {
-        comp->releaseResources();
-        return;
-    }
-
-    if (win->isExposed())
-        win->scheduleRenderJob(new CleanupJob(std::move(comp)), QQuickWindow::NoStage);
-    else {
+    if (win->isExposed()) {
+        // we are in main thread and RWHV delegate gets destroyed
+        // make new compositor observer and pass it to clean up job
+        // so it can request compositor in thread safe manner
+        unbind();
+        CleanupJob *job = new CleanupJob();
+        job->bind(m_client->compositorId());
+        win->scheduleRenderJob(job, QQuickWindow::NoStage);
+    } else {
         // TODO: Try to find a proper way to schedule job on the render thread if the window is
         // not exposed.
         // This is reproducible with ./tst_qquickwebengineviewgraphics simpleGraphics simpleGraphics
