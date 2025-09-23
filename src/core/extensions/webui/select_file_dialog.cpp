@@ -48,5 +48,5 @@ void SelectFileDialog::ShowDialog(SelectedCallback selected_callback,
     base::FilePath::StringType ext;
     ui::SelectFileDialog::FileTypeInfo file_type_info;
     select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_FOLDER, std::u16string(),
-                                    default_path, &file_type_info, 0, ext, nullptr, nullptr);
+                                    default_path, &file_type_info, 0, ext, {}, nullptr);
 }

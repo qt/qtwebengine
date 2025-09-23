@@ -11,15 +11,16 @@
 
 #include "api/display_info_provider_qt.h"
 #include "api/management_api_delegate_qt.h"
+#include "extension_web_contents_observer_qt.h"
 #include "file_system_delegate_qt.h"
 #include "messaging_delegate_qt.h"
+#include "mime_handler_view_guest_delegate_qt.h"
 
 #include <memory>
 
-#include "extension_web_contents_observer_qt.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 #include "extensions/browser/guest_view/extensions_guest_view_manager_delegate.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h"
-#include "mime_handler_view_guest_delegate_qt.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -33,7 +34,7 @@ ExtensionsAPIClientQt::ExtensionsAPIClientQt()
 {
 }
 
-AppViewGuestDelegate *ExtensionsAPIClientQt::CreateAppViewGuestDelegate() const
+std::unique_ptr<AppViewGuestDelegate> ExtensionsAPIClientQt::CreateAppViewGuestDelegate() const
 {
     // TODO(extensions): Implement to support Apps.
     NOTREACHED();

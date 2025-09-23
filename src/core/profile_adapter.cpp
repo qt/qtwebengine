@@ -5,6 +5,7 @@
 #include "profile_adapter.h"
 
 #include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version_info/version_info.h"

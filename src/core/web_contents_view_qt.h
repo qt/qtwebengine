@@ -53,9 +53,9 @@ public:
 
     gfx::NativeView GetNativeView() const override;
 
-    gfx::NativeView GetContentNativeView() const override { return nullptr; }
+    gfx::NativeView GetContentNativeView() const override { return {}; }
 
-    gfx::NativeWindow GetTopLevelNativeWindow() const override { return nullptr; }
+    gfx::NativeWindow GetTopLevelNativeWindow() const override { return {}; }
 
     gfx::Rect GetContainerBounds() const override;
 

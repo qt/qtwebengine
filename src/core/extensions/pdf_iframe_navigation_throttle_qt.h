@@ -26,7 +26,7 @@ namespace extensions {
 class PDFIFrameNavigationThrottleQt : public content::NavigationThrottle
 {
 public:
-    static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(content::NavigationHandle *handle);
+    static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(content::NavigationThrottleRegistry &registry);
 
     explicit PDFIFrameNavigationThrottleQt(content::NavigationHandle *handle);
     ~PDFIFrameNavigationThrottleQt() override;

@@ -27,6 +27,7 @@ public:
     ~ExtensionsBrowserClientQt() override;
 
     // ExtensionsBrowserClient overrides:
+    void Init() override;
     bool IsShuttingDown() override;
     bool AreExtensionsDisabled(const base::CommandLine &command_line,
                                content::BrowserContext *context) override;

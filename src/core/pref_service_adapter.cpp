@@ -128,6 +128,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterDictionaryPref(extensions::kUserPermissions.name);
     // Should match "kExternalUninstalls" in extensions/browser/extension_prefs.cc
     registry->RegisterListPref("extensions.external_uninstalls");
+    registry->RegisterBooleanPref("migrated_user_scripts_toggle", false);
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 
     // Media device salt id key

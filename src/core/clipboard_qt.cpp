@@ -170,7 +170,7 @@ void ClipboardQt::WriteHTML(std::string_view markup, std::optional<std::string_v
 
 void ClipboardQt::WriteRTF(std::string_view rtf)
 {
-    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeRTF), toQByteArray(rtf));
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeRtf), toQByteArray(rtf));
 }
 
 void ClipboardQt::WriteWebSmartPaste()
@@ -194,7 +194,7 @@ void ClipboardQt::WriteBookmark(std::string_view title_in, std::string_view url_
     data.append(reinterpret_cast<const char *>(url.utf16()), url.size() * 2);
     data.append('\n');
     data.append(reinterpret_cast<const char *>(title.utf16()), title.size() * 2);
-    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeMozillaURL), data);
+    getUncommittedData()->setData(QString::fromLatin1(ui::kMimeTypeMozillaUrl), data);
 }
 
 void ClipboardQt::WriteData(const ui::ClipboardFormatType &format, base::span<const uint8_t> data)
@@ -324,7 +324,7 @@ void ClipboardQt::ReadRTF(ui::ClipboardBuffer type,
             type == ui::ClipboardBuffer::kCopyPaste ? QClipboard::Clipboard : QClipboard::Selection);
     if (!mimeData)
         return;
-    const QByteArray byteArray = mimeData->data(QString::fromLatin1(ui::kMimeTypeRTF));
+    const QByteArray byteArray = mimeData->data(QString::fromLatin1(ui::kMimeTypeRtf));
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
@@ -466,13 +466,13 @@ std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer 
 
     std::vector<std::u16string> types;
     if (mimeData->hasImage())
-        types.push_back(base::UTF8ToUTF16(ui::kMimeTypePNG));
+        types.push_back(ui::kMimeTypePng16);
     if (mimeData->hasHtml())
-        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeHTML));
+        types.push_back(ui::kMimeTypeHtml16);
     if (mimeData->hasText())
-        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeText));
+        types.push_back(ui::kMimeTypeUtf8PlainText16);
     if (mimeData->hasUrls())
-        types.push_back(base::UTF8ToUTF16(ui::kMimeTypeURIList));
+        types.push_back(ui::kMimeTypeUriList16);
     const QStringList formats = mimeData->formats();
     for (const QString &mimeType : formats) {
         auto mime_type = mimeType.toStdString();

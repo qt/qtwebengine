@@ -57,17 +57,17 @@ public:
 
     // content::PermissionManager implementation:
     blink::mojom::PermissionStatus GetPermissionStatus(
-        blink::PermissionType permission,
+        const blink::mojom::PermissionDescriptorPtr &permission,
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
-    content::PermissionStatus GetPermissionStatusForCurrentDocument(blink::PermissionType, content::RenderFrameHost*, bool) override;
+    content::PermissionStatus GetPermissionStatusForCurrentDocument(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, bool) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForWorker(blink::PermissionType, content::RenderProcessHost *, const GURL &) override;
+    blink::mojom::PermissionStatus GetPermissionStatusForWorker(const blink::mojom::PermissionDescriptorPtr&, content::RenderProcessHost *, const GURL &) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForEmbeddedRequester(blink::PermissionType, content::RenderFrameHost*, const url::Origin&) override;
+    blink::mojom::PermissionStatus GetPermissionStatusForEmbeddedRequester(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, const url::Origin&) override;
 
-    content::PermissionResult GetPermissionResultForOriginWithoutContext(blink::PermissionType, const url::Origin&, const url::Origin&) override;
+    content::PermissionResult GetPermissionResultForOriginWithoutContext(const blink::mojom::PermissionDescriptorPtr&, const url::Origin&, const url::Origin&) override;
 
     void ResetPermission(
         blink::PermissionType permission,

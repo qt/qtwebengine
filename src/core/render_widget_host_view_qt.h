@@ -61,7 +61,7 @@ public:
     void SetSize(const gfx::Size& size) override;
     void SetBounds(const gfx::Rect&) override;
     gfx::NativeView GetNativeView() override;
-    gfx::NativeViewAccessible GetNativeViewAccessible() override { return nullptr; }
+    gfx::NativeViewAccessible GetNativeViewAccessible() override { return {}; }
     void Focus() override;
     bool HasFocus() override;
     bool IsPointerLocked() override;

@@ -21,7 +21,7 @@ ExtensionsUIQt::ExtensionsUIQt(content::WebUI *web_ui) : ui::MojoWebUIController
             web_ui->GetWebContents()->GetBrowserContext(), chrome::kChromeUIExtensionsHost);
 
     webui::SetupWebUIDataSource(
-            source, base::span(kExtensionsUiQtResources, kExtensionsUiQtResourcesSize),
+            source, kExtensionsUiQtResources,
             IDR_EXTENSIONS_UI_QT_EXTENSIONS_UI_QT_HTML);
 
     source->OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName::TrustedTypes,

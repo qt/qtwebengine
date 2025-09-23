@@ -206,10 +206,10 @@ namespace QtWebEngineCore {
 namespace {
 
 void MaybeAddThrottle(std::unique_ptr<content::NavigationThrottle> maybe_throttle,
-                      std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles)
+                      content::NavigationThrottleRegistry &registry)
 {
     if (maybe_throttle)
-        throttles->push_back(std::move(maybe_throttle));
+        registry.AddThrottle(std::move(maybe_throttle));
 }
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
@@ -682,6 +682,7 @@ content::AllowServiceWorkerResult
 ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
                                            const net::SiteForCookies &site_for_cookies,
                                            const std::optional<url::Origin> & /*top_frame_origin*/,
+                                           const blink::StorageKey & /*storage_key*/,
                                            const GURL & /*script_url*/,
                                            content::BrowserContext *context)
 {
@@ -699,6 +700,7 @@ ContentBrowserClientQt::AllowServiceWorker(const GURL &scope,
 void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
                                                    content::BrowserContext *context,
                                                    const std::vector<content::GlobalRenderFrameHostId> &/*render_frames*/,
+                                                   const blink::StorageKey & /*storage_key*/,
                                                    base::OnceCallback<void(bool)> callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -711,7 +713,8 @@ void ContentBrowserClientQt::AllowWorkerFileSystem(const GURL &url,
 
 bool ContentBrowserClientQt::AllowWorkerIndexedDB(const GURL &url,
                                                   content::BrowserContext *context,
-                                                  const std::vector<content::GlobalRenderFrameHostId> &/*render_frames*/)
+                                                  const std::vector<content::GlobalRenderFrameHostId> &/*render_frames*/,
+                                                  const blink::StorageKey & /*storage_key*/)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!context || context->ShutdownStarted())
@@ -904,26 +907,24 @@ static void navigationThrottleCallback(content::NavigationHandle *handle,
     std::move(result_callback).Run(!navigationAccepted);
 }
 
-std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt::CreateThrottlesForNavigation(
-        content::NavigationHandle *navigation_handle)
+void ContentBrowserClientQt::CreateThrottlesForNavigation(
+        content::NavigationThrottleRegistry &registry)
 {
-    std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
-    throttles.push_back(std::make_unique<navigation_interception::InterceptNavigationThrottle>(
-                            navigation_handle,
+    registry.AddThrottle(
+        std::make_unique<navigation_interception::InterceptNavigationThrottle>(
+                            registry,
                             base::BindRepeating(&navigationThrottleCallback),
                             navigation_interception::SynchronyMode::kSync,
                             std::nullopt /* async callback */));
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     MaybeAddThrottle(
-            extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle),
-            &throttles);
-    throttles.push_back(
+            extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(registry),
+            registry);
+    registry.AddThrottle(
             std::make_unique<pdf::PdfNavigationThrottle>(
-                navigation_handle, std::make_unique<PdfStreamDelegateQt>()));
-#endif // BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
-
-    return throttles;
+                registry, std::make_unique<PdfStreamDelegateQt>()));
+#endif // BUILDFLAG(ENABLE_PDF) && BUIDLFLAG(ENABLE_EXTENSIONS)
 }
 
 bool ContentBrowserClientQt::IsHandledURL(const GURL &url)
@@ -994,15 +995,18 @@ bool ContentBrowserClientQt::DoesSiteRequireDedicatedProcess(content::BrowserCon
     return ContentBrowserClient::DoesSiteRequireDedicatedProcess(browser_context, effective_site_url);
 }
 
-std::optional<content::ContentBrowserClient::SpareProcessRefusedByEmbedderReason>
-ContentBrowserClientQt::ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context,
-                                                        const GURL &site_url)
+bool ContentBrowserClientQt::ShouldUseSpareRenderProcessHost(content::BrowserContext *browser_context,
+                                                             const GURL &site_url,
+                                                             std::optional<SpareProcessRefusedByEmbedderReason> &refused_reason)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (site_url.SchemeIs(extensions::kExtensionScheme))
-       return SpareProcessRefusedByEmbedderReason::ExtensionProcess;
+    if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+       refused_reason = SpareProcessRefusedByEmbedderReason::ExtensionProcess;
+       return false;
+    }
 #endif
-    return ContentBrowserClient::ShouldUseSpareRenderProcessHost(browser_context, site_url);
+
+    return ContentBrowserClient::ShouldUseSpareRenderProcessHost(browser_context, site_url, refused_reason);
 }
 
 bool ContentBrowserClientQt::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(std::string_view scheme, bool is_embedded_origin_secure)
@@ -1029,11 +1033,12 @@ bool ContentBrowserClientQt::DoesSchemeAllowCrossOriginSharedWorker(const std::s
 void ContentBrowserClientQt::OverrideURLLoaderFactoryParams(content::BrowserContext *browser_context,
                                                             const url::Origin &origin,
                                                             bool is_for_isolated_world,
+                                                            bool is_for_service_worker,
                                                             network::mojom::URLLoaderFactoryParams *factory_params)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
-                browser_context, origin, is_for_isolated_world, factory_params);
+                browser_context, origin, is_for_isolated_world, is_for_service_worker, factory_params);
 #endif
 }
 

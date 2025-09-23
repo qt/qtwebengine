@@ -70,8 +70,6 @@ public:
     ContentVerifier *content_verifier() override;
     std::unique_ptr<ExtensionSet> GetDependentExtensions(const Extension *extension) override;
 
-    bool FinishDelayedInstallationIfReady(const std::string &extension_id, bool install_immediately) override;
-
     void Init(bool extensions_enabled);
 
     const base::OneShotEvent &ready() const override { return ready_; }

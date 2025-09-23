@@ -44,6 +44,7 @@
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/media_stream_request.h"
+#include "content/public/browser/permission_descriptor_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -749,9 +750,11 @@ void WebContentsDelegateQt::RequestPointerLock(content::WebContents *web_content
         if (!rfh)
             rfh = web_contents->GetPrimaryMainFrame();
 
+        content::PermissionRequestDescription permission_request_descriptor(
+                        content::PermissionDescriptorUtil::CreatePermissionDescriptorForPermissionType(blink::PermissionType::POINTER_LOCK),
+                        user_gesture, rfh->GetLastCommittedOrigin().GetURL());
         permissionManager->RequestPermissions(
-            rfh,
-            content::PermissionRequestDescription(blink::PermissionType::POINTER_LOCK, user_gesture, rfh->GetLastCommittedOrigin().GetURL()),
+            rfh, permission_request_descriptor,
             base::BindOnce([](content::WebContents *web_contents, PermissionManagerQt *manager, const std::vector<blink::mojom::PermissionStatus> &status)
             {
                 Q_ASSERT(status.size() == 1);

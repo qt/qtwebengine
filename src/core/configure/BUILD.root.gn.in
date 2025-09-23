@@ -355,6 +355,8 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/push_messaging/push_messaging_service_factory.h",
     "//chrome/browser/push_messaging/push_messaging_service_impl.cc",
     "//chrome/browser/push_messaging/push_messaging_service_impl.h",
+    "//chrome/browser/push_messaging/push_messaging_unsubscribed_entry.cc",
+    "//chrome/browser/push_messaging/push_messaging_unsubscribed_entry.h",
     "//chrome/browser/push_messaging/push_messaging_utils.cc",
     "//chrome/browser/push_messaging/push_messaging_utils.h",
     "//chrome/browser/signin/chrome_signin_client.cc",

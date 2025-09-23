@@ -508,7 +508,7 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     Q_ASSERT(rvh);
     if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl*>(m_webContents.get())->CreateRenderViewForRenderManager(
-                rvh, std::nullopt, nullptr);
+                rvh, std::nullopt, nullptr, std::nullopt);
 
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
 
@@ -2269,7 +2269,7 @@ void WebContentsAdapter::undiscard()
     Q_ASSERT(rvh);
     if (!m_webContents->GetPrimaryMainFrame()->IsRenderFrameLive())
         static_cast<content::WebContentsImpl *>(m_webContents.get())
-                ->CreateRenderViewForRenderManager(rvh, std::nullopt, nullptr);
+                ->CreateRenderViewForRenderManager(rvh, std::nullopt, nullptr, std::nullopt);
     m_webContentsDelegate->RenderViewHostChanged(nullptr, rvh);
     m_adapterClient->initializationFinished();
     m_adapterClient->selectionChanged();
