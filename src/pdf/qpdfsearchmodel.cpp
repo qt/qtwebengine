@@ -316,7 +316,7 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                 if (si < 0)
                     si = context.indexOf(searchString, Qt::CaseInsensitive);
                 if (si < 0)
-                    qWarning() << "search string" << searchString << "not found in context" << context;
+                    qCDebug(qLcS) << "search string" << searchString << "not found in context" << context;
                 contextBefore = context.mid(0, si);
                 contextAfter = context.mid(si + searchString.size());
             }
