@@ -637,6 +637,11 @@ qt_feature("webengine-developer-build" PRIVATE
     PURPOSE "Enables the developer build configuration."
     AUTODETECT QT_FEATURE_private_tests
 )
+qt_feature("webengine-pass-extra-flags" PRIVATE
+    LABEL "Pass cmake flags"
+    PURPOSE "Pass CMAKE_C_FLAGS and CMAKE_CXX_FLAGS to GN when building Chromium"
+    AUTODETECT NO
+)
 qt_feature("webengine-system-re2" PRIVATE
     LABEL "re2"
     AUTODETECT FALSE
