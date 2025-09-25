@@ -463,8 +463,14 @@ void InterceptedRequest::FollowRedirect(const std::vector<std::string> &removed_
                                         const net::HttpRequestHeaders &modified_cors_exempt_headers,
                                         const std::optional<GURL> &new_url)
 {
+    // On a redirect, Chromium will add User-Agent to the list of modified headers,
+    // which will erase any user-provided overrides. Remove it from the list to keep
+    // the user-supplied one for the redirect
+    net::HttpRequestHeaders interceptedModifiedHeaders = modified_headers;
+    interceptedModifiedHeaders.RemoveHeader("User-Agent");
+
     if (target_loader_)
-        target_loader_->FollowRedirect(removed_headers, modified_headers, modified_cors_exempt_headers, new_url);
+        target_loader_->FollowRedirect(removed_headers, interceptedModifiedHeaders, modified_cors_exempt_headers, new_url);
 
     // If |OnURLLoaderClientError| was called then we're just waiting for the
     // connection error handler of |proxied_loader_binding_|. Don't restart the
