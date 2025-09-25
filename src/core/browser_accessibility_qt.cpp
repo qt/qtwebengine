@@ -271,6 +271,8 @@ BrowserAccessibilityInterface::BrowserAccessibilityInterface(BrowserAccessibilit
 
 BrowserAccessibilityInterface::~BrowserAccessibilityInterface()
 {
+    if (m_object)
+        m_object->deleteLater();
     q->interface = nullptr;
 }
 
