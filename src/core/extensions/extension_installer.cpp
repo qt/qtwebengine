@@ -181,10 +181,10 @@ void ExtensionInstaller::cleanupBrokenInstall(const base::FilePath &dirToDelete,
 }
 
 void ExtensionInstaller::onInstallFailure(const base::FilePath &brokenInstallDir,
-                                          const std::string &error, bool cleanupSucceded)
+                                          const std::string &error, bool cleanupSucceeded)
 {
 
-    if (!cleanupSucceded)
+    if (!cleanupSucceeded)
         qWarning("Failed to clean up broken extension install in %ls",
                  qUtf16Printable(toQt(brokenInstallDir)));
 }

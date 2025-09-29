@@ -6,8 +6,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LOADALBLE_PLUGIN_PLACEHOLDER_QT_H
-#define LOADALBLE_PLUGIN_PLACEHOLDER_QT_H
+#ifndef LOADABLE_PLUGIN_PLACEHOLDER_QT_H
+#define LOADABLE_PLUGIN_PLACEHOLDER_QT_H
 
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 
@@ -39,4 +39,4 @@ private:
 
 }  // namespace QtWebEngineCore
 
-#endif  // LOADALBLE_PLUGIN_PLACEHOLDER_QT_H
+#endif  // LOADABLE_PLUGIN_PLACEHOLDER_QT_H

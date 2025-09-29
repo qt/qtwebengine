@@ -26,7 +26,7 @@ class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
 class ProfileAdapter;
 
-// Used to comunicate between URLRequestCustomJob living on the IO thread
+// Used to communicate between URLRequestCustomJob living on the IO thread
 // and URLRequestCustomJobDelegate living on the UI thread.
 class URLRequestCustomJobProxy : public base::RefCountedThreadSafe<URLRequestCustomJobProxy>
 {

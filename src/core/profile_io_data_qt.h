@@ -43,7 +43,7 @@ private:
 };
 
 // ProfileIOData contains data that lives on the IOthread
-// we still use shared memebers and use mutex which breaks
+// we still use shared members and use mutex which breaks
 // idea for this object, but this is wip.
 
 class ProfileIODataQt : public content::StoragePartition::NetworkContextCreatedObserver {

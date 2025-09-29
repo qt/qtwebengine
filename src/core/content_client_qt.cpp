@@ -551,7 +551,7 @@ void ContentClientQt::SetGpuInfo(const gpu::GPUInfo &gpu_info)
         QString log;
 
         // TODO: Factor vendor translation out from QtWebEngineCore::GPUInfo.
-        // Only name the most commmon desktop GPU hardware vendors for now.
+        // Only name the most common desktop GPU hardware vendors for now.
         switch (device.vendor_id) {
         case 0x1002:
             log += "AMD"_L1;

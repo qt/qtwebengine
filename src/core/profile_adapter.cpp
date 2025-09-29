@@ -898,7 +898,7 @@ void ProfileAdapter::reinitializeHistoryService()
 {
     Q_ASSERT(!m_offTheRecord);
     if (ensureDataPathExists()) {
-        // remove the associated services first, so we can get new ones (inited with
+        // remove the associated services first, so we can get new ones (initialized with
         // the new data paths) from the factory
         FaviconServiceFactoryQt::RemoveFromBrowserContext(m_profile.data());
         HistoryServiceFactoryQt::RemoveFromBrowserContext(m_profile.data());
