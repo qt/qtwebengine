@@ -32,7 +32,7 @@ public:
     operator=(const AuthenticatorRequestClientDelegateQt &) = delete;
     ~AuthenticatorRequestClientDelegateQt();
 
-    // content::AuthenticatorRequestClientDelegate ovverrides
+    // content::AuthenticatorRequestClientDelegate overrides
     void SetRelyingPartyId(const std::string &rp_id) override;
     bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
     void RegisterActionCallbacks(base::OnceClosure cancel_callback,

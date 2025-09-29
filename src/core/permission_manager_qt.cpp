@@ -674,7 +674,7 @@ void PermissionManagerQt::setTransientPermission(blink::PermissionType permissio
 
     permissionsForToken.push_back({requesting_origin, permission, granted});
 
-    // Render frame hosts get discarded often, so the map will eventualy fill up with junk unless
+    // Render frame hosts get discarded often, so the map will eventually fill up with junk unless
     // periodically cleaned. The number 25 was chosen arbitrarily.
     if (++m_transientWriteCount > 25) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,

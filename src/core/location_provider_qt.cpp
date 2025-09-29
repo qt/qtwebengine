@@ -176,7 +176,7 @@ void QtPositioningHelper::updatePosition(const QGeoPositionInfo &pos)
 
     // Chromium's geoposition needs a valid (as in >=0.) accuracy field.
     // try and get an accuracy estimate from QGeoPositionInfo.
-    // If we don't have any accuracy info, 100m seems a pesimistic enough default.
+    // If we don't have any accuracy info, 100m seems a pessimistic enough default.
     if (!pos.hasAttribute(QGeoPositionInfo::VerticalAccuracy) && !pos.hasAttribute(QGeoPositionInfo::HorizontalAccuracy))
         newPos->accuracy = 100;
     else {

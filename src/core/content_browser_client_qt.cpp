@@ -860,7 +860,7 @@ std::vector<std::unique_ptr<content::NavigationThrottle>> ContentBrowserClientQt
             extensions::PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(navigation_handle),
             &throttles);
     MaybeAddThrottle(pdf::PdfNavigationThrottle::MaybeCreateThrottleFor(navigation_handle, std::make_unique<PdfStreamDelegateQt>()), &throttles);
-#endif // BUILDFLAG(ENABLE_PDF) && BUIDLFLAG(ENABLE_EXTENSIONS)
+#endif // BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
 
     return throttles;
 }
@@ -1245,7 +1245,7 @@ ContentBrowserClientQt::WillCreateURLLoaderRequestInterceptors(content::Navigati
         if (pdf_interceptor)
             interceptors.push_back(std::move(pdf_interceptor));
     }
-#endif // BUILDFLAG(ENABLE_PDF) && BUIDLFLAG(ENABLE_EXTENSIONS)
+#endif // BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
 
     return interceptors;
 }

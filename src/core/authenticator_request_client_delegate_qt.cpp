@@ -184,7 +184,7 @@ void AuthenticatorRequestClientDelegateQt::OnTransportAvailabilityEnumerated(
 
     // Start WebAuth UX
     // we may need to pass data as well. for SelectAccount and SupportPin it is not required,
-    // skipping that for the timebeing.
+    // skipping that for the time being.
     m_dialogController->startRequest(m_isConditionalRequest);
 }
 

@@ -395,7 +395,7 @@ void InterceptedRequest::ContinueAfterIntercept()
                 request_.referrer_policy = redirectInfo.new_referrer_policy;
                 if (request_.method == net::HttpRequestHeaders::kGetMethod)
                     request_.request_body = nullptr;
-                // In case of multiple sequential rediredts, current_response_ has previously been moved to target_client_
+                // In case of multiple sequential redirects, current_response_ has previously been moved to target_client_
                 // so we create a new one using the redirect url.
                 if (!current_response_)
                     current_response_ = createResponse(request_);

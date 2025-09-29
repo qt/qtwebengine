@@ -49,7 +49,7 @@ QSGTexture *NativeSkiaOutputDeviceMetal::texture(QQuickWindow *win, uint32_t tex
 
     // This is a workaround to not to release metal texture too early.
     // In RHI, QMetalTexture wraps MTLTexture. QMetalTexture seems to be only destructed after the
-    // next MTLTexture is imported. The "old" MTLTexture can be still pontentially used by RHI
+    // next MTLTexture is imported. The "old" MTLTexture can be still potentially used by RHI
     // while QMetalTexture is not destructed. Metal Validation Layer also warns about it.
     // Delay releasing MTLTexture after the next one is presented.
     if (m_currentMetalTexture) {

@@ -413,7 +413,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
 
     if (navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage()) {
         ProfileAdapter *profileAdapter = m_viewClient->profileAdapter();
-        // VisistedLinksMaster asserts !IsOffTheRecord().
+        // VisitedLinksMaster asserts !IsOffTheRecord().
         if (navigation_handle->ShouldUpdateHistory() && profileAdapter->trackVisitedLinks()) {
             for (const GURL &url : navigation_handle->GetRedirectChain())
                 profileAdapter->visitedLinksManager()->addUrl(url);
@@ -447,7 +447,7 @@ void WebContentsDelegateQt::DidFinishNavigation(content::NavigationHandle *navig
             error_code = entry->GetHttpStatusCode();
     didFailLoad(toQt(navigation_handle->GetURL()), error_code, WebEngineError::toQtErrorDescription(error_code));
 
-    // The load will succede as an error-page load later, and we reported the original error above
+    // The load will succeed as an error-page load later, and we reported the original error above
     if (navigation_handle->IsErrorPage()) {
         // Now report we are starting to load an error-page.
 
