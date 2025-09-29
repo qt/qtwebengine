@@ -196,7 +196,7 @@ static quint32 nativeKeyCodeForKeyEvent(const QKeyEvent *ev)
 
 static int windowsKeyCodeForQtKey(int qtKey, bool isKeypad)
 {
-    // Determine wheter the event comes from the keypad
+    // Determine whether the event comes from the keypad
     if (isKeypad) {
         switch (qtKey) {
         case Qt::Key_0:

@@ -208,11 +208,11 @@ void QWebEngineClientHints::setIsMobile(bool mobile)
     m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAMobile, QVariant(mobile));
 }
 
-void QWebEngineClientHints::setFullVersion(const QString &fullVerson)
+void QWebEngineClientHints::setFullVersion(const QString &fullVersion)
 {
     if (!m_profileAdapter)
         return;
-    m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAFullVersion, QVariant(fullVerson));
+    m_profileAdapter->setClientHint(QtWebEngineCore::ProfileAdapter::UAFullVersion, QVariant(fullVersion));
 }
 
 void QWebEngineClientHints::setPlatformVersion(const QString &platformVersion)

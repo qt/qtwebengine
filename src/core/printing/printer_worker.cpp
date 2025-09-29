@@ -27,7 +27,7 @@ void PrinterWorker::print()
     }
 
     // We will modify device settings for individual pages, but we don't own
-    // the device object. Make its settings restoreable.
+    // the device object. Make its settings restorable.
     QPageSize defaultPageSize = m_device->pageLayout().pageSize();
     QPageLayout::Orientation defaultOrientation = m_device->pageLayout().orientation();
     QMarginsF defaultMargins = m_device->pageLayout().margins();

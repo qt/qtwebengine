@@ -627,7 +627,7 @@ void WebEngineContext::addProfileAdapter(ProfileAdapter *profileAdapter)
     if (content::RenderProcessHost::run_renderer_in_process()){
         if (!m_profileAdapters.isEmpty())
             qFatal("Single mode supports only single profile.");
-        // there is only one profle therefore make it 'default'
+        // there is only one profile therefore make it 'default'
         m_defaultProfileAdapter.reset(profileAdapter);
     }
     m_profileAdapters.append(profileAdapter);
@@ -666,7 +666,7 @@ void WebEngineContext::destroy()
 
     // Delete the global object and thus custom profiles
     // In case of single process ~RenderProcessHostImpl (there is only one instance)
-    // is called expliclty by BrowserMainLoop::ShutdownThreadsAndCleanUp and requires browser context.
+    // is called explicitly by BrowserMainLoop::ShutdownThreadsAndCleanUp and requires browser context.
     // therefore delete browser context on PostMainMessageLoopRun.
     if (!content::RenderProcessHost::run_renderer_in_process()) {
         m_defaultProfileAdapter.reset();
@@ -678,7 +678,7 @@ void WebEngineContext::destroy()
     }
 
     // Handle any events posted by browser-context shutdown.
-    // This should deliver all nessesery calls of DeleteSoon from PostTask
+    // This should deliver all necessary calls of DeleteSoon from PostTask
     flushMessages();
 
     m_devtoolsServer.reset();

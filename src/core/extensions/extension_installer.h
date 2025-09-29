@@ -50,7 +50,7 @@ private:
     void uninstallFinished(const std::string &id, bool success);
     void cleanupBrokenInstall(const base::FilePath &dirToDelete, const std::string &error);
     void onInstallFailure(const base::FilePath &brokenInstallDir, const std::string &error,
-                          bool cleanupSucceded);
+                          bool cleanupSucceeded);
 
     raw_ptr<content::BrowserContext> m_browserContext;
     ExtensionManager *m_manager;

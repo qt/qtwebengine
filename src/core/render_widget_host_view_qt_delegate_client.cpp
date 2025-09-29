@@ -881,7 +881,7 @@ void RenderWidgetHostViewQtDelegateClient::handleInputMethodEvent(QInputMethodEv
 
     m_receivedEmptyImeEvent = false;
 
-    // Finish compostion: insert or erase text.
+    // Finish composition: insert or erase text.
     if (!commitString.isEmpty() || replacementLength > 0) {
         m_rwhv->host()->ImeCommitText(toString16(commitString), underlines, replacementRange, 0);
         m_imeInProgress = false;
