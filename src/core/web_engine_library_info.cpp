@@ -433,9 +433,8 @@ std::string WebEngineLibraryInfo::getResolvedLocale()
     else
         locale = QLocale().bcp47Name().toStdString();
 
-    std::string resolvedLocale;
-    if (l10n_util::CheckAndResolveLocale(locale, &resolvedLocale))
-        return resolvedLocale;
+    if (auto resolvedLocale = l10n_util::CheckAndResolveLocale(locale))
+        return *resolvedLocale;
 
     return "en-US";
 }

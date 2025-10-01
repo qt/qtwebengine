@@ -2550,6 +2550,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     // Select the whole page by ctrl+a
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
@@ -3459,7 +3460,11 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("download-internals") << QUrl("chrome://download-internals") << true << false;
     QTest::newRow("downloads") << QUrl("chrome://downloads") << true << false;
     QTest::newRow("extensions OTR") << QUrl("chrome://extensions") << true << false;
+#if QT_CONFIG(webengine_extensions)
     QTest::newRow("extensions non-OTR") << QUrl("chrome://extensions") << false << true;
+#else
+    QTest::newRow("extensions non-OTR") << QUrl("chrome://extensions") << false << false;
+#endif // QT_CONFIG(webengine_extensions)
     QTest::newRow("extensions-internals") << QUrl("chrome://extensions-internals") << true << false;
     QTest::newRow("flags") << QUrl("chrome://flags") << true << false;
     QTest::newRow("gcm-internals") << QUrl("chrome://gcm-internals") << true << false;
@@ -3518,10 +3523,14 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("web-app-internals") << QUrl("chrome://web-app-internals") << true << false;
 #if QT_CONFIG(webengine_webrtc)
     QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true << true;
-#if QT_CONFIG(webengine_extensions)
-    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true << true;
-#endif // QT_CONFIG(webengine_extensions)
+#else
+    QTest::newRow("webrtc-internals") << QUrl("chrome://webrtc-internals") << true << false;
 #endif // QT_CONFIG(webengine_webrtc)
+#if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
+    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true << true;
+#else
+    QTest::newRow("webrtc-logs") << QUrl("chrome://webrtc-logs") << true << false;
+#endif // QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
     QTest::newRow("whats-new") << QUrl("chrome://whats-new") << true << false;
 }
 

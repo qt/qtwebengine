@@ -17,6 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "v8/include/cppgc/allocation.h"
+#include "v8/include/v8-cppgc.h"
 
 namespace QtWebEngineCore {
 
@@ -47,8 +49,18 @@ LoadablePluginPlaceholderQt* LoadablePluginPlaceholderQt::CreateLoadableMissingP
 
     const std::string html_data = webui::GetI18nTemplateHtml(template_html, std::move(values));
 
-    // Will destroy itself when its WebViewPlugin is going away.
-    return new LoadablePluginPlaceholderQt(render_frame, params, html_data, params.mime_type.Utf16());
+
+    auto* placeholder = cppgc::MakeGarbageCollected<LoadablePluginPlaceholderQt>(
+        render_frame->GetWebFrame()
+            ->GetAgentGroupScheduler()
+            ->Isolate()
+            ->GetCppHeap()
+            ->GetAllocationHandle(),
+        render_frame, params, html_data, params.mime_type.Utf16());
+    // placeholder->Init(html_data);
+    return placeholder;
+
+    // return new LoadablePluginPlaceholderQt(render_frame, params, html_data, params.mime_type.Utf16());
 }
 
 blink::WebPlugin* LoadablePluginPlaceholderQt::CreatePlugin()
@@ -60,6 +72,11 @@ blink::WebPlugin* LoadablePluginPlaceholderQt::CreatePlugin()
 v8::Local<v8::Value> LoadablePluginPlaceholderQt::GetV8Handle(v8::Isolate* isolate)
 {
     return gin::CreateHandle(isolate, this).ToV8();
+}
+
+const gin::WrapperInfo* LoadablePluginPlaceholderQt::wrapper_info() const
+{
+    return &kWrapperInfo;
 }
 
 }  // namespace QtWebEngineCore

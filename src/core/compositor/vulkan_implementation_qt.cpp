@@ -6,6 +6,7 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/notimplemented.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_util.h"

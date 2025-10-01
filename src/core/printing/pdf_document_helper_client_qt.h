@@ -21,7 +21,6 @@ private:
     void OnSaveURL(content::WebContents *contents) override {}
     void SetPluginCanSave(content::RenderFrameHost *render_frame_host, bool can_save) override;
     void UpdateContentRestrictions(content::RenderFrameHost *, int) override;
-    void OnSearchifyStarted(content::WebContents *) override;
 };
 
 #endif // PDF_DOCUMENT_HELPER_CLIENT_QT_H

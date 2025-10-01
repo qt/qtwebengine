@@ -81,7 +81,11 @@ std::unique_ptr<DisplayInfoProvider> ExtensionsAPIClientQt::CreateDisplayInfoPro
 
 ManagementAPIDelegate *ExtensionsAPIClientQt::CreateManagementAPIDelegate() const
 {
+#if QT_CONFIG(webengine_extensions)
     return new ManagementAPIDelegateQt;
+#else
+    return nullptr;
+#endif
 }
 
 } // namespace extensions

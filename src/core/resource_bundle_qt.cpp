@@ -38,7 +38,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
 }
 
 // static
-bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
+bool ResourceBundle::LocaleDataPakExists(std::string_view locale, Gender gender)
 {
 #if BUILDFLAG(IS_LINUX)
     base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
@@ -61,7 +61,7 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
 
 std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, bool /*crash_on_failure*/)
 {
-    DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
+    DCHECK(locale_resources_data_.empty()) << "locale.pak already loaded";
 
     std::string app_locale = l10n_util::GetApplicationLocale(pref_locale, false /* set_icu_locale */);
 
@@ -70,7 +70,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
     if (locale_fd > -1) {
         std::unique_ptr<DataPack> data_pack(new DataPack(ui::k100Percent));
         data_pack->LoadFromFile(base::File(locale_fd));
-        locale_resources_data_ = std::move(data_pack);
+        locale_resources_data_.push_back(std::move(data_pack));
         return app_locale;
     }
 #endif
@@ -94,7 +94,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string &pref_locale, 
         return std::string();
     }
 
-    locale_resources_data_ = std::move(data_pack);
+    locale_resources_data_.push_back(std::move(data_pack));
     return app_locale;
 }
 

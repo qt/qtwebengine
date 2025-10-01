@@ -16,15 +16,13 @@
 #include "base/values.h"
 #include "chrome/grit/component_extension_resources_map.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/buildflags.h"
 #include "extensions/common/constants.h"
 #include "pdf/buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/grit/pdf_resources_map.h"
-#endif
 
 #if BUILDFLAG(ENABLE_PDF)
+#include "chrome/grit/pdf_resources_map.h"
+
 #include "qtwebengine/browser/pdf/pdf_extension_util.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
@@ -33,13 +31,10 @@ namespace extensions {
 ComponentExtensionResourceManagerQt::ComponentExtensionResourceManagerQt()
 {
     AddComponentResourceEntries(kComponentExtensionResources, std::size(kComponentExtensionResources));
-#if BUILDFLAG(ENABLE_PLUGINS)
-    AddComponentResourceEntries(kPdfResources, std::size(kPdfResources));
-#endif
 #if BUILDFLAG(ENABLE_PDF)
+    AddComponentResourceEntries(kPdfResources, std::size(kPdfResources));
     base::Value::Dict dict;
     pdf_extension_util::AddStrings(pdf_extension_util::PdfViewerContext::kPdfViewer, &dict);
-    pdf_extension_util::AddAdditionalData(/*enable_annotations=*/true, &dict);
 
     ui::TemplateReplacements pdf_viewer_replacements;
     ui::TemplateReplacementsFromDictionaryValue(dict, &pdf_viewer_replacements);

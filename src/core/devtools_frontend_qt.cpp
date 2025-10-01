@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 using namespace QtWebEngineCore;

@@ -5,8 +5,9 @@
 #ifndef EXTENSION_MANAGER_H_
 #define EXTENSION_MANAGER_H_
 
-#include <memory>
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
+#if QT_CONFIG(webengine_extensions)
 #include "api/qwebengineextensioninfo.h"
 #include "api/qwebengineextensioninfo_p.h"
 
@@ -14,6 +15,8 @@
 #include <QString>
 #include <QObject>
 #include <QtWebEngineCore/private/qtwebenginecoreglobal_p.h>
+
+#include <memory>
 
 namespace content {
 class BrowserContext;
@@ -68,5 +71,7 @@ private:
     content::BrowserContext *m_context;
 };
 } // namespace QtWebEngineCore
+
+#endif
 
 #endif // EXTENSION_MANAGER_H_

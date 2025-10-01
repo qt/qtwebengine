@@ -26,11 +26,11 @@
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "qtwebengine/common/plugin.mojom.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

@@ -33,7 +33,8 @@ ExtensionsUIQt::ExtensionsUIQt(content::WebUI *web_ui) : ui::MojoWebUIController
 void ExtensionsUIQt::BindInterface(
         mojo::PendingReceiver<qtwebengine::mojom::ExtensionsUIHandlerFactory> receiver)
 {
-    page_factory_receiver_.reset();
+    if (page_factory_receiver_.is_bound())
+        page_factory_receiver_.reset();
     page_factory_receiver_.Bind(std::move(receiver));
 }
 

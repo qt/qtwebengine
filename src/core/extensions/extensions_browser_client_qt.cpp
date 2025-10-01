@@ -13,6 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notimplemented.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
 #include "base/memory/ref_counted_memory.h"

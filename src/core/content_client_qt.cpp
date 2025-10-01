@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -130,7 +131,6 @@ void ComputeBuiltInPlugins(std::vector<content::ContentPluginInfo> *plugins)
     static constexpr char kPDFPluginDescription[] = "Portable Document Format";
     content::ContentPluginInfo pdf_info;
     pdf_info.is_internal = true;
-    pdf_info.is_out_of_process = true;
     pdf_info.name = "Chromium PDF Viewer";
     pdf_info.description = kPDFPluginDescription;
     pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);

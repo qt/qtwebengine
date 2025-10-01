@@ -10,6 +10,7 @@
 #include "build_config_qt.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
+#include "base/memory_coordinator/memory_consumer_registry.h"
 
 #include <QtGui/qtgui-config.h>
 #include <QList>
@@ -22,6 +23,7 @@ class FieldTrialList;
 
 namespace content {
 class BrowserMainRunner;
+class BrowserMemoryConsumerRegistry;
 class ContentMainRunner;
 class MojoIpcSupport;
 }
@@ -103,6 +105,9 @@ private:
 #if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif
+    std::unique_ptr<base::ScopedMemoryConsumerRegistry<content::BrowserMemoryConsumerRegistry>>
+            m_browserMemoryConsumerRegistry;
+
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;
     static bool m_closingDown;

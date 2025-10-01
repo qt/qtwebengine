@@ -17,6 +17,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/download_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"

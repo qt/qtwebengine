@@ -1476,6 +1476,9 @@ void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
 #if defined(Q_OS_MACOS) && (defined(__arm64__) || defined(__aarch64__))
     QSKIP("This test crashes for Apple M1");
 #endif
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: Moving the window requires real input events. Can't auto test.");
+
     QWidget mainWidget;
     mainWidget.setLayout(new QHBoxLayout);
 
@@ -1772,9 +1775,11 @@ void tst_QWebEnginePage::getUserMediaRequest_data()
     using PT = QWebEnginePermission::PermissionType;
 
     QTest::addRow("device audio") << "getUserMedia({audio: true})" << PT::MediaAudioCapture;
+#if QT_CONFIG(webengine_webrtc)
     QTest::addRow("device video") << "getUserMedia({video: true})" << PT::MediaVideoCapture;
     QTest::addRow("device audio+video")
             << "getUserMedia({audio: true, video: true})" << PT::MediaAudioVideoCapture;
+#endif
     QTest::addRow("desktop video")
             << "getUserMedia({video: { mandatory: { chromeMediaSource: 'desktop' }}})"
             << PT::DesktopVideoCapture;
@@ -4426,11 +4431,11 @@ void tst_QWebEnginePage::recommendedStateAuto()
 
     QWebEnginePage devTools;
     page.setDevToolsPage(&devTools);
-    QTRY_COMPARE(lifecycleSpy.size(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(lifecycleSpy.size(), 1, 10000);
     QCOMPARE(lifecycleSpy.takeFirst().value(0), QVariant::fromValue(QWebEnginePage::LifecycleState::Active));
 
     page.setDevToolsPage(nullptr);
-    QTRY_COMPARE(lifecycleSpy.size(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(lifecycleSpy.size(), 2, 10000);
     QCOMPARE(lifecycleSpy.takeFirst().value(0), QVariant::fromValue(QWebEnginePage::LifecycleState::Frozen));
     QCOMPARE(lifecycleSpy.takeFirst().value(0), QVariant::fromValue(QWebEnginePage::LifecycleState::Discarded));
 }

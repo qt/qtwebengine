@@ -4,6 +4,8 @@
 
 #include "runtime_api_delegate_qt.h"
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+
 #include "extensions/extension_manager.h"
 #include "extensions/extension_system_qt.h"
 
@@ -27,9 +29,11 @@ void RuntimeAPIDelegateQt::RemoveUpdateObserver(UpdateObserver *observer) { }
 
 void RuntimeAPIDelegateQt::ReloadExtension(const ExtensionId &extension_id)
 {
+#if QT_CONFIG(webengine_extensions)
     auto *manager = static_cast<ExtensionSystemQt *>(ExtensionSystem::Get(browser_context_))
                             ->extensionManager();
     manager->reloadExtension(extension_id);
+#endif
 }
 
 bool RuntimeAPIDelegateQt::CheckForUpdates(const ExtensionId &extension_id,
@@ -70,21 +74,6 @@ bool RuntimeAPIDelegateQt::GetPlatformInfo(PlatformInfo *info)
         info->arch = extensions::api::runtime::PlatformArch::kMips;
     } else if (strcmp(arch, "mips64el") == 0) {
         info->arch = extensions::api::runtime::PlatformArch::kMips64;
-    } else {
-        NOTREACHED();
-    }
-
-    const char *nacl_arch = update_client::UpdateQueryParams::GetNaclArch();
-    if (strcmp(nacl_arch, "arm") == 0) {
-        info->nacl_arch = extensions::api::runtime::PlatformNaclArch::kArm;
-    } else if (strcmp(nacl_arch, "x86-32") == 0) {
-        info->nacl_arch = extensions::api::runtime::PlatformNaclArch::kX86_32;
-    } else if (strcmp(nacl_arch, "x86-64") == 0) {
-        info->nacl_arch = extensions::api::runtime::PlatformNaclArch::kX86_64;
-    } else if (strcmp(nacl_arch, "mips32") == 0) {
-        info->nacl_arch = extensions::api::runtime::PlatformNaclArch::kMips;
-    } else if (strcmp(nacl_arch, "mips64") == 0) {
-        info->nacl_arch = extensions::api::runtime::PlatformNaclArch::kMips64;
     } else {
         NOTREACHED();
     }

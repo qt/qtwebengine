@@ -389,8 +389,8 @@ void InterceptedRequest::ContinueAfterIntercept()
                 net::RedirectInfo redirectInfo = net::RedirectInfo::ComputeRedirectInfo(
                         request_.method, request_.url, request_.site_for_cookies,
                         first_party_url_policy, request_.referrer_policy, request_.referrer.spec(),
-                        net::HTTP_TEMPORARY_REDIRECT, toGurl(info.url), std::nullopt,
-                        false /*insecure_scheme_was_upgraded*/);
+                        request_.request_initiator, net::HTTP_TEMPORARY_REDIRECT, toGurl(info.url),
+                        std::nullopt, false /*insecure_scheme_was_upgraded*/);
                 request_.method = redirectInfo.new_method;
                 request_.url = redirectInfo.new_url;
                 request_.site_for_cookies = redirectInfo.new_site_for_cookies;

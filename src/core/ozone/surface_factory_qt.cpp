@@ -156,24 +156,6 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 #endif // QT_CONFIG(opengl)
 }
 
-void SurfaceFactoryQt::CreateNativePixmapAsync(
-        gfx::AcceleratedWidget widget,
-        gpu::VulkanDeviceQueue *device_queue,
-        gfx::Size size,
-        gfx::BufferFormat format,
-        gfx::BufferUsage usage,
-        NativePixmapCallback callback)
-{
-    if (!SupportsNativePixmaps()) {
-        std::move(callback).Run(nullptr);
-        return;
-    }
-
-    // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
-    // and return the result with the provided callback.
-    std::move(callback).Run(CreateNativePixmap(widget, device_queue, size, format, usage));
-}
-
 scoped_refptr<gfx::NativePixmap>
 SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::AcceleratedWidget /*widget*/,

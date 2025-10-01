@@ -74,7 +74,6 @@ public:
     void FocusThroughTabTraversal(bool reverse) override;
     void OnCapturerCountChanged() override { QT_NOT_YET_IMPLEMENTED }
     void FullscreenStateChanged(bool) override { }
-    void UpdateWindowControlsOverlay(const gfx::Rect &) override { QT_NOT_YET_IMPLEMENTED }
 
     content::BackForwardTransitionAnimationManager *GetBackForwardTransitionAnimationManager() override { return nullptr; }
 #if BUILDFLAG(IS_MAC)

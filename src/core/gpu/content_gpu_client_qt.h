@@ -35,7 +35,8 @@ public:
 
     // Overridden from content::ContentGpuClient:
     void GpuServiceInitialized() override;
-    void ExposeInterfacesToBrowser(const gpu::GpuPreferences &gpu_preferences,
+    void ExposeInterfacesToBrowser(viz::GpuServiceImpl *gpu_service,
+                                   const gpu::GpuPreferences &gpu_preferences,
                                    const gpu::GpuDriverBugWorkarounds &gpu_workarounds,
                                    mojo::BinderMap *binders) override;
 

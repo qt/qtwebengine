@@ -289,7 +289,7 @@ private:
                         m_request.method, m_request.url,
                         m_request.site_for_cookies,
                         first_party_url_policy, m_request.referrer_policy,
-                        m_request.referrer.spec(), net::HTTP_SEE_OTHER,
+                        m_request.referrer.spec(), m_request.request_initiator, net::HTTP_SEE_OTHER,
                         m_redirect, std::nullopt, false /*insecure_scheme_was_upgraded*/);
             m_client->OnReceiveRedirect(redirectInfo, std::move(m_head));
             m_head = nullptr;

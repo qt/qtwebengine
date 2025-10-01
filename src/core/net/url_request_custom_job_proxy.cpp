@@ -49,6 +49,7 @@ void URLRequestCustomJobProxy::reply(std::string contentType, QIODevice *device,
     if (!m_client)
         return;
     DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
+    DCHECK (!m_started);
     bool hadCharset = false;
     net::HttpUtil::ParseContentType(contentType, &m_client->m_mimeType, &m_client->m_charset, &hadCharset, nullptr);
     m_client->m_device = device;
@@ -76,6 +77,7 @@ void URLRequestCustomJobProxy::redirect(GURL url)
     if (!m_client)
         return;
     DCHECK (!m_ioTaskRunner || m_ioTaskRunner->RunsTasksInCurrentSequence());
+    DCHECK (!m_started);
     if (m_client->m_device || m_client->m_error)
         return;
     m_client->m_redirect = url;

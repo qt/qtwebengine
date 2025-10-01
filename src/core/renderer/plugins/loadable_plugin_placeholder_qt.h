@@ -23,12 +23,15 @@ public:
     static LoadablePluginPlaceholderQt* CreateLoadableMissingPlugin(content::RenderFrame* render_frame,
                                                                     const blink::WebPluginParams& params);
 
-private:
     LoadablePluginPlaceholderQt(content::RenderFrame* render_frame,
                                 const blink::WebPluginParams& params,
                                 const std::string& html_data,
                                 const std::u16string& title);
     ~LoadablePluginPlaceholderQt() override;
+
+private:
+    // gin::Wrappable overrides.
+    const gin::WrapperInfo* wrapper_info() const override;
 
     // content::LoadablePluginPlaceholder overrides.
     blink::WebPlugin* CreatePlugin() override;

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_UI_QT_H
 #define EXTENSIONS_UI_QT_H
 
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "qtwebengine/browser/extensions/webui/extensions_ui_qt.mojom.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 

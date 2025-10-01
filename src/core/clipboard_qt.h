@@ -61,10 +61,6 @@ protected:
     void WriteSvg(std::string_view markup) override;
     void WriteFilenames(std::vector<ui::FileInfo> filenames) override;
 
-    void WriteClipboardHistory() override;
-    void WriteUploadCloudClipboard() override;
-    void WriteConfidentialDataForPassword() override;
-
     base::flat_map<ui::ClipboardBuffer, std::unique_ptr<ui::DataTransferEndpoint>> m_dataSrc;
 };
 

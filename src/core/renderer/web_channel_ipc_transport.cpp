@@ -19,14 +19,15 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "v8/include/v8.h"
+
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 namespace QtWebEngineCore {
 
-class WebChannelTransport : public gin::Wrappable<WebChannelTransport>
+class WebChannelTransport : public gin::DeprecatedWrappable<WebChannelTransport>
 {
 public:
-    static gin::WrapperInfo kWrapperInfo;
+    static gin::DeprecatedWrapperInfo kWrapperInfo;
     static void Install(blink::WebLocalFrame *frame, uint worldId);
     static void Uninstall(blink::WebLocalFrame *frame, uint worldId);
 
@@ -34,13 +35,13 @@ private:
     WebChannelTransport() {}
     void NativeQtSendMessage(gin::Arguments *args);
 
-    // gin::WrappableBase
+    // gin::DeprecatedWrappableBase
     gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
     mojo::AssociatedRemote<qtwebchannel::mojom::WebChannelTransportHost> m_remote;
     content::RenderFrame *m_renderFrame = nullptr;
 };
 
-gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };
+gin::DeprecatedWrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 void WebChannelTransport::Install(blink::WebLocalFrame *frame, uint worldId)
 {
@@ -129,7 +130,7 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
 {
-    return gin::Wrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate).SetMethod(
+    return gin::DeprecatedWrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate).SetMethod(
             "send", &WebChannelTransport::NativeQtSendMessage);
 }
 

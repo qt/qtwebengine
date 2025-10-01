@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/disallow_activation_reason.h"
+#include "ui/display/types/display_constants.h"
 #include "url/origin.h"
 
 namespace QtWebEngineCore {

@@ -9,10 +9,10 @@
 #include <QtWebEngineCore/qtwebenginecore-config.h>
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 
+#include "content/public/common/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 
 // This is just config sanity check
 #if QT_CONFIG(webengine_printing_and_pdf)

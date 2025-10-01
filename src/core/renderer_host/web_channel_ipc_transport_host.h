@@ -9,6 +9,8 @@
 
 #include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "qtwebengine/browser/qtwebchannel.mojom.h"
 
 #include <QWebChannelAbstractTransport>

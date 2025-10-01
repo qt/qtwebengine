@@ -14,6 +14,8 @@
 
 #include <string>
 
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+
 #include "base/one_shot_event.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -77,7 +79,9 @@ public:
 
     void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value::Dict &) override { /* fixme? */}
 
+#if QT_CONFIG(webengine_extensions)
     QtWebEngineCore::ExtensionManager *extensionManager();
+#endif
 
 private:
     void NotifyExtensionLoaded(const Extension *extension);
@@ -98,7 +102,9 @@ private:
     ExtensionRegistry *extension_registry_;
     extensions::RendererStartupHelper *renderer_helper_;
     bool initialized_;
+#if QT_CONFIG(webengine_extensions)
     std::unique_ptr<QtWebEngineCore::ExtensionManager> extension_manager_;
+#endif
 
     base::WeakPtrFactory<ExtensionSystemQt> weak_ptr_factory_;
 };

@@ -75,7 +75,6 @@ private:
     bool CanDisableExtension(const extensions::Extension *extension) override { return true; }
     void OnAddNewOrUpdatedExtension(const extensions::Extension *extension) override { }
     void UpdateExternalExtensionAlert() override {}
-    void OnExtensionInstalled(const extensions::Extension*, const syncer::StringOrdinal&, int, base::Value::Dict) override {}
     void GrantActivePermissions(const extensions::Extension *extension) override { }
 
     raw_ptr<content::BrowserContext> m_browserContext;

@@ -11,6 +11,7 @@
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 
+#include "base/notimplemented.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/foundations/browser_autofill_manager.h"
