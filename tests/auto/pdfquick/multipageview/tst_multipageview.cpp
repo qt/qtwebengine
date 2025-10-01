@@ -356,7 +356,7 @@ void tst_MultiPageView::search()
         contentPos = tableViewContentPos(table);
     }
     qCDebug(lcTests) << "total movements" << movements;
-    QVERIFY(movements > 4);
+    QCOMPARE_GT(movements, 4);
 }
 
 void tst_MultiPageView::pinchDragPinch()

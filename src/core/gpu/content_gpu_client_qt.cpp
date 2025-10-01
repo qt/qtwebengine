@@ -170,6 +170,10 @@ public:
         Q_ASSERT(manager->IsEssentialGpuInfoAvailable());
 
         const gpu::GPUInfo &gpuInfo = manager->GetGPUInfo();
+        if (!gpuInfo.IsInitialized()) {
+            qWarning("GPUInfo not initialized on GpuInfoUpdate");
+            return;
+        }
         Q_ASSERT(gpuInfo.IsInitialized());
 
         // Avoid logging the info again if the device hasn't changed.
@@ -224,9 +228,11 @@ void ContentGpuClientQt::GpuServiceInitialized()
 }
 
 void ContentGpuClientQt::ExposeInterfacesToBrowser(
+        viz::GpuServiceImpl *gpu_service,
         const gpu::GpuPreferences &gpu_preferences,
         const gpu::GpuDriverBugWorkarounds &gpu_workarounds, mojo::BinderMap *binders)
 {
+    Q_UNUSED(gpu_service);
     Q_UNUSED(gpu_workarounds);
     Q_UNUSED(binders);
     m_gpuPreferences = gpu_preferences;

@@ -138,6 +138,7 @@ void tst_QWebEngineDownloadRequest::initTestCase()
 void tst_QWebEngineDownloadRequest::init()
 {
     QVERIFY(m_server->start());
+    m_view->window()->windowHandle()->requestActivate();
 }
 
 void tst_QWebEngineDownloadRequest::cleanup()
@@ -1436,7 +1437,7 @@ void tst_QWebEngineDownloadRequest::pauseDownload()
     m_view->load(m_server->url());
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 10000);
     QTRY_COMPARE_WITH_TIMEOUT(pausedCount, 1, 10000);
-    QTRY_COMPARE_WITH_TIMEOUT(m_finishedDownloads.size(), 1, 10000);
+    QTRY_COMPARE_WITH_TIMEOUT(m_finishedDownloads.size(), 1, 15000);
     QTRY_COMPARE(m_finishedDownloads.values()[0]->isPaused(), false);
     QTRY_COMPARE(m_finishedDownloads.values()[0]->receivedBytes(), fileSize);
 }

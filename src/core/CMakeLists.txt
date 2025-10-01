@@ -277,13 +277,12 @@ foreach(arch ${archs})
                 renderer_host/web_channel_ipc_transport_host.cpp renderer_host/web_channel_ipc_transport_host.h
         )
 
-        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
+        extend_gn_target(${buildGn}
             SOURCES
                 common/extensions/extensions_api_provider_qt.cpp common/extensions/extensions_api_provider_qt.h
                 common/extensions/extensions_client_qt.cpp common/extensions/extensions_client_qt.h
                 extensions/api/display_info_provider_qt.cpp extensions/api/display_info_provider_qt.h
                 extensions/api/runtime_api_delegate_qt.cpp extensions/api/runtime_api_delegate_qt.h
-                extensions/api/management_api_delegate_qt.cpp extensions/api/management_api_delegate_qt.h
                 extensions/component_extension_resource_manager_qt.cpp extensions/component_extension_resource_manager_qt.h
                 extensions/extension_host_delegate_qt.cpp extensions/extension_host_delegate_qt.h
                 extensions/extension_system_factory_qt.cpp extensions/extension_system_factory_qt.h
@@ -291,9 +290,6 @@ foreach(arch ${archs})
                 extensions/extension_web_contents_observer_qt.cpp extensions/extension_web_contents_observer_qt.h
                 extensions/extensions_api_client_qt.cpp extensions/extensions_api_client_qt.h
                 extensions/extensions_browser_client_qt.cpp extensions/extensions_browser_client_qt.h
-                extensions/extension_manager.cpp extensions/extension_manager.h
-                extensions/extension_loader.cpp extensions/extension_loader.h
-                extensions/extension_installer.cpp extensions/extension_installer.h
                 extensions/file_system_delegate_qt.cpp extensions/file_system_delegate_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
@@ -304,17 +300,24 @@ foreach(arch ${archs})
                 renderer/extensions/extensions_renderer_api_provider_qt.cpp renderer/extensions/extensions_renderer_api_provider_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
+                renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
+        )
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
+            SOURCES
+                extensions/api/management_api_delegate_qt.cpp extensions/api/management_api_delegate_qt.h
+                extensions/extension_manager.cpp extensions/extension_manager.h
+                extensions/extension_loader.cpp extensions/extension_loader.h
+                extensions/extension_installer.cpp extensions/extension_installer.h
                 extensions/webui/extensions_ui_page_handler_qt.cpp extensions/webui/extensions_ui_page_handler_qt.h
                 extensions/webui/extensions_ui_qt.cpp extensions/webui/extensions_ui_qt.h
                 extensions/webui/select_file_dialog.cpp extensions/webui/select_file_dialog.h
         )
 
-        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions AND QT_FEATURE_webengine_printing_and_pdf
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/pdf_document_helper_client_qt.cpp printing/pdf_document_helper_client_qt.h
-                renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -352,6 +355,8 @@ foreach(arch ${archs})
             enable_background_contents=false
             enable_background_mode=false
             enable_bluetooth_emulation=false
+            enable_compose=false
+            enable_extensions=true
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
             enable_java_templates=false
@@ -360,6 +365,7 @@ foreach(arch ${archs})
             enable_message_center=false
             enable_nacl=false
             enable_oop_printing=false
+            enable_plugins=true
             enable_remoting=false
             enable_reporting=false
             enable_resource_allowlist_generation=false
@@ -386,6 +392,7 @@ foreach(arch ${archs})
             use_cups=false
             use_dawn=false
             skia_use_dawn=false
+            dawn_use_built_dxc=false
             use_static_angle=true
             devtools_fast_bundle=false
             devtools_skip_typecheck=false
@@ -400,10 +407,6 @@ foreach(arch ${archs})
             CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
         extend_gn_list(gnArgArg
-            ARGS enable_plugins
-            CONDITION QT_FEATURE_webengine_printing_and_pdf
-        )
-         extend_gn_list(gnArgArg
             ARGS enable_spellcheck
             CONDITION QT_FEATURE_webengine_spellchecker
         )
@@ -422,10 +425,6 @@ foreach(arch ${archs})
         extend_gn_list(gnArgArg
             ARGS rtc_use_pipewire
             CONDITION QT_FEATURE_webengine_webrtc_pipewire
-        )
-        extend_gn_list(gnArgArg
-            ARGS enable_extensions
-            CONDITION QT_FEATURE_webengine_extensions
         )
         extend_gn_list(gnArgArg
             ARGS enable_vulkan

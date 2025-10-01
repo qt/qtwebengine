@@ -100,11 +100,11 @@ PDFIFrameNavigationThrottleQt::MaybeCreateThrottleFor(content::NavigationThrottl
 {
     if (registry.GetNavigationHandle().IsInMainFrame())
         return nullptr;
-    return std::make_unique<PDFIFrameNavigationThrottleQt>(&registry.GetNavigationHandle());
+    return std::make_unique<PDFIFrameNavigationThrottleQt>(registry);
 }
 
-PDFIFrameNavigationThrottleQt::PDFIFrameNavigationThrottleQt(content::NavigationHandle *handle)
-    : content::NavigationThrottle(handle)
+PDFIFrameNavigationThrottleQt::PDFIFrameNavigationThrottleQt(content::NavigationThrottleRegistry &registry)
+    : content::NavigationThrottle(registry)
 {
 }
 

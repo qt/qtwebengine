@@ -12,6 +12,7 @@
 
 #include "base/containers/map_util.h"
 #include "base/logging.h"
+#include "base/notimplemented.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/variant_util.h"
@@ -441,19 +442,6 @@ bool ClipboardQt::IsSelectionBufferAvailable() const
     return QGuiApplication::clipboard()->supportsSelection();
 }
 #endif
-
-void ClipboardQt::WriteClipboardHistory()
-{
-    NOTIMPLEMENTED();
-}
-void ClipboardQt::WriteUploadCloudClipboard()
-{
-    NOTIMPLEMENTED();
-}
-void ClipboardQt::WriteConfidentialDataForPassword()
-{
-    NOTIMPLEMENTED();
-}
 
 // This is the same as ReadAvailableTypes minus dealing with custom-data
 std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer buffer, const ui::DataTransferEndpoint *data_dst) const

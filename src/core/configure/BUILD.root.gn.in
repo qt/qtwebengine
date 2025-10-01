@@ -4,7 +4,6 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
 import("//pdf/features.gni")
-import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//tools/grit/repack.gni")
@@ -297,9 +296,9 @@ source_set("qtwebengine_sources") {
     "//chrome/common:channel_info",
     "//chrome/common:version_header",
     "//components/custom_handlers",
-    "//components/embedder_support:embedder_support",
+    "//components/embedder_support",
+    "//components/embedder_support:user_agent",
     "//components/enterprise/buildflags:buildflags",
-    "//components/nacl/common:buildflags",
     "//components/performance_manager",
     "//components/permissions:permissions_common",
     "//components/plugins/renderer/",
@@ -397,8 +396,6 @@ source_set("qtwebengine_sources") {
     "//chrome/common/url_constants.h",
     "//chrome/common/webui_url_constants.cc",
     "//chrome/common/webui_url_constants.h",
-    "//components/embedder_support/user_agent_utils.cc",
-    "//components/embedder_support/user_agent_utils.h",
     "//ui/webui/mojo_web_ui_controller.cc",
     "//ui/webui/mojo_web_ui_controller.h",
     "//ui/webui/webui_util.cc",
@@ -528,6 +525,8 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/resources/pdf:resources",
       "//components/pdf/browser",
       "//components/pdf/browser:interceptors",
+      "//components/pdf/common:constants",
+      "//components/pdf/common:util",
       "//components/pdf/renderer",
       "//components/printing/browser",
       "//components/printing/renderer",

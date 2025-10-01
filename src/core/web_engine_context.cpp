@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/common/features.h"
 #include "content/common/process_visibility_tracker.h"
+#include "content/browser/memory_coordinator/browser_memory_consumer_registry.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -902,10 +903,6 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
 
-    // Currently causing more issues than it fixes.
-    // Probably will be removed in 134, tst_origins should be updated in this case.
-    disableFeatures.push_back(url::kStandardCompliantNonSpecialSchemeURLParsing.name);
-
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
@@ -1043,6 +1040,9 @@ WebEngineContext::WebEngineContext()
     mojo::core::Init(mojoConfiguration);
 
     // This block mirrors ContentMainRunnerImpl::RunBrowser():
+
+    m_browserMemoryConsumerRegistry =
+            std::make_unique<base::ScopedMemoryConsumerRegistry<content::BrowserMemoryConsumerRegistry>>();
     m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
@@ -1053,9 +1053,9 @@ WebEngineContext::WebEngineContext()
     }
     m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();
+    tracing::InitTracingPostFeatureList(/*enable_consumer=*/true, /*will_trace_thread_restart=*/false);
     tracing::PerfettoTracedProcess::Get().SetAllowSystemTracingConsumerCallback(
             base::BindRepeating(&ShouldAllowSystemTracingConsumer));
-    tracing::InitTracingPostFeatureList(/*enable_consumer=*/true);
     base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource());
     content::ProcessVisibilityTracker::GetInstance();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();

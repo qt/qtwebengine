@@ -114,6 +114,7 @@ public:
                                         content::BrowserContext *browser_context) override;
 
     void CreateExtensionWebContentsObserver(content::WebContents *) override;
+    extensions::SafeBrowsingDelegate* GetSafeBrowsingDelegate() override { return nullptr; }
 
 private:
     // Support for extension APIs.

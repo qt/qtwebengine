@@ -30,11 +30,6 @@ void ExtensionHostDelegateQt::OnExtensionHostCreated(content::WebContents *web_c
     extensions::ExtensionWebContentsObserverQt::CreateForWebContents(web_contents);
 }
 
-void ExtensionHostDelegateQt::OnMainFrameCreatedForBackgroundPage(ExtensionHost *host)
-{
-    Q_UNUSED(host);
-}
-
 void ExtensionHostDelegateQt::CreateTab(std::unique_ptr<content::WebContents> web_contents,
                                         const std::string &extension_id,
                                         WindowOpenDisposition disposition,

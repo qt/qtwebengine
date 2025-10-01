@@ -13,6 +13,7 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "base/notimplemented.h"
 #include "components/input/cursor_manager.h"
 #include "components/input/events_helper.h"
 #include "components/input/render_widget_host_input_event_router.h"
@@ -970,7 +971,7 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *event)
         Q_ASSERT(m_pendingWheelEvents.isEmpty());
         blink::WebMouseWheelEvent webEvent = WebEventFactory::toWebWheelEvent(event);
         m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
-        GetMouseWheelPhaseHandler()->AddPhaseIfNeededAndScheduleEndEvent(webEvent, true);
+        GetMouseWheelPhaseHandler()->AddPhaseIfNeededAndScheduleEndEvent(webEvent, true, false /* is_fling_capable */); // fixme args
         if (host()->delegate() && host()->delegate()->GetInputEventRouter())
             host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(this, &webEvent, ui::LatencyInfo());
         return;
@@ -993,7 +994,7 @@ void RenderWidgetHostViewQt::WheelEventAck(const blink::WebMouseWheelEvent &even
     while (!m_pendingWheelEvents.isEmpty() && !m_wheelAckPending) {
         blink::WebMouseWheelEvent webEvent = m_pendingWheelEvents.takeFirst();
         m_wheelAckPending = (webEvent.phase != blink::WebMouseWheelEvent::kPhaseEnded);
-        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, true);
+        m_mouseWheelPhaseHandler.AddPhaseIfNeededAndScheduleEndEvent(webEvent, true, false /* is_fling_capable */); // fixme args
         if (host()->delegate() && host()->delegate()->GetInputEventRouter())
             host()->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(this, &webEvent, ui::LatencyInfo());
     }

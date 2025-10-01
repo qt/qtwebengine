@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/content_verifier/content_verifier.h"
@@ -57,7 +58,6 @@
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/mime_util.h"
 #include "pdf/buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "qtwebengine/grit/qt_webengine_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -121,10 +121,12 @@ public:
     void Shutdown() override {}
 };
 
+#if QT_CONFIG(webengine_extensions)
 QtWebEngineCore::ExtensionManager *ExtensionSystemQt::extensionManager()
 {
     return extension_manager_.get();
 }
+#endif
 
 void ExtensionSystemQt::LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory)
 {
@@ -293,7 +295,9 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
     service_worker_manager_ = std::make_unique<ServiceWorkerManager>(browser_context_);
     user_script_manager_ = std::make_unique<UserScriptManager>(browser_context_);
     quota_service_ = std::make_unique<QuotaService>();
+#if QT_CONFIG(webengine_extensions)
     extension_manager_ = std::make_unique<QtWebEngineCore::ExtensionManager>(browser_context_);
+#endif
     management_policy_ = std::make_unique<ManagementPolicy>();
 
     // Make the chrome://extension-icon/ resource available.

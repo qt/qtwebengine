@@ -28,7 +28,7 @@ class PDFIFrameNavigationThrottleQt : public content::NavigationThrottle
 public:
     static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(content::NavigationThrottleRegistry &registry);
 
-    explicit PDFIFrameNavigationThrottleQt(content::NavigationHandle *handle);
+    explicit PDFIFrameNavigationThrottleQt(content::NavigationThrottleRegistry &registry);
     ~PDFIFrameNavigationThrottleQt() override;
 
     // content::NavigationThrottle

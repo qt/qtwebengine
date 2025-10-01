@@ -21,6 +21,3 @@ void PDFDocumentHelperClientQt::SetPluginCanSave(content::RenderFrameHost *rende
 void PDFDocumentHelperClientQt::UpdateContentRestrictions(content::RenderFrameHost *, int)
 {
 }
-void PDFDocumentHelperClientQt::OnSearchifyStarted(content::WebContents *)
-{
-}

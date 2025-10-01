@@ -94,7 +94,7 @@ inline QVariant evaluateJavaScriptSync(QQuickWebEngineView *view, const QString 
             "})"
             );
     view->runJavaScript(script, callback);
-    QTRY_LOOP_IMPL(engine->globalObject().property("called").toBool(), 5000, 50);
+    QTRY_LOOP_IMPL(engine->globalObject().property("called").toBool(), 5000, 50)
     if (!engine->globalObject().property("called").toBool()) {
         qWarning("JavaScript wasn't evaluated");
         return QVariant();

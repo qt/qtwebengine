@@ -99,6 +99,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterIntegerPref(prefs::kNotificationNextPersistentId, 10000);
     // chrome/browser/push_messaging
     registry->RegisterDictionaryPref(prefs::kPushMessagingAppIdentifierMap);
+    registry->RegisterListPref(prefs::kPushMessagingUnsubscribedEntriesList);
     // chrome/browser/gcm
     gcm::RegisterPrefs(registry.get());
 
@@ -118,7 +119,6 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterListPref(extensions::pref_names::kInstallDenyList);
     registry->RegisterDictionaryPref(extensions::pref_names::kInstallForceList);
     registry->RegisterListPref(extensions::pref_names::kAllowedTypes);
-    registry->RegisterBooleanPref(extensions::pref_names::kStorageGarbageCollect, false);
     registry->RegisterListPref(extensions::pref_names::kAllowedInstallSites);
     registry->RegisterStringPref(extensions::pref_names::kLastChromeVersion, std::string());
     registry->RegisterListPref(extensions::pref_names::kNativeMessagingBlocklist);

@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/notimplemented.h"
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
@@ -25,9 +26,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "select_file_dialog_factory_qt.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -282,6 +283,15 @@ void BrowserMainPartsQt::PostMainMessageLoopRun()
     WebEngineContext::current()->destroyProfileAdapter();
 }
 
+#if defined(Q_OS_WIN)
+class DesktopScreenWinQt : public display::win::ScreenWin
+{
+public:
+    DesktopScreenWinQt() {}
+    ~DesktopScreenWinQt() {}
+};
+#endif
+
 int BrowserMainPartsQt::PreCreateThreads()
 {
 #if BUILDFLAG(IS_MAC)
@@ -289,8 +299,9 @@ int BrowserMainPartsQt::PreCreateThreads()
 #endif
 
     // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
+    // FIXME: This is now done differently in Chrome, find out where and if we need to change.
 #if defined(Q_OS_WIN)
-    display::Screen::SetScreenInstance(new display::win::ScreenWin);
+    display::Screen::SetScreenInstance(new DesktopScreenWinQt());
 #elif defined(Q_OS_DARWIN)
     display::Screen::SetScreenInstance(display::CreateNativeScreen());
 #else

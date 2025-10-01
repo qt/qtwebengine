@@ -30,7 +30,7 @@ function(get_ios_target_triple_and_sysroot result arch)
     get_ios_sysroot(sysroot ${arch})
     set(${result}
         -target ${arch}-apple-ios${CMAKE_OSX_DEPLOYMENT_TARGET}
-        -isysroot ${sysroot} PARENT_SCOPE
+        -isysroot "${sysroot}" PARENT_SCOPE
     )
 endfunction()
 
@@ -254,7 +254,6 @@ endfunction()
 
 macro(append_build_type_setup)
     list(APPEND gnArgArg
-        use_ml=false
         init_stack_vars=false
         is_component_build=false
         is_shared=true
@@ -262,12 +261,13 @@ macro(append_build_type_setup)
         forbid_non_component_debug_builds=false
         treat_warnings_as_errors=false
         use_allocator_shim=false
-        use_freelist_dispatcher=false
+        use_ml=false
         use_partition_alloc=true
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
         use_custom_libcxx_for_host=false
         assert_cpp20=false
+        enable_constraints=false
     )
     if (QT_FEATURE_webengine_rust_build)
       list(APPEND gnArgArg
@@ -466,6 +466,7 @@ macro(append_compiler_linker_sdk_setup)
             get_darwin_sdk_version(macSdkVersion)
             list(APPEND gnArgArg
                 use_system_xcode=true
+                enable_stripping=false
                 mac_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 mac_sdk_min="${macSdkVersion}"
                 use_libcxx=true
@@ -481,6 +482,7 @@ macro(append_compiler_linker_sdk_setup)
             list(APPEND gnArgArg
                 use_system_xcode=true
                 enable_ios_bitcode=true
+                enable_stripping=false
                 ios_deployment_target="${CMAKE_OSX_DEPLOYMENT_TARGET}"
                 ios_enable_code_signing=false
                 use_libcxx=true

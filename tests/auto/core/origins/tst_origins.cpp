@@ -452,6 +452,7 @@ void tst_Origins::jsUrlCanon()
 void tst_Origins::jsUrlRelative()
 {
     QVERIFY(verifyLoad(QSL("about:blank")));
+    // FIXME comments are wrong after 140
 
     // Schemes with hosts, like http, work as expected.
     QCOMPARE(eval(QSL("new URL('bar', 'http://foo').href")), QVariant(QSL("http://foo/bar")));
@@ -468,14 +469,14 @@ void tst_Origins::jsUrlRelative()
     // this. The following cases all fail with TypeErrors.
     QCOMPARE(eval(QSL("new URL('bar', 'tst:foo').href")), QVariant());
     QCOMPARE(eval(QSL("new URL('baz', 'tst:foo/bar').href")), QVariant());
-    QCOMPARE(eval(QSL("new URL('bar', 'tst://foo').href")), QVariant());
-    QCOMPARE(eval(QSL("new URL('bar', 'tst:///foo').href")), QVariant());
+    QCOMPARE(eval(QSL("new URL('bar', 'tst://foo').href")), QVariant(QSL("tst://foo/bar")));
+    QCOMPARE(eval(QSL("new URL('bar', 'tst:///foo').href")), QVariant(QSL("tst:///bar")));
 
     // However, registered custom schemes have been patched to allow relative
     // URLs even without an initial slash.
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:foo').href")), QVariant(QSL("qrc:bar")));
     QCOMPARE(eval(QSL("new URL('baz', 'qrc:foo/bar').href")), QVariant(QSL("qrc:foo/baz")));
-    QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant(QSL("qrc://bar")));
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant(QSL("qrc://foo/bar")));
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:///foo').href")), QVariant(QSL("qrc:///bar")));
 
     // With a slash it works the same as http except 'foo' is part of the path and not the host.
@@ -492,8 +493,8 @@ void tst_Origins::jsUrlRelative()
     // If the relative URL begins with >= 2 slashes, then the scheme is treated
     // not as a Syntax::Path scheme but as a Syntax::HostPortAndUserInformation
     // scheme.
-    QCOMPARE(eval(QSL("new URL('//baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc://baz/")));
-    QCOMPARE(eval(QSL("new URL('///baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc://baz/")));
+    QCOMPARE(eval(QSL("new URL('//baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc://baz")));
+    QCOMPARE(eval(QSL("new URL('///baz', 'qrc:/foo/bar/').href")), QVariant(QSL("qrc:///baz")));
 }
 
 // Test origin serialization in Blink, implemented by blink::KURL and

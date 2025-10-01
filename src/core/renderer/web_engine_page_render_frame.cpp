@@ -23,7 +23,7 @@ namespace {
 void updateStyleAndLayoutForTree(blink::Document *document)
 {
     // Document::UpdateStyleAndLayout must run on the main thread of the render processs
-    CHECK(WTF::IsMainThread());
+    CHECK(blink::IsMainThread());
 
     if (!document)
         return;

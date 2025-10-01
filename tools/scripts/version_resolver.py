@@ -43,8 +43,8 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '138.0.7204.261'
-chromium_branch = '7204'
+chromium_version = '140.0.7339.225'
+chromium_branch = '7339'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -65,7 +65,7 @@ submodule_blacklist = [
   'third_party/widevine/test/license_server',
   'ui/file_manager/internal'
 ]
-submodule_whitelist = [ 'src/third_party/android_ndk' , 'src/third_party/libunwindstack' ]
+submodule_whitelist = [ 'src/third_party/android_ndk' , 'src/third_party/libunwindstack', 'src/third_party/mircosoft_dxheaders/src'  ]
 
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 

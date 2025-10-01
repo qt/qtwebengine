@@ -113,7 +113,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //    if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
 //        return &NewWebUI<CertificateViewerUI>;
 //#endif  // USE_NSS_CERTS && USE_AURA
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if QT_CONFIG(webengine_extensions)
     if (url.host_piece() == chrome::kChromeUIExtensionsHost) {
         if (profile->IsIncognitoProfile()) {
             qWarning("chrome://extensions is not supported with an off-the-record profile.");

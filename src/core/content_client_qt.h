@@ -9,8 +9,8 @@
 
 #include "base/synchronization/lock.h"
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_client.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "ui/base/layout.h"
 
 #include <memory>

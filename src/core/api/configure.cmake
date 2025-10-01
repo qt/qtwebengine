@@ -99,7 +99,7 @@ qt_feature("webengine-printing-and-pdf" PRIVATE
 qt_feature("webengine-pepper-plugins" PRIVATE
     LABEL "Pepper Plugins"
     PURPOSE "Enables use of Pepper plugins."
-    AUTODETECT QT_FEATURE_webengine_printing_and_pdf
+    AUTODETECT TRUE
 )
 qt_feature("webengine-webchannel" PUBLIC
     SECTION "WebEngine"
@@ -133,9 +133,8 @@ qt_feature("webengine-native-spellchecker" PUBLIC
 qt_feature("webengine-extensions" PUBLIC
     SECTION "WebEngine"
     LABEL "Extensions"
-    PURPOSE "Enables Chromium extensions within certain limits. Currently used by the pdf viewer and hangout webrtc extension."
-    AUTODETECT ON
-    CONDITION QT_FEATURE_webengine_printing_and_pdf OR QT_FEATURE_webengine_webrtc
+    PURPOSE "Enables Chromium extensions API."
+    AUTODETECT NOT QT_FEATURE_webengine_embedded_build
 )
 qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"
@@ -198,7 +197,6 @@ qt_configure_add_summary_section(NAME "Qt WebEngineCore")
 qt_configure_add_summary_entry(ARGS "webengine-embedded-build")
 qt_configure_add_summary_entry(ARGS "webengine-full-debug-info")
 qt_configure_add_summary_entry(ARGS "webengine-sanitizer")
-qt_configure_add_summary_entry(ARGS "webengine-pepper-plugins")
 qt_configure_add_summary_entry(ARGS "webengine-printing-and-pdf")
 qt_configure_add_summary_entry(ARGS "webengine-proprietary-codecs")
 qt_configure_add_summary_entry(ARGS "webengine-spellchecker")

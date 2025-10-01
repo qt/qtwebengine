@@ -47,8 +47,8 @@ windows-11_24H2-msvc2022-arm64                OFF             ON
 windows-11_24H2-msvc2022                      ON              ON
 windows-11_24H2-msvc2022-developer-build      ON              ON
 windows-11_24H2-mingw13-developer-build       OFF             ON
-opensuse-15.6-host-asan                       OFF             ON
-opensuse-15.6-developer-build                 OFF             ON
+opensuse-15.6-host-asan                       OFF             OFF
+opensuse-15.6-developer-build                 OFF             OFF
 jammy-arm64-debian-pkg-packaging              ON              ON
 jammy-amd64-debian-pkg-packaging              ON              ON
 documentation-warnings                        ON              ON

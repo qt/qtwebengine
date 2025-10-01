@@ -23,14 +23,14 @@
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
-#include "content/public/renderer/render_frame.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/net_errors.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -71,8 +71,8 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/render_frame_impl.h"
-#include "plugins/loadable_plugin_placeholder_qt.h"
 #include "qtwebengine/common/plugin.mojom.h"
+#include "plugins/loadable_plugin_placeholder_qt.h"
 #endif // ENABLE_PLUGINS
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -446,11 +446,6 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
     *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
 #endif // BUILDFLAG(ENABLE_PLUGINS)
     return true;
-}
-
-bool ContentRendererClientQt::IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path)
-{
-    return plugin_path.value() == FILE_PATH_LITERAL("internal-pdf-viewer");
 }
 
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)

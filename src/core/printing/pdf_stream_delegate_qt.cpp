@@ -99,19 +99,33 @@ PdfStreamDelegateQt::GetStreamInfo(content::RenderFrameHost* embedder_frame)
     return helper->TakeStreamInfo();
 }
 
-void PdfStreamDelegateQt::OnPdfEmbedderSandboxed(content::FrameTreeNodeId)
-{
-    NOTIMPLEMENTED();
-}
-
 bool PdfStreamDelegateQt::ShouldAllowPdfFrameNavigation(content::NavigationHandle*)
 {
     // Only for the OOPIF PDF viewer
     return true;
 }
 
-bool PdfStreamDelegateQt::ShouldAllowPdfExtensionFrameNavigation(content::NavigationHandle*)
+bool PdfStreamDelegateQt::ShouldAllowPdfExtensionFrameNavigation(content::NavigationHandle *navigation_handle)
+{
+    if (navigation_handle->GetURL().IsAboutBlank())
+        return true;
+
+    // Verify this is a guest, otherwise allow the navigation to proceed.
+    auto *guest = extensions::MimeHandlerViewGuest::FromNavigationHandle(navigation_handle);
+    if (!guest)
+        return true;
+
+    // Since this is the PDF delegate, don't suppress navigations for other stream
+    // types (should they exist).
+    base::WeakPtr<extensions::StreamContainer> stream = guest->GetStreamWeakPtr();
+    if (!stream || stream->extension_id() != extension_misc::kPdfExtensionId)
+        return true;
+
+    return url::IsSameOriginWith(stream->handler_url(), navigation_handle->GetURL());
+}
+
+bool PdfStreamDelegateQt::MaybeDeleteSandboxedStream(content::FrameTreeNodeId)
 {
     // Only for the OOPIF PDF viewer
-    return true;
+    return false;
 }

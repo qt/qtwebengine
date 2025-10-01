@@ -82,7 +82,6 @@ public:
     bool OverrideCreatePlugin(content::RenderFrame *render_frame,
                               const blink::WebPluginParams &params,
                               blink::WebPlugin **plugin) override;
-    bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path) override;
 
     void WillSendRequest(blink::WebLocalFrame *frame,
                          ui::PageTransition transition_type,

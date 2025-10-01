@@ -29,7 +29,7 @@ std::string generateRandomString(size_t length)
 }
 
 bool generateDirNameOnFileThread(const base::FilePath &baseDir,
-                                 base::FilePath::StringViewType prefix, base::FilePath *out)
+                                 const base::FilePath::StringType &prefix, base::FilePath *out)
 {
     base::ScopedBlockingCall scoped_blocking_call(FROM_HERE, base::BlockingType::MAY_BLOCK);
     base::FilePath outPath;
