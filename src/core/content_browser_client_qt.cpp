@@ -6,6 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals_page_handler.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/embedder_support/user_agent_utils.h"
@@ -30,6 +32,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
+#include "content/public/browser/web_ui_controller_interface_binder.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -115,7 +118,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "content/public/browser/web_ui_controller_interface_binder.h"
 #include "common/extensions/extensions_client_qt.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"
@@ -467,6 +469,7 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
         content::RenderFrameHost *render_frame_host,
         mojo::BinderMapWithContext<content::RenderFrameHost *> *map)
 {
+    RegisterWebUIControllerInterfaceBinder<::mojom::UsbInternalsPageHandler, UsbInternalsUI>(map);
     map->Add<content_settings::mojom::ContentSettingsManager>(
             base::BindRepeating(&BindContentSettingsManager));
     map->Add<network_hints::mojom::NetworkHintsHandler>(base::BindRepeating(&BindNetworkHintsHandler));

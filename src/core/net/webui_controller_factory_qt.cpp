@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/device_log/device_log_ui.h"
 #include "chrome/browser/ui/webui/devtools/devtools_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
+#include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -98,6 +99,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
     if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
         return &NewWebUI<chromeos::DeviceLogUI>;
+
+    if (url.host_piece() == chrome::kChromeUIUsbInternalsHost)
+        return &NewWebUI<UsbInternalsUI>;
 
     if (url.host_piece() == chrome::kChromeUIVersionQtHost)
         return &NewWebUI<VersionUIQt>;
