@@ -475,11 +475,18 @@ function(add_intermediate_archive target buildDir completeStatic)
     string(TOUPPER ${config} cfg)
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
+    if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+        set(deployment_target_arg -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
+    else()
+        unset(deployment_target_arg)
+    endif()
+
     if(NOT completeStatic)
         set(archives_rsp "${buildDir}/${ninjaTarget}_archives.rsp")
         set(archives_out "${buildDir}/${cmakeTarget}_archives.o")
         set(archives_command
             COMMAND clang++ -r -nostdlib -arch ${arch}
+            ${deployment_target_arg}
             -o ${archives_out}
             -Wl,-keep_private_externs
             -Wl,-all_load
@@ -490,6 +497,7 @@ function(add_intermediate_archive target buildDir completeStatic)
         OUTPUT ${buildDir}/${cmakeTarget}.a
         BYPRODUCTS ${objects_out} ${archives_out}
         COMMAND clang++ -r -nostdlib -arch ${arch}
+            ${deployment_target_arg}
             -o ${objects_out}
             -Wl,-keep_private_externs
             @${objects_rsp}
@@ -520,6 +528,9 @@ function(add_intermediate_object target buildDir completeStatic)
     endif()
     set(objects_rsp "${buildDir}/${ninjaTarget}_objects.rsp")
     set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
+    if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+        list(APPEND args -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
+    endif()
     add_custom_command(
         OUTPUT ${objects_out}
         COMMAND clang++ -r -nostdlib
