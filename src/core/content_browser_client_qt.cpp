@@ -53,12 +53,14 @@
 #include "ui/base/ui_base_switches.h"
 #include "url/url_util_qt.h"
 
+#include "qtwebengine/common/plugin.mojom.h"
 #include "qtwebengine/common/renderer_configuration.mojom.h"
 
-#include "profile_adapter.h"
+#include "authenticator_request_client_delegate_qt.h"
 #include "browser_main_parts_qt.h"
 #include "certificate_error_controller.h"
 #include "client_cert_select_controller.h"
+#include "content_settings_manager_qt.h"
 #include "custom_handlers/protocol_handler_registry_factory.h"
 #include "devtools_manager_delegate_qt.h"
 #include "file_system_access/file_system_access_permission_request_manager_qt.h"
@@ -69,8 +71,9 @@
 #include "net/proxying_restricted_cookie_manager_qt.h"
 #include "net/proxying_url_loader_factory_qt.h"
 #include "net/system_network_context_manager.h"
-#include "profile_qt.h"
+#include "profile_adapter.h"
 #include "profile_io_data_qt.h"
+#include "profile_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "select_file_dialog_factory_qt.h"
 #include "type_conversion.h"
@@ -80,8 +83,6 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_library_info.h"
 #include "web_engine_settings.h"
-#include "authenticator_request_client_delegate_qt.h"
-#include "content_settings_manager_qt.h"
 #include "api/qwebenginecookiestore.h"
 #include "api/qwebenginecookiestore_p.h"
 #include "api/qwebengineurlrequestinfo_p.h"
@@ -155,6 +156,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/plugin_info_host_qt.h"
 #include "extensions/pdf_iframe_navigation_throttle_qt.h"
 #include "printing/pdf_document_helper_client_qt.h"
 #endif
@@ -200,12 +202,31 @@ bool IsHandledProtocol(std::string_view scheme)
 
 namespace QtWebEngineCore {
 
-void MaybeAddThrottle(
-    std::unique_ptr<content::NavigationThrottle> maybe_throttle,
-    std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
+namespace {
+
+void MaybeAddThrottle(std::unique_ptr<content::NavigationThrottle> maybe_throttle,
+                      std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles)
+{
     if (maybe_throttle)
         throttles->push_back(std::move(maybe_throttle));
 }
+
+#if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
+void BindPluginInfoHost(int render_process_id, int render_frame_id,
+                        mojo::PendingAssociatedReceiver<qtwebengine::mojom::PluginInfoHost> receiver)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    content::RenderProcessHost* host = content::RenderProcessHost::FromID(render_process_id);
+    if (!host)
+        return;
+
+    mojo::MakeSelfOwnedAssociatedReceiver(
+        std::make_unique<extensions::PluginInfoHostQt>(render_process_id, render_frame_id, host->GetBrowserContext()),
+        std::move(receiver));
+}
+#endif
+
+}  // namespace
 
 ContentBrowserClientQt::ContentBrowserClientQt()
 {
@@ -527,13 +548,13 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                         extensions::ExtensionWebContentsObserverQt::BindLocalFrameHost(std::move(receiver), render_frame_host);
                     }, &rfh));
 #endif
-    associated_registry.AddInterface<autofill::mojom::AutofillDriver>(base::BindRepeating(
-            [](content::RenderFrameHost *render_frame_host,
-               mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
-                autofill::ContentAutofillDriverFactory::BindAutofillDriver(render_frame_host,
-                                                                           std::move(receiver));
-            },
-            &rfh));
+    associated_registry.AddInterface<autofill::mojom::AutofillDriver>(
+                base::BindRepeating(
+                    [](content::RenderFrameHost *render_frame_host,
+                       mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver> receiver) {
+                        autofill::ContentAutofillDriverFactory::BindAutofillDriver(render_frame_host,
+                                                                                   std::move(receiver));
+                    }, &rfh));
 #if BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry.AddInterface<pdf::mojom::PdfHost>(
             base::BindRepeating(
@@ -543,8 +564,12 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
                             std::move(receiver), render_frame_host,
                             std::make_unique<PDFDocumentHelperClientQt>());
                 },
-            &rfh));
-#endif  // BUILDFLAG(ENABLE_PDF)
+                &rfh));
+    associated_registry.AddInterface<qtwebengine::mojom::PluginInfoHost>(
+            base::BindRepeating(&BindPluginInfoHost,
+                                rfh.GetProcess()->GetDeprecatedID(),
+                                rfh.GetRoutingID()));
+#endif  // BUILDFLAG(ENABLE_PDF) && BUILDFLAG(ENABLE_EXTENSIONS)
     ContentBrowserClient::RegisterAssociatedInterfaceBindersForRenderFrameHost(rfh, associated_registry);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry.AddInterface<guest_view::mojom::GuestViewHost>(base::BindRepeating(

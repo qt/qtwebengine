@@ -497,8 +497,8 @@ source_set("qtwebengine_sources") {
   }
   if (enable_plugins) {
     sources += [
-      "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
-      "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
+      "//chrome/browser/plugins/plugin_metadata.cc",
+      "//chrome/browser/plugins/plugin_metadata.h",
     ]
   }
   if (enable_print_preview) {

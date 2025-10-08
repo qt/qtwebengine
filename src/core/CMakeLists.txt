@@ -254,12 +254,6 @@ foreach(arch ${archs})
                 cursor_utils_qt_mac.mm cursor_utils_qt_mac.h
         )
 
-        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_pepper_plugins
-            SOURCES
-                renderer/pepper/pepper_renderer_host_factory_qt.cpp renderer/pepper/pepper_renderer_host_factory_qt.h
-                renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
-        )
-
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
             SOURCES
                 printing/pdfium_document_wrapper_qt.cpp printing/pdfium_document_wrapper_qt.h
@@ -300,6 +294,7 @@ foreach(arch ${archs})
                 extensions/file_system_delegate_qt.cpp extensions/file_system_delegate_qt.h
                 extensions/messaging_delegate_qt.cpp extensions/messaging_delegate_qt.h
                 extensions/mime_handler_view_guest_delegate_qt.cpp extensions/mime_handler_view_guest_delegate_qt.h
+                extensions/plugin_info_host_qt.cpp extensions/plugin_info_host_qt.h
                 extensions/plugin_service_filter_qt.cpp extensions/plugin_service_filter_qt.h
                 extensions/unpacked_extension_installer.h extensions/unpacked_extension_installer.cpp
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
@@ -316,6 +311,7 @@ foreach(arch ${archs})
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
                 printing/pdf_document_helper_client_qt.cpp printing/pdf_document_helper_client_qt.h
+                renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
         )
 
         extend_gn_target(${buildGn} CONDITION WIN32
@@ -402,12 +398,7 @@ foreach(arch ${archs})
         )
         extend_gn_list(gnArgArg
             ARGS enable_plugins
-            CONDITION QT_FEATURE_webengine_printing_and_pdf OR
-            QT_FEATURE_webengine_pepper_plugins
-        )
-        extend_gn_list(gnArgArg
-            ARGS enable_ppapi
-            CONDITION QT_FEATURE_webengine_pepper_plugins
+            CONDITION QT_FEATURE_webengine_printing_and_pdf
         )
          extend_gn_list(gnArgArg
             ARGS enable_spellcheck

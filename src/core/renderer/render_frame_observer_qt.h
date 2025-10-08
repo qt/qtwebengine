@@ -28,9 +28,6 @@ public:
     explicit RenderFrameObserverQt(content::RenderFrame *render_frame, web_cache::WebCacheImpl *web_cache_impl);
     ~RenderFrameObserverQt();
 
-#if QT_CONFIG(webengine_pepper_plugins)
-    void DidCreatePepperPlugin(content::RendererPpapiHost *host) override;
-#endif
     bool OnAssociatedInterfaceRequestForFrame(
         const std::string &interface_name,
         mojo::ScopedInterfaceEndpointHandle *handle) override;

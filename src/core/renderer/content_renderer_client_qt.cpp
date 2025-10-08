@@ -72,6 +72,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/render_frame_impl.h"
 #include "plugins/loadable_plugin_placeholder_qt.h"
+#include "qtwebengine/common/plugin.mojom.h"
 #endif // ENABLE_PLUGINS
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -387,21 +388,23 @@ bool ContentRendererClientQt::IsPluginHandledExternally(content::RenderFrame *re
                                    const std::string &original_mime_type)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(ENABLE_PLUGINS)
-    bool found = false;
-    content::WebPluginInfo plugin_info;
-    std::string mime_type;
+    mojo::AssociatedRemote<qtwebengine::mojom::PluginInfoHost> plugin_info_host;
+    render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+            &plugin_info_host);
+    qtwebengine::mojom::PluginInfoPtr plugin_info = qtwebengine::mojom::PluginInfo::New();
+    plugin_info_host->GetPluginInfo(
+            original_url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+            original_mime_type, &plugin_info);
 
-    static_cast<content::RenderFrameImpl *>(render_frame)->GetPepperHost()->GetPluginInfo(
-                original_url, original_mime_type, &found, &plugin_info, &mime_type);
-    if (!found)
-        return false;
+#if QT_CONFIG(webengine_printing_and_pdf)
     if (IsPdfExtensionOrigin(render_frame->GetWebFrame()->GetSecurityOrigin()))
         return true;
+#endif
     return extensions::MimeHandlerViewContainerManager::Get(
                 content::RenderFrame::FromWebFrame(
                     plugin_element.GetDocument().GetFrame()),
                 true /* create_if_does_not_exist */)
-                    ->CreateFrameContainer(plugin_element, original_url, mime_type, plugin_info);
+                    ->CreateFrameContainer(plugin_element, original_url, plugin_info->actual_mime_type, plugin_info->plugin);
 #else
     return false;
 #endif
@@ -417,33 +420,30 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
 #endif // ENABLE_EXTENSIONS
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-    content::WebPluginInfo info;
-    std::string actual_mime_type;
-    bool found = false;
+    std::string orig_mime_type = params.mime_type.Utf8();
+    GURL url(params.url);
+    mojo::AssociatedRemote<qtwebengine::mojom::PluginInfoHost> plugin_info_host;
+    render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_info_host);
 
-    static_cast<content::RenderFrameImpl *>(render_frame)
-            ->GetPepperHost()
-            ->GetPluginInfo(params.url, params.mime_type.Utf8(), &found, &info, &actual_mime_type);
-    if (!found) {
-        *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
-        return true;
-    }
+    qtwebengine::mojom::PluginInfoPtr plugin_info = qtwebengine::mojom::PluginInfo::New();
+    plugin_info_host->GetPluginInfo(url, render_frame->GetWebFrame()->Top()->GetSecurityOrigin(),
+                                    orig_mime_type, &plugin_info);
 #if QT_CONFIG(webengine_printing_and_pdf)
-    if (info.name == u"Chromium PDF Viewer") {
+    if (plugin_info->plugin.name == u"Chromium PDF Viewer") {
         blink::WebPluginParams new_params(params);
-        for (const auto& mime_type : info.mime_types) {
-          if (mime_type.mime_type == params.mime_type.Utf8()) {
-            AppendParams(mime_type.additional_params, &new_params.attribute_names,
-                         &new_params.attribute_values);
-            break;
-          }
+        for (const auto& mime_type : plugin_info->plugin.mime_types) {
+            if (mime_type.mime_type == params.mime_type.Utf8()) {
+                AppendParams(mime_type.additional_params, &new_params.attribute_names,
+                             &new_params.attribute_values);
+                break;
+            }
         }
 
         *plugin = pdf::CreateInternalPlugin(std::move(new_params), render_frame, GetAdditionalPdfInternalPluginAllowedOrigins());
         return true;
     }
 #endif
-    *plugin = render_frame->CreatePlugin(info, params);
+    *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
 #endif // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }

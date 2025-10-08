@@ -122,7 +122,7 @@ static QString getSystem32Dir()
 }
 #endif
 
-#if QT_CONFIG(webengine_pepper_plugins)
+#if BUILDFLAG(ENABLE_PLUGINS)
 
 // The plugin logic is based on chrome/common/chrome_content_client.cc:
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -130,21 +130,6 @@ static QString getSystem32Dir()
 // found in the LICENSE.Chromium file.
 
 #include "content/public/common/content_plugin_info.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
-
-static QString ppapiPluginsPath()
-{
-    // Look for plugins in /plugins/ppapi or application dir.
-    static bool initialized = false;
-    static QString potentialPluginsPath =
-            QLibraryInfo::path(QLibraryInfo::PluginsPath) % "/ppapi"_L1;
-    if (!initialized) {
-        initialized = true;
-        if (!QFileInfo::exists(potentialPluginsPath))
-            potentialPluginsPath = QCoreApplication::applicationDirPath();
-    }
-    return potentialPluginsPath;
-}
 
 void ComputeBuiltInPlugins(std::vector<content::ContentPluginInfo> *plugins)
 {
@@ -172,7 +157,7 @@ void ContentClientQt::AddPlugins(std::vector<content::ContentPluginInfo> *plugin
 }
 
 } // namespace QtWebEngineCore
-#endif // QT_CONFIG(webengine_pepper_plugins)
+#endif // BUILDFLAG(ENABLE_PLUGINS)
 
 namespace QtWebEngineCore {
 
@@ -220,9 +205,6 @@ static bool IsWidevineAvailable(base::FilePath *cdm_path,
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {
         pluginPaths << webenginePluginsPath() + u'/' + QLatin1StringView(kWidevineCdmFileName);
-#if QT_CONFIG(webengine_pepper_plugins)
-        pluginPaths << ppapiPluginsPath() + u'/' + QLatin1StringView(kWidevineCdmFileName);
-#endif
 #if defined(Q_OS_MACOS)
     QDir potentialWidevineDir(u"/Applications/Google Chrome.app/Contents/Frameworks"_s);
     const auto archDir = QSysInfo::currentCpuArchitecture() == "x86_64"_L1

@@ -11,6 +11,7 @@
 #include "components/embedder_support/origin_trials/origin_trial_policy_impl.h"
 #include "content/public/common/content_client.h"
 #include "gpu/config/gpu_info.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/base/layout.h"
 
 #include <memory>
@@ -20,7 +21,7 @@ namespace QtWebEngineCore {
 
 class ContentClientQt : public content::ContentClient {
 public:
-#if QT_CONFIG(webengine_pepper_plugins)
+#if BUILDFLAG(ENABLE_PLUGINS)
     void AddPlugins(std::vector<content::ContentPluginInfo> *plugins) override;
 #endif
     void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,

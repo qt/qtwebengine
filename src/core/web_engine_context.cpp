@@ -53,9 +53,6 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#if QT_CONFIG(webengine_pepper_plugins)
-#include "content/public/browser/plugin_service.h"
-#endif
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
@@ -452,12 +449,6 @@ static std::string getANGLEType(const base::CommandLine &cmd)
 
     return "disabled";
 }
-
-#if QT_CONFIG(webengine_pepper_plugins)
-void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
-{
-}
-#endif
 
 static void logContext(const base::CommandLine &cmd)
 {
@@ -1077,16 +1068,6 @@ WebEngineContext::WebEngineContext()
 
 #if defined(Q_OS_LINUX)
     media::AudioManager::SetGlobalAppName(QCoreApplication::applicationName().toStdString());
-#endif
-
-#if QT_CONFIG(webengine_pepper_plugins)
-    // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
-    // might fail unless the page queried the list of available plugins at least once
-    // (which ends up calling PluginService::GetPlugins). Since the plugins list can only
-    // be created from the FILE thread, and that GetPluginInfoArray is synchronous, it
-    // can't loads plugins synchronously from the IO thread to serve the render process' request
-    // and we need to make sure that it happened beforehand.
-    content::PluginService::GetInstance()->GetPlugins(base::BindOnce(&dummyGetPluginCallback));
 #endif
 
 #if QT_CONFIG(webengine_printing_and_pdf)

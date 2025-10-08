@@ -50,6 +50,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
+#include "extensions/plugin_info_host_qt.h"
 #include "extensions/plugin_service_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_PLUGINS)
 
@@ -249,6 +250,7 @@ int BrowserMainPartsQt::PreMainMessageLoopRun()
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService *plugin_service = content::PluginService::GetInstance();
     plugin_service->SetFilter(extensions::PluginServiceFilterQt::GetInstance());
+    extensions::PluginInfoHostQt::EnsureFactoryBuilt();
 #endif // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
