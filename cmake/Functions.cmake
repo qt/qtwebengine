@@ -394,9 +394,13 @@ function(get_copy_of_response_file result target rsp)
     add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
 endfunction()
 
-# Creates an IMPORTED object library pointing to a single (previously merged) object file
-# and includes it in the cmakeTarget static archive, without propagating any usage
-# requirements to the consumers of the cmakeTarget.
+# Creates an IMPORTED object library pointing to a single object file
+# that is the result of merging multiple Chromium object files with `clang -r`.
+#
+# The object file is added to the cmakeTarget static archive, without
+# propagating any usage requirements to the consumers of the cmakeTarget.
+#
+# Used exclusively for single-arch macOS static builds of QtPdf.
 function(add_archiver_options target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     string(TOUPPER ${config} cfg)
@@ -431,6 +435,16 @@ function(add_archiver_options target buildDir completeStatic)
     set_property(TARGET "${gn_object_target}" PROPERTY IMPORTED_OBJECTS_${cfg} ${objects_out})
 endfunction()
 
+# Links Chromium object files and static libraries to a target Qt library (e.g. Pdf or
+# WebEngineCore), using response files.
+#
+# The function is used on all platforms except for:
+# - universal macOS
+# - static single-arch macOS
+# - iOS of any kind
+# The function IS used for single-arch shared-library macOS builds.
+# The function IS NOT used for static macOS builds and iOS, as the default macOS 'ar'
+# static library archiver does not support response files.
 function(add_linker_options target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
@@ -492,6 +506,23 @@ function(add_linker_options target buildDir completeStatic)
     endif()
 endfunction()
 
+# Creates a single config, arch-specific static library archive from multiple Chromium object
+# files and static libraries.
+#
+# Steps:
+# 1. Merges multiple object files into a single object file via partial linking, aka `clang -r`
+# 2. If completeStatic is false, merges all static archives into a single object (not archive)
+#    file with `clang -r`.
+#    This is done for WebEngineCore, but not Pdf, as Pdf uses only object files.
+# 3. Creates a single final archive with the above created object and archive object files with
+#    `ar -crs`.
+#
+# The complicated setup is used due to missing response file support in the macOS `ar` archiver.
+#
+# This is only used for universal macOS builds of QtPdf and QtWebEngineCore.
+#
+# TODO: This currently loses debug information for static Qt builds, because `clang -r` does NOT
+# transfer debug information, but only adds debug link info, see QTBUG-116619.
 function(add_intermediate_archive target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     get_target_property(arch ${target} ARCH)
@@ -542,6 +573,13 @@ function(add_intermediate_archive target buildDir completeStatic)
     )
 endfunction()
 
+# Merges multiple Chromium object files into a single object file using `clang -r`.
+# E.g. multiple Pdf object files into a single Pdf_objects.o file.
+#
+# This is used for iOS builds and single-arch static macOS builds of QtPdf.
+#
+# TODO: This currently loses debug information for static Qt builds, because `clang -r` does NOT
+# transfer debug information, but only adds debug link info, see QTBUG-116619.
 function(add_intermediate_object target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     get_target_property(arch ${target} ARCH)
@@ -593,8 +631,12 @@ function(create_lipo_command target buildDir fileName)
     )
 endfunction()
 
-# this function only deals with objects as it is only
-# used by qtpdf and we do not need anything more
+# Lipo-s object files into a single universal object file.
+#
+# The resulting lipo-ed object file is added to the STATIC_LIBRARY_OPTIONS of the module target
+# (e.g QtPdf).
+#
+# The function is only used for iOS QtPdf builds.
 function(add_ios_lipo_command target buildDir)
     get_target_property(config ${target} CONFIG)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
@@ -610,6 +652,16 @@ function(add_ios_lipo_command target buildDir)
     )
 endfunction()
 
+# Lipos-s two arch-specific static archives into a single universal static archive.
+#
+# The resulting lipo-ed static archive is added as an IMPORTED static library, and is linked
+# to the module target (e.g. Pdf)
+#
+# Only used for universal macOS builds.
+#
+# TODO: Currently broken for universal static macOS builds, because target_link_libraries() will
+# not try to merge the lipo-ed static archive with the module static archive. The Qt build will
+# succeed, but user projects will fail with linker errors.
 function(add_lipo_command target buildDir)
     get_target_property(config ${target} CONFIG)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
@@ -1284,15 +1336,28 @@ function(add_gn_build_artifacts_to_target)
                 LINK_DEPENDS ${arg_BUILDDIR}/${config}/${arch}/${arg_NINJA_STAMP}
             )
             if(QT_IS_MACOS_UNIVERSAL)
+                # For universal macOS builds we create (merge) per-arch intermediate archives from
+                # objects and static archives, to lipo them later, and then link them to the
+                # module target via target_link_libraries().
+                # TODO: Currently broken for static universal QtPdf builds. Static WebEngine are
+                # not supported, so not relevant for that.
                 add_intermediate_archive(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             elseif(IOS)
+                # For iOS builds that only support building QtPdf, but not QtWebEngine, we create
+                # a per-arch merged object file from all Pdf object files, and later (see below)
+                # lipo them together, and finally add them to STATIC_LIBRARY_OPTIONS of QtPdf.
                 add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
             else()
                 if(MACOS AND QT_FEATURE_static)
-                    # mac archiver does not support @file notation, do intermediate object istead
+                    # The macOS archiver does not support response files (aka @file notation),
+                    # so we create a merged intermediate object like on iOS, create an IMPORTED
+                    # object library for it, and link that to the module target.
                     add_intermediate_object(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                     add_archiver_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 else()
+                    # For single-arch macOS shared builds, and all other platforms (Linux, Windows,
+                    # Android), instead of merging objects, we directly link the response files to
+                    # the module target.
                     add_linker_options(${target} ${arg_BUILDDIR}/${config}/${arch} ${arg_COMPLETE_STATIC})
                 endif()
             endif()
