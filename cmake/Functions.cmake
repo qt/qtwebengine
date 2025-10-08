@@ -81,15 +81,41 @@ function(get_copy_of_response_file result target rsp)
     add_dependencies(${cmakeTarget} ${cmakeTarget}_${rsp}_copy_${config})
 endfunction()
 
+# Creates an IMPORTED object library pointing to a single (previously merged) object file
+# and includes it in the cmakeTarget static archive, without propagating any usage
+# requirements to the consumers of the cmakeTarget.
 function(add_archiver_options target buildDir completeStatic)
     get_target_property(config ${target} CONFIG)
     string(TOUPPER ${config} cfg)
     get_target_property(ninjaTarget ${target} NINJA_TARGET)
     get_target_property(cmakeTarget ${target} CMAKE_TARGET)
     set(objects_out "${buildDir}/${cmakeTarget}_objects.o")
-    add_library(GnObject_${cmakeTarget}_${config} OBJECT IMPORTED GLOBAL)
-    target_link_libraries(${cmakeTarget} PRIVATE $<$<CONFIG:${config}>:GnObject_${cmakeTarget}_${config}>)
-    set_property(TARGET GnObject_${cmakeTarget}_${config} PROPERTY IMPORTED_OBJECTS_${cfg} ${objects_out})
+
+    set(gn_object_target "GnObject_${cmakeTarget}_${config}")
+    add_library("${gn_object_target}" OBJECT IMPORTED GLOBAL)
+
+    # This genex construct is used to prevent leakage of the
+    # ${gn_object_target} target into the INTERFACE_LINK_LIBRARIES
+    # property of the <module> target in its exported
+    # <module>Targets.cmake file, and in the accompanying .prl file.
+    set(config_genex "$<CONFIG:${config}>")
+
+    # This prevents the .prl leakage, it always evaluates to true.
+    set(skip_walk_genex "$<BOOL:QT_SKIP_WALK_LIBS_PROCESSING>")
+
+    # This prevents the INTERFACE_LINK_LIBRARIES leakage.
+    if(CMAKE_VERSION VERSION_LESS "3.26")
+        set(build_genex "BUILD_INTERFACE")
+    else()
+        set(build_genex "BUILD_LOCAL_INTERFACE")
+    endif()
+
+    set(link_genex "$<${build_genex}:${gn_object_target}>")
+    set(condition "$<AND:${config_genex},${skip_walk_genex}>")
+    set(final_genex "$<${condition}:${link_genex}>")
+
+    target_link_libraries(${cmakeTarget} PRIVATE "${final_genex}")
+    set_property(TARGET "${gn_object_target}" PROPERTY IMPORTED_OBJECTS_${cfg} ${objects_out})
 endfunction()
 
 function(add_linker_options target buildDir completeStatic)
