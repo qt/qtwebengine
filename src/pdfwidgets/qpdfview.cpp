@@ -676,7 +676,8 @@ void QPdfView::mouseMoveEvent(QMouseEvent *event)
         const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
         const QRect pageGeometry = it.value().first;
         if (pageGeometry.contains(event->position().toPoint())) {
-            const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
+            QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft()
+                                                         + d->m_viewport.topLeft());
             d->m_linkModel.setPage(page);
             auto dest = d->m_linkModel.linkAt(posInPoints);
             setCursor(dest.isValid() ? Qt::PointingHandCursor : Qt::ArrowCursor);
@@ -695,7 +696,8 @@ void QPdfView::mouseReleaseEvent(QMouseEvent *event)
         const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
         const QRect pageGeometry = it.value().first;
         if (pageGeometry.contains(event->position().toPoint())) {
-            const QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft());
+            QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft()
+                                                         + d->m_viewport.topLeft());
             d->m_linkModel.setPage(page);
             auto dest = d->m_linkModel.linkAt(posInPoints);
             if (dest.isValid()) {
