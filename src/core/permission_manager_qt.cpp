@@ -121,34 +121,24 @@ static std::vector<QWebEnginePermission::PermissionType> toQt(
 {
     // This function handles the edge case differences between our permission types and Blink's;
     // namely, MediaAudioVideoCapture and DesktopAudioVideoCapture
-    std::vector<QWebEnginePermission::PermissionType> permissions;
-    for (auto &p : blinkPermissions) {
-        permissions.push_back(toQt(p));
+    std::unordered_multiset<QWebEnginePermission::PermissionType> permissionSet;
+    for (auto p : blinkPermissions) {
+        permissionSet.insert(toQt(p));
     }
 
-    for (auto i1 = permissions.begin(); i1 != permissions.end(); ++i1) {
-        if (*i1 == QWebEnginePermission::PermissionType::MediaAudioCapture) {
-            for (auto i2 = permissions.begin(); i2 != permissions.end(); ++i2) {
-                if (*i2 == QWebEnginePermission::PermissionType::MediaVideoCapture) {
-                    // Merge MediaAudioCapture and MediaVideoCapture into MediaAudioVideoCapture
-                    *i1 = QWebEnginePermission::PermissionType::MediaAudioVideoCapture;
-                    permissions.erase(i2);
-                    break;
-                }
-            }
-        } else if (*i1 == QWebEnginePermission::PermissionType::DesktopVideoCapture) {
-            for (auto i2 = i1 + 1; i2 != permissions.end(); ++i2) {
-                if (*i2 == QWebEnginePermission::PermissionType::DesktopVideoCapture) {
-                    // Double DesktopVideoCapture means we actually need DesktopAudioVideoCapture
-                    *i2 = QWebEnginePermission::PermissionType::DesktopAudioVideoCapture;
-                    i1 = permissions.erase(i1);
-                    break;
-                }
-            }
-        }
+    if (permissionSet.count(QWebEnginePermission::PermissionType::DesktopVideoCapture) > 1) {
+        permissionSet.erase(QWebEnginePermission::PermissionType::DesktopVideoCapture);
+        permissionSet.insert(QWebEnginePermission::PermissionType::DesktopAudioVideoCapture);
     }
 
-    return permissions;
+    if (permissionSet.count(QWebEnginePermission::PermissionType::MediaAudioCapture)
+            && permissionSet.count(QWebEnginePermission::PermissionType::MediaVideoCapture)) {
+        permissionSet.erase(QWebEnginePermission::PermissionType::MediaAudioCapture);
+        permissionSet.erase(QWebEnginePermission::PermissionType::MediaVideoCapture);
+        permissionSet.insert(QWebEnginePermission::PermissionType::MediaAudioVideoCapture);
+    }
+
+    return std::vector<QWebEnginePermission::PermissionType>(permissionSet.begin(), permissionSet.end());
 }
 
 static QWebEnginePermission::State toQt(blink::mojom::PermissionStatus state)
