@@ -71,7 +71,7 @@ public:
     QWebEngineContextMenuRequest *lastContextMenuRequest() const override;
     QWebEnginePage *createPageForWindow(QWebEnginePage::WebWindowType type) override;
     QObject *accessibilityParentObject() override;
-    void didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) override;
+    QThread *didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     void printRequested() override;
     void printRequestedByFrame(QWebEngineFrame frame) override;

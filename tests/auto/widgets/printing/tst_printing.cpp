@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtWebEngineCore/qtwebenginecore-config.h>
-#include <QWebEngineSettings>
-#include <QWebEngineView>
+
+#include <QPrinter>
+#include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
-#include <QSignalSpy>
+#include <QWebEngineSettings>
+#include <QWebEngineView>
+
 #include <util.h>
 
 #ifdef QTPDF_SUPPORT
@@ -26,6 +29,8 @@ private slots:
     void printHeaderAndFooter_data();
     void printHeaderAndFooter();
     void interruptPrinting();
+    void printOnQPrinterBasic();
+    void interruptPrintingOnQPrinter();
 };
 
 void tst_Printing::printToPdfBasic()
@@ -250,6 +255,49 @@ void tst_Printing::interruptPrinting()
     view.page()->printToPdf(tempDir.path() + "/file.pdf");
     // Navigation stop interrupts print job, preferably do this without crash/assert
     view.page()->triggerAction(QWebEnginePage::Stop);
+}
+
+void tst_Printing::printOnQPrinterBasic()
+{
+    QWebEngineView view;
+    loadSync(view.page(), QUrl("qrc:///resources/basic_printing_page.html"));
+
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+
+    QPrinter printer;
+    printer.setOutputFileName(tempDir.path() + "/file.pdf");
+    QVERIFY(printer.isValid());
+    QCOMPARE(printer.outputFormat(), QPrinter::PdfFormat);
+
+    QSignalSpy printSpy(&view, &QWebEngineView::printFinished);
+    view.print(&printer);
+    QTRY_VERIFY(printSpy.size() == 1);
+    QVERIFY(printSpy.takeFirst().takeFirst().toBool());
+}
+
+void tst_Printing::interruptPrintingOnQPrinter()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+
+    QPrinter printer;
+    printer.setOutputFileName(tempDir.path() + "/file.pdf");
+    printer.setCopyCount(100000);
+    QVERIFY(printer.isValid());
+    QCOMPARE(printer.outputFormat(), QPrinter::PdfFormat);
+
+    {
+        QWebEngineView view;
+        loadSync(view.page(), QUrl("qrc:///resources/basic_printing_page.html"));
+        view.print(&printer);
+        QTRY_COMPARE(printer.printerState(), QPrinter::Active);
+        QTRY_COMPARE(printer.paintingActive(), true);
+        // Destroying the view here should interrupt immediately instead of waiting for all
+        // pages to print.
+    }
+
+    QTRY_COMPARE(printer.printerState(), QPrinter::Idle);
 }
 
 QTEST_MAIN(tst_Printing)
