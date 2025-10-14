@@ -8,6 +8,7 @@
 
 #include <QPainter>
 #include <QPagedPaintDevice>
+#include <QThread>
 
 namespace QtWebEngineCore {
 
@@ -66,6 +67,13 @@ void PrinterWorker::print()
                 m_device->newPage();
 
             for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
+                // The page being printed requests interruption when it is destroyed; this lets
+                // us return early and avoid doing extra work in the background.
+                if (QThread::currentThread()->isInterruptionRequested()) {
+                    Q_EMIT resultReady(false);
+                    return;
+                }
+
                 if (printedPages > 0)
                     m_device->newPage();
 

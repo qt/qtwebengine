@@ -52,6 +52,7 @@
 #include <QMimeData>
 #include <QtCore/QPointer>
 #include <QRect>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 #include <QVariant>
@@ -131,6 +132,10 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
     delete settings;
+#if QT_CONFIG(webengine_printing_and_pdf)
+    if (printerThread)
+        printerThread->requestInterruption();
+#endif
     profile->d_ptr->removeWebContentsAdapterClient(this);
 }
 
@@ -539,10 +544,12 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
 void QWebEnginePagePrivate::didPrintPage(QSharedPointer<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
+    Q_Q(QWebEnginePage);
     Q_ASSERT(currentPrinter);
-    if (view)
-        view->didPrintPage(currentPrinter, result);
-    else
+    if (view) {
+        printerThread = view->didPrintPage(currentPrinter, result);
+        QObject::connect(printerThread, &QThread::finished, q, [this]() { printerThread = nullptr; });
+    } else
         currentPrinter = nullptr;
 #else
     // should not get here
