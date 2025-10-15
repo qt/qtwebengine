@@ -18,10 +18,12 @@ ColumnLimit: 100
 # How much weight do extra characters after the line length limit have.
 # PenaltyExcessCharacter: 4
 
+# REUSE-IgnoreStart
 # Disable reflow of some specific comments
 # qdoc comments: indentation rules are different.
 # Translation comments and SPDX license identifiers are also excluded.
 CommentPragmas: "^!|^:|^ SPDX-License-Identifier:"
+# REUSE-IgnoreEnd
 
 # We want a space between the type and the star for pointer types.
 PointerBindsToType: false
