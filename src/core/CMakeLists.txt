@@ -132,6 +132,7 @@ foreach(arch ${archs})
                 file_system_access/file_system_access_permission_request_manager_qt.cpp file_system_access/file_system_access_permission_request_manager_qt.h
                 find_text_helper.cpp find_text_helper.h
                 global_descriptors_qt.h
+                gpu/content_gpu_client_qt.cpp gpu/content_gpu_client_qt.h
                 javascript_dialog_controller.cpp javascript_dialog_controller.h javascript_dialog_controller_p.h
                 javascript_dialog_manager_qt.cpp javascript_dialog_manager_qt.h
                 login_delegate_qt.cpp login_delegate_qt.h
