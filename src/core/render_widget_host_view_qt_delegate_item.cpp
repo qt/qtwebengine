@@ -54,19 +54,30 @@ void RenderWidgetHostViewQtDelegateItem::initAsPopup(const QRect &screenRect)
 {
     Q_ASSERT(m_isPopup);
     setSize(screenRect.size());
+    m_popupRect = screenRect;
     if (m_widgetDelegate)
         m_widgetDelegate->InitAsPopup(screenRect);
 }
 
 QRectF RenderWidgetHostViewQtDelegateItem::viewGeometry() const
 {
-    // Transform the entire rect to find the correct top left corner.
-    const QPointF p1 = mapToGlobal(QPointF(0, 0));
-    const QPointF p2 = mapToGlobal(QPointF(width(), height()));
-    QRectF geometry = QRectF(p1, p2).normalized();
-    // But keep the size untransformed to behave like other QQuickItems.
-    geometry.setSize(size());
-    return geometry;
+    const QTransform transform = itemTransform(nullptr, nullptr);
+
+    const bool isTransformed = transform.type() > QTransform::TxTranslate;
+
+    if (!isTransformed) {
+        // find the correct top left corner
+        const QPointF tl = mapToGlobal(QPointF(0, 0));
+        return QRectF(tl, size());
+    } else if (!m_isPopup) {
+        // keep it simply untransformed, as we transform only delegate as there no way
+        // to return screen rect which would makes sense in that case
+        // this is just band-aid workaround to support rotation and scaling
+        return QRectF(QPointF(0, 0), size());
+    } else {
+        // this is transformed and popup, keep chromium unaware of transformations
+        return m_popupRect;
+    }
 }
 
 QRect RenderWidgetHostViewQtDelegateItem::windowGeometry() const
