@@ -115,6 +115,7 @@ private:
 
     RenderWidgetHostViewQtDelegateClient *m_client;
     bool m_isPopup;
+    QRectF m_popupRect;
     QColor m_clearColor;
     Qt::InputMethodHints m_inputMethodHints = {};
     QList<QMetaObject::Connection> m_windowConnections;

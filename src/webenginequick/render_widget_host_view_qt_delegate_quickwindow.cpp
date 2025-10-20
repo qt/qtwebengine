@@ -27,19 +27,6 @@ static inline struct ItemTransform getTransformValuesFromItemTree(QQuickItem *it
     return returnValue;
 }
 
-static inline QPointF transformPoint(const QPointF &point, const QTransform &transform,
-                                     const QPointF &offset, const QQuickItem *parent)
-{
-    // make scene vector
-    QPointF a = point - offset;
-    // apply local transformation
-    a = transform.map(a);
-    // make screen coordinates
-    a = parent->mapFromScene(a);
-    a = parent->mapToGlobal(a);
-    return a;
-}
-
 RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(
         RenderWidgetHostViewQtDelegateItem *realDelegate, QWindow *parent)
     : QQuickWindow(), m_realDelegate(realDelegate), m_virtualParent(nullptr), m_transformed(false)
@@ -64,37 +51,29 @@ void RenderWidgetHostViewQtDelegateQuickWindow::setVirtualParent(QQuickItem *vir
 }
 
 // rect is visual geometry in form of global screen coordinates
-// chromium knows nothing about local transformation
+// if menu is transformed screen rect is simply given in screen
+// coordinates where parent geometry is simply QRect(0,0,size())
 void RenderWidgetHostViewQtDelegateQuickWindow::InitAsPopup(const QRect &rect)
 {
     // To decide if there is a scale or rotation, we check it from the transfrom
     // to also cover the case where the scale is higher up in the item tree.
     QTransform transform = m_virtualParent->itemTransform(nullptr, nullptr);
-    m_transformed = transform.isRotating() || transform.isScaling();
+    m_transformed = transform.type() > QTransform::TxTranslate;
 
     if (m_transformed) {
         // code below tries to cover the case where webengine view is rotated or scaled,
         // the code assumes the rotation is in the form of  90, 180, 270 degrees
         // to archive that we keep chromium unaware of transformation and we transform
         // just the window content.
-        m_rect = rect;
-        // get parent window (scene) offset
-        QPointF offset = m_virtualParent->mapFromScene(QPoint(0, 0));
-        offset = m_virtualParent->mapToGlobal(offset);
-        // get local transform
-        QPointF tl = transformPoint(rect.topLeft(), transform, offset, m_virtualParent);
-        QPointF br = transformPoint(rect.bottomRight(), transform, offset, m_virtualParent);
-        QRectF popupRect(tl, br);
-        popupRect = popupRect.normalized();
-        // include offset from parent window
-        popupRect.moveTo(popupRect.topLeft() - offset);
-        setGeometry(popupRect.adjusted(0, 0, 1, 1).toRect());
-        // add offset since screenRect and transformed popupRect one are different and
-        // we want to rotate in center.
+        QRectF popupRect = transform.mapRect(rect);
+        // adjust for scene offset
+        const QPointF offset =
+                m_virtualParent->mapToGlobal(m_virtualParent->mapFromScene(QPoint(0, 0)));
+        popupRect.translate(offset);
+        setGeometry(popupRect.normalized().toRect());
         m_realDelegate->setX(-rect.width() / 2.0 + geometry().width() / 2.0);
         m_realDelegate->setY(-rect.height() / 2.0 + geometry().height() / 2.0);
         m_realDelegate->setTransformOrigin(QQuickItem::Center);
-
         // We need to read the values for scale and rotation from the item tree as it is not
         // sufficient to only use the virtual parent item and its parent for the case that the
         // scale or rotation is applied higher up the item tree.
