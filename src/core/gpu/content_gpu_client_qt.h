@@ -5,6 +5,8 @@
 #ifndef CONTENT_GPU_CLIENT_QT_H
 #define CONTENT_GPU_CLIENT_QT_H
 
+#include "base/memory/scoped_refptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/config/gpu_preferences.h"
 
@@ -29,6 +31,7 @@ public:
     ~ContentGpuClientQt();
 
     gpu::GpuPreferences gpuPreferences() const { return m_gpuPreferences; }
+    scoped_refptr<base::SingleThreadTaskRunner> gpuTaskRunner() const { return m_gpuTaskRunner; }
 
     // Overridden from content::ContentGpuClient:
     void GpuServiceInitialized() override;
@@ -39,6 +42,7 @@ public:
 private:
     QScopedPointer<GpuObserver> m_gpuObserver;
     gpu::GpuPreferences m_gpuPreferences;
+    scoped_refptr<base::SingleThreadTaskRunner> m_gpuTaskRunner;
 };
 
 } // namespace QtWebEngineCore

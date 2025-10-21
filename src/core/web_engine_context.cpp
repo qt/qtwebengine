@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/common/features.h"
 #include "content/common/process_visibility_tracker.h"
-#include "content/gpu/gpu_child_thread.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -516,23 +515,6 @@ static void setupProxyPac(base::CommandLine &commandLine)
     }
 }
 
-static void cleanupVizProcess()
-{
-    auto gpuChildThread = content::GpuChildThread::instance();
-    if (!gpuChildThread)
-        return;
-    content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
-    auto factory = static_cast<content::VizProcessTransportFactory*>(content::ImageTransportFactory::GetInstance());
-    factory->PrepareForShutDown();
-
-    // Wait for viz destroy tasks to be completed on the GPU thread.
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    gpuChildThread->main_thread_runner()->PostTask(
-            FROM_HERE, base::BindOnce([](base::WaitableEvent *event) { event->Signal(); }, &event));
-    event.Wait();
-}
-
 static QStringList parseEnvCommandLine(const QString &cmdLine)
 {
     QString arg;
@@ -645,8 +627,22 @@ void WebEngineContext::destroy()
 
     // Normally the GPU thread is shut down when the GpuProcessHost is destroyed
     // on IO thread (triggered by ~BrowserMainRunner). But by that time the UI
-    // task runner is not working anymore so we need to do this earlier.
-    cleanupVizProcess();
+    // task runner is not working anymore so we need to clean Viz up earlier.
+    if (m_mainDelegate->gpuClient() && m_mainDelegate->gpuClient()->gpuTaskRunner()) {
+        content::GetHostFrameSinkManager()->SetConnectionLostCallback(base::DoNothing());
+        auto factory = static_cast<content::VizProcessTransportFactory *>(
+                content::ImageTransportFactory::GetInstance());
+        factory->PrepareForShutDown();
+
+        // Wait for viz destroy tasks to be completed on the GPU thread.
+        base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                                  base::WaitableEvent::InitialState::NOT_SIGNALED);
+        m_mainDelegate->gpuClient()->gpuTaskRunner()->PostTask(
+                FROM_HERE,
+                base::BindOnce([](base::WaitableEvent *event) { event->Signal(); }, &event));
+        event.Wait();
+    }
+
     // Flush the UI message loop before quitting.
     flushMessages();
 

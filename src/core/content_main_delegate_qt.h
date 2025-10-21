@@ -17,6 +17,7 @@ namespace QtWebEngineCore {
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
+    ContentGpuClientQt *gpuClient() const { return m_gpuClient.get(); }
 
     // This is where the embedder puts all of its startup code that needs to run
     // before the sandbox is engaged.

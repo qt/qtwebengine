@@ -219,6 +219,7 @@ void ContentGpuClientQt::GpuServiceInitialized()
 {
     // This is expected to be called on the GPU thread.
     Q_ASSERT(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    m_gpuTaskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
 
     m_gpuObserver.reset(new GpuObserver(this));
     content::GpuDataManager::GetInstance()->AddObserver(m_gpuObserver.get());
