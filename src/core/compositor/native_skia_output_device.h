@@ -11,7 +11,6 @@
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
-#include "gpu/config/gpu_preferences.h"
 
 #include <QMutex>
 

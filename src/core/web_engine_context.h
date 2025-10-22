@@ -23,17 +23,11 @@ class FieldTrialList;
 namespace content {
 class BrowserMainRunner;
 class ContentMainRunner;
-class GpuThreadController;
-class InProcessChildThreadParams;
 class MojoIpcSupport;
 }
 
 namespace discardable_memory {
 class DiscardableSharedMemoryManager;
-}
-
-namespace gpu {
-struct GpuPreferences;
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
