@@ -1,5 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:network-protocol
 
 // based on chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.cc
 // Copyright 2018 The Chromium Authors. All rights reserved.
