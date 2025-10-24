@@ -135,7 +135,7 @@ QString QWebEngineExtensionInfo::id() const
 }
 
 /*!
-    \property QWebEngineExtensionInfo::name
+    \property QWebEngineExtensionInfo::description
     \brief The description of the extension.
 
     Acquired from the extension's manifest file's description property.
