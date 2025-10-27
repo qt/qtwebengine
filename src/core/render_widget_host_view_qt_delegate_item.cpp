@@ -321,7 +321,7 @@ void RenderWidgetHostViewQtDelegateItem::inputMethodEvent(QInputMethodEvent *eve
 void RenderWidgetHostViewQtDelegateItem::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChange(newGeometry, oldGeometry);
-    m_client->visualPropertiesChanged();
+    polish();
 }
 
 void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const ItemChangeData &value)
@@ -352,7 +352,7 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
             if (!m_isPopup)
                 m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent*)), SLOT(onHide())));
         }
-        m_client->visualPropertiesChanged();
+        polish();
     } else if (change == QQuickItem::ItemVisibleHasChanged) {
         if (value.boolValue) {
             m_client->notifyShown();
@@ -364,7 +364,7 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
                 onHide();
         }
     } else if (change == QQuickItem::ItemDevicePixelRatioHasChanged) {
-        m_client->visualPropertiesChanged();
+        polish();
     }
 }
 
@@ -490,6 +490,11 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
     return node;
 }
 
+void RenderWidgetHostViewQtDelegateItem::updatePolish()
+{
+    m_client->visualPropertiesChanged();
+}
+
 void RenderWidgetHostViewQtDelegateItem::onBeforeRendering()
 {
     auto comp = compositor();
@@ -508,7 +513,7 @@ void RenderWidgetHostViewQtDelegateItem::onAfterFrameEnd()
 
 void RenderWidgetHostViewQtDelegateItem::onWindowPosChanged()
 {
-    m_client->visualPropertiesChanged();
+    polish();
 }
 
 void RenderWidgetHostViewQtDelegateItem::onHide()
