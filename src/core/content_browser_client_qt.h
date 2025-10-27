@@ -237,6 +237,7 @@ public:
     static std::string getUserAgent();
 
     std::string GetUserAgent() override { return getUserAgent(); }
+    std::string GetUserAgentBasedOnPolicy(content::BrowserContext *context) override;
     blink::UserAgentMetadata GetUserAgentMetadata() override;
     std::string GetProduct() override;
 
