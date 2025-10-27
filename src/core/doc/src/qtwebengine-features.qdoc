@@ -305,17 +305,181 @@
 
     \section1 Hardware Acceleration
 
-    QtWebEngine tries to use hardware acceleration for rendering the content. It uses
-    \c OpenGL or \c OpenGLES APIs to execute rendering calls on the GPU. As a fallback,
-    software rendering is used whenever the hardware does not meet the required set of
-    OpenGL functionality. A user can check the current hardware acceleration state by
-    loading the \c {chrome://gpu} internal page. Moreover, the acceleration can be explicitly
-    disabled with \c {QTWEBENGINE_CHROMIUM_FLAGS} using the \c {disable-gpu} switch.
-    For example on Linux:
+    \QWE tries to use hardware acceleration for rendering web content whenever possible.
+    The actual rendering is performed by Chromium, and the final image is produced by Chromium's
+    compositor, which makes use of modern GPU APIs such as OpenGL, Vulkan, Metal, or Direct3D,
+    depending on the platform and available drivers.
 
+    This final image is then imported by \QWE into the Qt rendering pipeline using GPU
+    interoperability, allowing efficient sharing of GPU resources without unnecessary copies.
+    The imported image is passed to the \l{Qt Quick Scene Graph}, which also performs
+    hardware-accelerated rendering through the Qt Rendering Hardware Interface (RHI).
+
+    While both Qt and Chromium rely on GPU acceleration, they may not necessarily use the same
+    graphics API. In practice, \QWE attempts to align Chromium’s GPU backend with the one
+    used by Qt when possible, defaulting to Qt’s chosen backend configuration to ensure
+    compatibility and optimal performance, though it is possible to manually override these
+    defaults if needed.
+
+    When hardware acceleration is not available or fails, \QWE automatically tries to fall back to
+    software rendering.
+
+    \section2 Force use of software rendering
+
+    The automatic fallback to software rendering is not always possible, and \QWE may fail to
+    properly display web content or may exit with an error message. In such cases, it maybe
+    necessary to explicitly disable hardware acceleration and use software rendering instead.
+
+    There are multiple ways to force software rendering:
+
+    \list
+    \li Disable hardware acceleration in Chromium:
     \badcode
     export QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu
     \endcode
+    \li Disable hardware acceleration in \l{Qt Quick Scene Graph}:
+    \badcode
+    export QT_QUICK_BACKEND=software
+    \endcode
+    \endlist
+
+    \section2 Changing the graphics API backend in Qt
+
+    There are two ways to choose the graphics API backend:
+    \list
+    \li Set \c{QSG_RHI_BACKEND} environment variable before launching application.
+    \li Call \l{QQuickWindow::setGraphicsApi()} in combination with
+        \l{QSGRendererInterface::GraphicsApi} before constructing the first \l{QQuickWindow}.
+    \endlist
+
+    For more details, see
+    \l{Rendering via the Qt Rendering Hardware Interface}.
+
+    \section2 Changing the graphics API backend in Chromium
+
+    Changing Chromium’s graphics API backend is generally not recommended, as it may cause
+    compatibility issues or inconsistent rendering behavior. Whenever possible, prefer using the
+    \c{QSG_RHI_BACKEND} environment variable instead. However, it may be necessary in some cases
+    for debugging or as a temporary workaround for driver-specific problems.
+
+    To override Chromium's backend, set the \c{QTWEBENGINE_CHROMIUM_FLAGS} environment variable to
+    pass the corresponding Chromium command line flags, such as \c{--use-gl=} or \c{--use-angle=}.
+
+    In \QWE, Chromium currently uses the \e{ANGLE} backend by default on all platforms where
+    hardware acceleration is supported. ANGLE is a cross-platform graphics abstraction layer in
+    Chromium which hides the underlying native graphics backend.
+
+    The default configuration \QWE uses is this:
+    \badcode
+    export QTWEBENGINE_CHROMIUM_FLAGS="--use-gl=angle --use-angle=default"
+    \endcode
+
+    If ANGLE crashes under a specific configuration, it can be completely disabled while still using
+    Vulkan for hardware-accelerated rendering:
+    \badcode
+    export QTWEBENGINE_CHROMIUM_FLAGS="--use-gl=stub --enable-features=Vulkan --use-vulkan=native"
+    \endcode
+    \note Certain features such as \l{WebGL} may not work with a custom configuration like this.
+
+    Alternatively, the following configuration uses Vulkan for rendering while keeping ANGLE enabled
+    for \l{WebGL} support:
+    \badcode
+    export QTWEBENGINE_CHROMIUM_FLAGS="--use-gl=angle --enable-features=Vulkan --use-vulkan=native"
+    \endcode
+
+    For more details about the corresponding Chromium command line flags, see Chromium's source
+    code:
+    \l{https://chromium.googlesource.com/experimental/chromium/src/+/lkgr/ui/gl/gl_switches.cc}
+    {//ui/gl/gl_switches.cc}
+
+    \section2 NVIDIA on Linux
+
+    On Linux systems with an NVIDIA GPU, Chromium is forced to use Vulkan for rendering.
+
+    \QWE uses GBM buffer objects to import textures from Chromium into Qt's graphics pipeline.
+    However, NVIDIA drivers currently do not support allocating these buffer objects.
+    As a workaround, \QWE forces Chromium to render with Vulkan and imports the textures using
+    Vulkan interoperability.
+
+    \note Qt itself is not forced to use Vulkan. Chromium uses the
+    \c{--use-gl=angle --enable-features=Vulkan --use-vulkan=native} configuration.
+
+    \section2 Enable logging and troubleshooting
+
+    When a rendering issue occurs, it is important to know the failing configuration and the
+    current state of hardware acceleration in order to investigate and report the problem
+    effectively.
+
+    The easiest way to check this information is to load the \c{chrome://gpu} internal page and
+    analyze its content. However, this page may not always be readable or available during a
+    rendering issue.
+
+    \QWE provides logging categories that can be enabled to dump detailed graphics information:
+
+    \list
+    \li \c{qt.webenginecontext} logs how \QWE was initialized, the detected GPU, and the graphics
+        configuration.
+    \li \c{qt.webengine.compositor} logs the configuration used by Chromium and the steps \QWE takes
+        to import textures into Qt's graphics pipeline.
+    \endlist
+
+    To enable these logs, set the \c{QT_LOGGING_RULES} environment variable, for example:
+    \badcode
+    export QT_LOGGING_RULES="qt.webenginecontext=true;qt.webengine.compositor=true"
+    \endcode
+
+    \note If the \c{QSG RHI Device} used by Qt and the \c{GL Renderer} used by Chromium differ,
+    it indicates that Qt and Chromium are using different GPUs in a multi-GPU system, which is
+    currently not supported.
+
+    This is an example GPU log from \c{qt.webenginecontext}:
+    \badcode
+    Chromium GL Backend: angle
+    Chromium ANGLE Backend: default
+    Chromium Vulkan Backend: disabled
+
+    QSG RHI Backend: OpenGL
+    QSG RHI Backend Supported: yes
+    QSG RHI Device: AMD AMD Radeon Graphics (radeonsi, raphael_mendocino, LLVM 20.1.8, DRM 3.61, 6.12.41-gentoo-x86_64) 4.6 (Compatibility Profile) Mesa 25.1.9
+    QSG RHI GPU Vendor: AMD
+    \endcode
+
+    The first block presents the Chromium configuration:
+    \list
+    \li \c{Chromium GL Backend} shows the value of the \c{--use-gl=} setting.
+    \li \c{Chromium ANGLE Backend} shows the value of the \c{--use-angle=} setting.
+    \li \c{Chromium Vulkan Backend} shows the value of the \c{--use-vulkan=} setting.
+    \endlist
+
+    The second block presents the Qt configuration:
+    \list
+    \li \c{QSG RHI Backend} shows the underlying native graphics API.
+    \li \c{QSG RHI Backend Supported} indicates whether this graphics API is supported by \QWE.
+    \li \c{QSG RHI Device} shows metadata for the graphics device used by the RHI.
+    \li \c{QSG RHI Vendor} shows the vendor of the graphics device used by the RHI.
+    \endlist
+
+    This is an example ANGLE log from \c{qt.webengine.compositor} for the same GPU:
+    \badcode
+    qt.webengine.compositor: ANGLE_OPENGL display is initialized:
+    GL Renderer: ANGLE (AMD, AMD Radeon Graphics (radeonsi raphael_mendocino LLVM 20.1.8), OpenGL 4.6 (Core Profile) Mesa 25.1.9)
+    2 GPU(s) detected:
+      Nvidia, device id: 0x1d01, driver: Mesa 25.1.9, system device id: 0x0, preference: None, active: no
+      AMD, device id: 0x164e, driver: Mesa 25.1.9, system device id: 0x0, preference: None, active: yes
+    NVIDIA Optimus: disabled
+    AMD Switchable: disabled
+    \endcode
+
+    The log entries above indicates:
+    \list
+    \li \c{ANGLE_OPENGL display is initialized} confirms that ANGLE was successfully initialized
+        with the specified display type.
+    \li \c{GL Renderer} shows metadata for the graphics device used by ANGLE (expected to match
+        the \c{QSG RHI Device}).
+    \li \c{2 GPU(s) detected} lists the GPUs detected by ANGLE.
+    \li \c{NVIDIA Optimus} and \c{AMD Switchable} indicate whether ANGLE supports GPU switching
+        at runtime (currently not supported).
+    \endlist
 
     \section1 HTML5 DRM
 
