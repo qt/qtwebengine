@@ -1046,6 +1046,13 @@ std::string ContentBrowserClientQt::getUserAgent()
                                               + ".0.0.0");
 }
 
+std::string ContentBrowserClientQt::GetUserAgentBasedOnPolicy(content::BrowserContext *context)
+{
+    if (!context)
+        return getUserAgent();
+    return static_cast<ProfileQt *>(context)->profileAdapter()->httpUserAgent().toStdString();
+}
+
 blink::UserAgentMetadata ContentBrowserClientQt::GetUserAgentMetadata()
 {
     // Implemented only for safe-keeping. It will be overridden on WebContents level.
