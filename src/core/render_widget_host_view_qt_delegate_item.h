@@ -73,7 +73,7 @@ public:
     void setInputMethodHints(Qt::InputMethodHints) override;
     void setClearColor(const QColor &color) override;
     void unhandledWheelEvent(QWheelEvent *ev) override;
-
+    void updatePolish() override;
     void readyToSwap() override;
 
     void setWidgetDelegate(WidgetDelegate *delegate);

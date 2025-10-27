@@ -1892,19 +1892,47 @@ void QQuickWebEngineView::geometryChange(const QRectF &newGeometry, const QRectF
 {
     QQuickItem::geometryChange(newGeometry, oldGeometry);
     Q_D(QQuickWebEngineView);
-    if (d->delegateItem)
+    if (d->delegateItem) {
         d->delegateItem->setSize(newGeometry.size());
+        // this handles notifications of local offset changes
+        d->delegateItem->polish();
+    }
 }
 
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
 {
-    Q_D(QQuickWebEngineView);
-    if (d && d->profileInitialized() && d->adapter->isInitialized()
+    QQuickItem::itemChange(change, value);
+    if (!d_ptr) // see releaseProfile()
+        return;
+    if (d_ptr->profileInitialized() && d_ptr->adapter->isInitialized()
             && (change == ItemSceneChange || change == ItemVisibleHasChanged)) {
         if (window())
-            d->adapter->setVisible(isVisible());
+            d_ptr->adapter->setVisible(isVisible());
     }
-    QQuickItem::itemChange(change, value);
+    if (change == ItemParentHasChanged) {
+        // track global offset changes
+        QQuickItem *item = value.item;
+        // detach
+        while (item) {
+            disconnect(item, nullptr, this, nullptr);
+            item = item->parentItem();
+        }
+        // attach
+        item = parentItem();
+        while (item) {
+            connect(item, &QQuickItem::xChanged, this, [this]() {
+                if (d_ptr && d_ptr->delegateItem)
+                    d_ptr->delegateItem->polish();
+            });
+            connect(item, &QQuickItem::yChanged, this, [this]() {
+                if (d_ptr && d_ptr->delegateItem)
+                    d_ptr->delegateItem->polish();
+            });
+            item = item->parentItem();
+        }
+        if (d_ptr->delegateItem)
+            d_ptr->delegateItem->polish();
+    }
 }
 
 void QQuickWebEngineView::acceptAsNewWindow(QWebEngineNewWindowRequest *request)
