@@ -61,7 +61,7 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     scoped_refptr<gfx::NativePixmap> nativePixmap = m_frontBuffer->nativePixmap();
     if (!nativePixmap) {
         if (m_isNativeBufferSupported) {
-            qWarning("VULKAN: No NativePixmap.");
+            qWarning("VULKAN: Failed to get native pixmap despite dma_buf support.");
             return nullptr;
         }
 
