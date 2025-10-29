@@ -26,16 +26,6 @@ static inline struct ItemTransform getTransformValuesFromItemTree(QQuickItem *it
     return returnValue;
 }
 
-static inline QPoint getOffset(QQuickItem *item)
-{
-    // get parent window (scene) offset
-    QPointF offset = item->mapFromScene(QPoint(0, 0));
-    offset = item->mapToGlobal(offset);
-    // get local offset
-    offset -= item->mapToGlobal(QPoint(0, 0));
-    return offset.toPoint();
-}
-
 static inline QPointF transformPoint(const QPointF &point, const QTransform &transform,
                                      const QPointF &offset, const QQuickItem *parent)
 {
@@ -72,7 +62,7 @@ void RenderWidgetHostViewQtDelegateQuickWindow::setVirtualParent(QQuickItem *vir
     m_virtualParent = virtualParent;
 }
 
-// rect is window geometry in form of parent window offset + offset in scene coordinates
+// rect is visual geometry in form of global screen coordinates
 // chromium knows nothing about local transformation
 void RenderWidgetHostViewQtDelegateQuickWindow::InitAsPopup(const QRect &rect)
 {
@@ -111,9 +101,7 @@ void RenderWidgetHostViewQtDelegateQuickWindow::InitAsPopup(const QRect &rect)
         m_realDelegate->setRotation(transformValues.rotation);
         m_realDelegate->setScale(transformValues.scale);
     } else {
-        QRect geometry(rect);
-        geometry.moveTo(rect.topLeft() - getOffset(m_virtualParent));
-        setGeometry(geometry);
+        setGeometry(rect);
     }
     m_realDelegate->show();
     raise();
@@ -128,8 +116,12 @@ void RenderWidgetHostViewQtDelegateQuickWindow::Resize(int width, int height)
 
 void RenderWidgetHostViewQtDelegateQuickWindow::MoveWindow(const QPoint &screenPos)
 {
-    if (!m_transformed)
-        QQuickWindow::setPosition(screenPos - getOffset(m_virtualParent));
+    if (!m_transformed) {
+        // Note we assume popup is frameless (no decorations), as screenPos is from
+        // visual gemometry and not window gemetry, however here we set
+        // positon of window frame.
+        QQuickWindow::setPosition(screenPos);
+    }
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::SetClearColor(const QColor &color)
