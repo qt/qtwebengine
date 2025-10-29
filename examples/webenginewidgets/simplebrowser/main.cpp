@@ -21,6 +21,19 @@ QUrl commandLineUrlArgument()
     return QUrl(u"chrome://qt"_s);
 }
 
+bool isSingleProcessMode()
+{
+    const QStringList args = QCoreApplication::arguments();
+    if (args.contains("--single-process"_L1))
+        return true;
+
+    const QStringList flags = qEnvironmentVariable("QTWEBENGINE_CHROMIUM_FLAGS").split(u' ');
+    if (flags.contains("--single-process"_L1))
+        return true;
+
+    return false;
+}
+
 int main(int argc, char **argv)
 {
     QCoreApplication::setOrganizationName("QtExamples");
@@ -37,7 +50,8 @@ int main(int argc, char **argv)
     QUrl url = commandLineUrlArgument();
 
     Browser browser;
-    BrowserWindow *window = browser.createHiddenWindow();
+    bool offTheRecord = isSingleProcessMode();
+    BrowserWindow *window = browser.createHiddenWindow(offTheRecord);
     window->tabWidget()->setUrl(url);
     window->show();
     return app.exec();
