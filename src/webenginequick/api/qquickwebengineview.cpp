@@ -446,8 +446,14 @@ void QQuickWebEngineViewPrivate::contextMenuRequested(QWebEngineContextMenuReque
 void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, bool &accepted, bool isMainFrame, bool hasFrameData)
 {
     Q_Q(QQuickWebEngineView);
+
+    QQmlEngine *engine = qmlEngine(q);
+    if (!engine)
+        return;
+
     auto request = new QWebEngineNavigationRequest(url, static_cast<QWebEngineNavigationRequest::NavigationType>(navigationType), isMainFrame, hasFrameData);
-    qmlEngine(q)->newQObject(request);
+
+    engine->newQObject(request);
     Q_EMIT q->navigationRequested(request);
 
     accepted = request->isAccepted();
