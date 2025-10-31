@@ -87,8 +87,11 @@ void TouchSelectionControllerClientQt::onScrollEnd()
 
 bool TouchSelectionControllerClientQt::IsCommandIdEnabled(int command_id) const
 {
-    bool editable = m_rwhv->getTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
-    bool readable = m_rwhv->getTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
+    const ui::mojom::TextInputState *state = m_rwhv->getTextInputState();
+    ui::TextInputType type = state ? state->type : ui::TEXT_INPUT_TYPE_NONE;
+
+    bool editable = type != ui::TEXT_INPUT_TYPE_NONE;
+    bool readable = type != ui::TEXT_INPUT_TYPE_PASSWORD;
     bool hasSelection = !m_rwhv->GetSelectedText().empty();
 
     switch (command_id) {

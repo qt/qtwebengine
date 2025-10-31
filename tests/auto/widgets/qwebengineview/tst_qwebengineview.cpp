@@ -55,6 +55,8 @@
 #include <QtCore/qregularexpression.h>
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == (expect | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu));
 
@@ -114,6 +116,7 @@ private Q_SLOTS:
     void setLoadedPage();
     void microFocusCoordinates();
     void focusInputTypes();
+    void inputModes();
     void unhandledKeyEventPropagation();
     void horizontalScrollbarTest();
 
@@ -711,6 +714,87 @@ void tst_QWebEngineView::focusInputTypes()
     VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), (Qt::ImhMultiLine | Qt::ImhPreferLowercase));
     QVERIFY(webView.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
     QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+}
+
+void tst_QWebEngineView::inputModes()
+{
+    QWebEngineView webView;
+    webView.resize(200, 600);
+    webView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&webView));
+
+    QSignalSpy loadFinishedSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.load(QUrl(u"qrc:///resources/input_modes.html"_s));
+    QVERIFY(loadFinishedSpy.wait());
+
+    auto inputMethodQuery = [&webView](Qt::InputMethodQuery query) {
+        QInputMethodQueryEvent event(query);
+        QApplication::sendEvent(webView.focusProxy(), &event);
+        return event.value(query);
+    };
+
+    // inputmode=none
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"noneMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"noneMode"_s);
+    // Should not trigger the virtual keyboard.
+    QTRY_VERIFY(!inputMethodQuery(Qt::ImEnabled).toBool());
+
+    // inputmode=text
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"textMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"textMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhPreferLowercase);
+
+    // inputmode=tel
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"telMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"telMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(),
+                             Qt::ImhDialableCharactersOnly);
+
+    // inputmode=url
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"urlMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"urlMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(),
+                             Qt::ImhUrlCharactersOnly | Qt::ImhNoAutoUppercase);
+
+    // inputmode=email
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"emailMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"emailMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhEmailCharactersOnly);
+
+    // inputmode=numeric
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"numericMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"numericMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhDigitsOnly);
+
+    // inputmode=decimal
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"decimalMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"decimalMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhFormattedNumbersOnly);
+
+    // inputmode=search
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"searchMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"searchMode"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(),
+                             Qt::ImhPreferLowercase | Qt::ImhNoAutoUppercase);
+
+    // inputmode=none
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"noneMode"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"noneMode"_s);
+    // Should hide the virtual keyboard.
+    QTRY_VERIFY(!inputMethodQuery(Qt::ImEnabled).toBool());
+
+    // inputmode=numeric overrides <input type="text">
+    QTest::mouseClick(webView.focusProxy(), Qt::LeftButton, {}, elementCenter(webView.page(), u"override"_s));
+    QTRY_COMPARE(evaluateJavaScriptSync(webView.page(), u"document.activeElement.id"_s).toString(), u"override"_s);
+    QTRY_VERIFY(inputMethodQuery(Qt::ImEnabled).toBool());
+    VERIFY_INPUTMETHOD_HINTS(webView.focusProxy()->inputMethodHints(), Qt::ImhDigitsOnly);
 }
 
 class KeyEventRecordingWidget : public QWidget {

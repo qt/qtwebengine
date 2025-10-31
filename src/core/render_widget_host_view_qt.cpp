@@ -73,6 +73,15 @@ enum ImStateFlags {
     AllFlags = TextInputStateUpdated | TextSelectionUpdated | TextSelectionBoundsUpdated
 };
 
+static inline bool isEditableField(content::TextInputManager *text_input_manager)
+{
+    if (!text_input_manager)
+        return false;
+
+    const auto *state = text_input_manager->GetTextInputState();
+    return state ? state->type != ui::TEXT_INPUT_TYPE_NONE : false;
+}
+
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
@@ -196,8 +205,8 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 
     QObject::disconnect(m_adapterClientDestroyedConnection);
 
-    if (text_input_manager_)
-        text_input_manager_->RemoveObserver(this);
+    if (GetTextInputManager())
+        GetTextInputManager()->RemoveObserver(this);
 
     if (host()->delegate())
         m_touchSelectionControllerClient->resetControls();
@@ -666,19 +675,18 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state)
 {
-    Q_UNUSED(text_input_manager);
     Q_UNUSED(updated_view);
     Q_UNUSED(did_update_state);
 
-    const ui::mojom::TextInputState *state = text_input_manager_->GetTextInputState();
+    const ui::mojom::TextInputState *state = text_input_manager->GetTextInputState();
     if (!state) {
         // Do not reset input method state here because an editable node might be still focused and
         // this would hide the virtual keyboard if a child of the focused node is removed.
         return;
     }
 
-    ui::TextInputType type = getTextInputType();
-    m_delegate->setInputMethodHints(toQtInputMethodHints(getTextInputType()) | Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu);
+    m_delegate->setInputMethodHints(inputMethodHints());
+
     QString surroundingText = toQt(state->value);
     // Remove IME composition text from the surrounding text
     if (state->composition.has_value())
@@ -693,7 +701,8 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
         } else {
             delegateClient()->setCursorPosition(state->selection.start());
         }
-        m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE, type == ui::TEXT_INPUT_TYPE_PASSWORD);
+        m_delegate->inputMethodStateChanged(state->type != ui::TEXT_INPUT_TYPE_NONE,
+                                            state->type == ui::TEXT_INPUT_TYPE_PASSWORD);
     }
 
     if (m_imState & ImStateFlags::TextInputStateUpdated) {
@@ -714,19 +723,18 @@ void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputMana
 
 void RenderWidgetHostViewQt::OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view)
 {
-    Q_UNUSED(text_input_manager);
     Q_UNUSED(updated_view);
 
     m_imState |= ImStateFlags::TextSelectionBoundsUpdated;
     if (m_imState == ImStateFlags::AllFlags
-            || (m_imState == ImStateFlags::TextSelectionFlags && getTextInputType() == ui::TEXT_INPUT_TYPE_NONE)) {
+        || (m_imState == ImStateFlags::TextSelectionFlags
+            && !isEditableField(text_input_manager))) {
         delegateClient()->selectionChanged();
     }
 }
 
 void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view)
 {
-    Q_UNUSED(text_input_manager);
     Q_UNUSED(updated_view);
 
     // We obtain the TextSelection from focused RWH which is obtained from the
@@ -739,7 +747,8 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 
 #if BUILDFLAG(IS_OZONE)
     if (ui::Clipboard::IsSupportedClipboardBuffer(ui::ClipboardBuffer::kSelection)) {
-        const content::TextInputManager::TextSelection *selection = GetTextInputManager()->GetTextSelection(focused_view);
+        const content::TextInputManager::TextSelection *selection =
+                text_input_manager->GetTextSelection(focused_view);
         if (selection->selected_text().length() && selection->user_initiated()) {
             // Set the ClipboardBuffer::kSelection to the ui::Clipboard.
             ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kSelection);
@@ -750,7 +759,8 @@ void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *t
 
     m_imState |= ImStateFlags::TextSelectionUpdated;
     if (m_imState == ImStateFlags::AllFlags
-            || (m_imState == ImStateFlags::TextSelectionFlags && getTextInputType() == ui::TEXT_INPUT_TYPE_NONE)) {
+        || (m_imState == ImStateFlags::TextSelectionFlags
+            && !isEditableField(text_input_manager))) {
         delegateClient()->selectionChanged();
     }
 }
@@ -858,6 +868,78 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
         host()->delegate()->GetInputEventRouter()->RouteTouchEvent(this, &touchEvent, CreateLatencyInfo(touchEvent));
 }
 
+Qt::InputMethodHints RenderWidgetHostViewQt::inputMethodHints() const
+{
+    const Qt::InputMethodHints kBaseHints =
+            Qt::ImhNoPredictiveText | Qt::ImhNoTextHandles | Qt::ImhNoEditMenu;
+
+    const auto *state = getTextInputState();
+    ui::TextInputType type = state ? state->type : ui::TEXT_INPUT_TYPE_NONE;
+    ui::TextInputMode mode = state ? state->mode : ui::TEXT_INPUT_MODE_NONE;
+
+    auto inputTypeToHints = [](ui::TextInputType type) -> Qt::InputMethodHints {
+        switch (type) {
+        case ui::TEXT_INPUT_TYPE_TEXT:
+            return Qt::ImhPreferLowercase;
+        case ui::TEXT_INPUT_TYPE_PASSWORD:
+            return Qt::ImhSensitiveData | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText;
+        case ui::TEXT_INPUT_TYPE_SEARCH:
+            return Qt::ImhPreferLowercase | Qt::ImhNoAutoUppercase;
+        case ui::TEXT_INPUT_TYPE_EMAIL:
+            return Qt::ImhEmailCharactersOnly;
+        case ui::TEXT_INPUT_TYPE_NUMBER:
+            return Qt::ImhFormattedNumbersOnly;
+        case ui::TEXT_INPUT_TYPE_TELEPHONE:
+            return Qt::ImhDialableCharactersOnly;
+        case ui::TEXT_INPUT_TYPE_URL:
+            return Qt::ImhUrlCharactersOnly | Qt::ImhNoAutoUppercase;
+        case ui::TEXT_INPUT_TYPE_DATE_TIME:
+        case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
+            return Qt::ImhDate | Qt::ImhTime;
+        case ui::TEXT_INPUT_TYPE_DATE:
+        case ui::TEXT_INPUT_TYPE_MONTH:
+        case ui::TEXT_INPUT_TYPE_WEEK:
+            return Qt::ImhDate;
+        case ui::TEXT_INPUT_TYPE_TIME:
+            return Qt::ImhTime;
+        case ui::TEXT_INPUT_TYPE_TEXT_AREA:
+        case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
+            return Qt::ImhMultiLine | Qt::ImhPreferLowercase;
+        case ui::TEXT_INPUT_TYPE_NONE:
+            // Hide virtual keyboard,
+            // handled by RenderWidgetHostViewQtDelegateClient::inputMethodQuery().
+            return Qt::ImhNone;
+        case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
+        case ui::TEXT_INPUT_TYPE_NULL:
+            return Qt::ImhNone;
+        }
+    };
+
+    switch (mode) {
+    case ui::TEXT_INPUT_MODE_DEFAULT:
+        // No explicit inputmode, fall back to <input> type.
+        return kBaseHints | inputTypeToHints(type);
+    case ui::TEXT_INPUT_MODE_NONE:
+        // Hide virtual keyboard,
+        // handled by RenderWidgetHostViewQtDelegateClient::inputMethodQuery().
+        return kBaseHints;
+    case ui::TEXT_INPUT_MODE_TEXT:
+        return kBaseHints | Qt::ImhPreferLowercase;
+    case ui::TEXT_INPUT_MODE_TEL:
+        return kBaseHints | Qt::ImhDialableCharactersOnly;
+    case ui::TEXT_INPUT_MODE_URL:
+        return kBaseHints | Qt::ImhUrlCharactersOnly | Qt::ImhNoAutoUppercase;
+    case ui::TEXT_INPUT_MODE_EMAIL:
+        return kBaseHints | Qt::ImhEmailCharactersOnly;
+    case ui::TEXT_INPUT_MODE_NUMERIC:
+        return kBaseHints | Qt::ImhDigitsOnly;
+    case ui::TEXT_INPUT_MODE_DECIMAL:
+        return kBaseHints | Qt::ImhFormattedNumbersOnly;
+    case ui::TEXT_INPUT_MODE_SEARCH:
+        return kBaseHints | Qt::ImhPreferLowercase | Qt::ImhNoAutoUppercase;
+    }
+}
+
 bool RenderWidgetHostViewQt::isPopup() const
 {
     return widget_type_ == content::WidgetType::kPopup;
@@ -949,14 +1031,6 @@ blink::mojom::FrameWidgetInputHandler *RenderWidgetHostViewQt::getFrameWidgetInp
         return nullptr;
 
     return focused_widget->GetFrameWidgetInputHandler();
-}
-
-ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
-{
-    if (text_input_manager_ && text_input_manager_->GetTextInputState())
-        return text_input_manager_->GetTextInputState()->type;
-
-    return ui::TEXT_INPUT_TYPE_NONE;
 }
 
 viz::SurfaceId RenderWidgetHostViewQt::GetCurrentSurfaceId() const

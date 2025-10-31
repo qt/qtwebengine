@@ -171,6 +171,11 @@ public:
     void handleWheelEvent(QWheelEvent *);
     void processMotionEvent(const ui::MotionEvent &motionEvent);
     void resetInputManagerState() { m_imState = 0; }
+    const ui::mojom::TextInputState *getTextInputState() const
+    {
+        return text_input_manager_ ? text_input_manager_->GetTextInputState() : nullptr;
+    }
+    Qt::InputMethodHints inputMethodHints() const;
 
     // Called from WebContentsAdapter.
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
@@ -179,7 +184,6 @@ public:
     ui::TouchSelectionController *getTouchSelectionController() const { return m_touchSelectionController.get(); }
     TouchSelectionControllerClientQt *getTouchSelectionControllerClient() const { return m_touchSelectionControllerClient.get(); }
     blink::mojom::FrameWidgetInputHandler *getFrameWidgetInputHandler();
-    ui::TextInputType getTextInputType() const;
 
     void synchronizeVisualProperties(
             const std::optional<viz::LocalSurfaceId> &childSurfaceId);

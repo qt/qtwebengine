@@ -21,7 +21,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
@@ -262,8 +261,6 @@ inline QStringList fromVector(const std::vector<std::u16string> &vector)
 }
 
 QList<QSslCertificate> toCertificateChain(net::X509Certificate *certificate);
-
-Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputType);
 
 } // namespace QtWebEngineCore
 
