@@ -20,8 +20,6 @@ set(tst_qwebengineview_resource_files
     "resources/frame_a.html"
     "resources/image2.png"
     "resources/index.html"
-    "resources/input_modes.html"
-    "resources/input_types.html"
     "resources/keyboardEvents.html"
     "resources/scrolltest_page.html"
 )
