@@ -1,0 +1,16 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+input, textarea, div[contenteditable="true"] {
+    position: relative;
+    left: 10px;
+    width: 100px;
+    height: 50px;
+    margin: 10px 0;
+    font-size: 16px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    display: block;
+}

@@ -15,6 +15,7 @@ qt_internal_add_test(tst_inputmethod
 set(tst_inputmethod_resource_files
     "resources/input_modes.html"
     "resources/input_types.html"
+    "resources/style.css"
 )
 
 qt_internal_add_resource(tst_inputmethod "tst_inputmethod"
