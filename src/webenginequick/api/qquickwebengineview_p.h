@@ -480,6 +480,9 @@ QT_WARNING_POP
     QQuickWebEngineFrame mainFrame();
     Q_REVISION(6, 8) Q_INVOKABLE QQuickWebEngineFrame findFrameByName(const QString &name);
 
+    // Used by QWebView. Not callable through QML
+    void runJavaScript(const QString &script, const std::function<void(const QVariant &)> &resultCallback);
+
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     Q_REVISION(1,3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());

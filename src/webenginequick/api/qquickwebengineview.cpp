@@ -1504,6 +1504,12 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
+void QQuickWebEngineView::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &resultCallback)
+{
+    Q_D(QQuickWebEngineView);
+    d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, resultCallback);
+}
+
 void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
 {
     runJavaScript(script, QWebEngineScript::MainWorld, callback);
