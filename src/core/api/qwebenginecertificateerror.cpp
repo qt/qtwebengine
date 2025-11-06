@@ -85,7 +85,8 @@ bool QWebEngineCertificateError::isOverridable() const
 }
 
 /*!
-    Returns the URL that triggered the error.
+    \property QWebEngineCertificateError::url
+    \brief The URL that triggered the error.
 
     \sa description()
 */
@@ -112,7 +113,8 @@ bool QWebEngineCertificateError::isMainFrame() const
 }
 
 /*!
-    Returns the type of the error.
+    \property QWebEngineCertificateError::type
+    \brief The type of the error.
 
     \sa description(), isOverridable()
 */
@@ -124,7 +126,8 @@ QWebEngineCertificateError::Type QWebEngineCertificateError::type() const
 }
 
 /*!
-    Returns a short localized human-readable description of the error.
+    \property QWebEngineCertificateError::description
+    \brief A short localized human-readable description of the error.
 
     \sa url(), isOverridable()
 */

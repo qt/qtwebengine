@@ -88,7 +88,8 @@ QWebEngineContextMenuRequest::QWebEngineContextMenuRequest(
 QWebEngineContextMenuRequest::~QWebEngineContextMenuRequest() = default;
 
 /*!
-    Returns the position of the context menu request, usually the mouse
+    \property QWebEngineContextMenuRequest::position
+    \brief The position of the context menu request, usually the mouse
     position where the context menu event was triggered.
 */
 QPoint QWebEngineContextMenuRequest::position() const
@@ -97,7 +98,8 @@ QPoint QWebEngineContextMenuRequest::position() const
 }
 
 /*!
-    Returns the selected text of the context menu request.
+    \property QWebEngineContextMenuRequest::selectedText
+    \brief The selected text of the context menu request.
 */
 QString QWebEngineContextMenuRequest::selectedText() const
 {
@@ -105,7 +107,8 @@ QString QWebEngineContextMenuRequest::selectedText() const
 }
 
 /*!
-    Returns the text of a link if the context menu request was requested for a link.
+    \property QWebEngineContextMenuRequest::linkText
+    \brief The text of a link if the context menu request was requested for a link.
 */
 QString QWebEngineContextMenuRequest::linkText() const
 {
@@ -113,7 +116,9 @@ QString QWebEngineContextMenuRequest::linkText() const
 }
 
 /*!
-    Returns the URL of a link if the menu context request is a link.
+    \property QWebEngineContextMenuRequest::linkUrl
+    \brief The URL of a link if the menu context request is a link.
+
     It is not guaranteed to be a valid URL.
 */
 QUrl QWebEngineContextMenuRequest::linkUrl() const
@@ -122,7 +127,8 @@ QUrl QWebEngineContextMenuRequest::linkUrl() const
 }
 
 /*!
-    If the context menu request is a media element, returns the URL of that media.
+    \property QWebEngineContextMenuRequest::mediaUrl
+    \brief The URL of the media element if the context menu request is a media element.
 */
 QUrl QWebEngineContextMenuRequest::mediaUrl() const
 {
@@ -130,8 +136,9 @@ QUrl QWebEngineContextMenuRequest::mediaUrl() const
 }
 
 /*!
-    Returns the type of the media element or \c MediaTypeNone
-    if the context menu requestis not a media element.
+    \property QWebEngineContextMenuRequest::mediaType
+    \brief The type of the media element or \c MediaTypeNone
+    if the context menu request is not a media element.
 */
 QWebEngineContextMenuRequest::MediaType QWebEngineContextMenuRequest::mediaType() const
 {
@@ -139,8 +146,8 @@ QWebEngineContextMenuRequest::MediaType QWebEngineContextMenuRequest::mediaType(
 }
 
 /*!
-    Returns \c true if the context menu request is editable by the user;
-    otherwise returns \c false.
+    \property QWebEngineContextMenuRequest::isContentEditable
+    \brief Whether the context menu request is editable by the user.
 */
 bool QWebEngineContextMenuRequest::isContentEditable() const
 {
@@ -148,8 +155,9 @@ bool QWebEngineContextMenuRequest::isContentEditable() const
 }
 
 /*!
-    If the menu context request is a word considered misspelled by the spell-checker,
-    returns the misspelled word.
+    \property QWebEngineContextMenuRequest::misspelledWord
+    \brief The misspelled word if the menu context request is a word
+    considered misspelled by the spell-checker.
 
     For possible replacements of the word, see spellCheckerSuggestions().
 */
@@ -160,8 +168,9 @@ QString QWebEngineContextMenuRequest::misspelledWord() const
 
 
 /*!
-    If the menu context request is a word considered misspelled by the spell-checker,
-    returns a list of suggested replacements for misspelledWord().
+    \property QWebEngineContextMenuRequest::spellCheckerSuggestions
+    \brief A list of suggested replacements for misspelledWord() if the menu
+    context request is a word considered misspelled by the spell-checker.
 */
 QStringList QWebEngineContextMenuRequest::spellCheckerSuggestions() const
 {
@@ -183,8 +192,10 @@ void QWebEngineContextMenuRequest::setAccepted(bool accepted)
 }
 
 /*!
-    Returns the current media element's status and its available operations.
-    \c MediaNone if the selected web page content is not a media element.
+    \property QWebEngineContextMenuRequest::mediaFlags
+    \brief The current media element's status and its available operations.
+
+    Returns \c MediaNone if the selected web page content is not a media element.
 */
 QWebEngineContextMenuRequest::MediaFlags QWebEngineContextMenuRequest::mediaFlags() const
 {
@@ -192,8 +203,10 @@ QWebEngineContextMenuRequest::MediaFlags QWebEngineContextMenuRequest::mediaFlag
 }
 
 /*!
-    Returns the available edit operations in the current context
-    or \c CanDoNone if no actions are available.
+    \property QWebEngineContextMenuRequest::editFlags
+    \brief The available edit operations in the current context.
+
+    Returns \c CanDoNone if no actions are available.
 */
 QWebEngineContextMenuRequest::EditFlags QWebEngineContextMenuRequest::editFlags() const
 {

@@ -151,7 +151,7 @@ QString QWebEngineLoadingInfo::errorString() const
     \value  HttpStatusCodeDomain
             Error is the HTTP response status code, even in case of success e.g. the server replied with status 200.
 */
-/*
+/*!
     \property QWebEngineLoadingInfo::errorDomain
     \brief Holds the error domain.
 */

@@ -19,9 +19,11 @@ QQuickWebEngineDownloadRequest::QQuickWebEngineDownloadRequest(QWebEngineDownloa
 }
 
 /*!
-    \internal
-    Returns the WebEngineView the download was requested on. If the download was not triggered by content in a WebEngineView,
-    \c nullptr is returned.
+    \property QQuickWebEngineDownloadRequest::view
+    \brief The WebEngineView the download was requested on.
+
+    If the download was not triggered by content in a WebEngineView,
+    returns \nullptr.
 */
 QQuickWebEngineView *QQuickWebEngineDownloadRequest::view() const
 {

@@ -212,10 +212,9 @@ bool QWebEngineExtensionInfo::isLoaded() const
     return d_ptr && d_ptr->isLoaded();
 }
 
-/*
+/*!
     \property QWebEngineExtensionInfo::isInstalled
-    \brief This property holds whether the extension is installed in the profile's install
-   directory.
+    \brief whether the extension is installed in the profile's install directory.
 
     \sa QWebEngineExtensionManager::installDirectory(),
     QWebEngineExtensionManager::installExtension(), QWebEngineExtensionManager::uninstallExtension()

@@ -295,7 +295,8 @@ void QWebEngineDownloadRequest::resume()
 }
 
 /*!
-    Returns the download item's ID.
+    \property QWebEngineDownloadRequest::id
+    \brief The download item's ID.
 */
 
 quint32 QWebEngineDownloadRequest::id() const
@@ -385,7 +386,8 @@ quint32 QWebEngineDownloadRequest::id() const
 */
 
 /*!
-    Returns the download item's current state.
+    \property QWebEngineDownloadRequest::state
+    \brief The download item's current state.
 
     \sa DownloadState
 */
@@ -397,7 +399,8 @@ QWebEngineDownloadRequest::DownloadState QWebEngineDownloadRequest::state() cons
 }
 
 /*!
-    Returns the total amount of data to download in bytes.
+    \property QWebEngineDownloadRequest::totalBytes
+    \brief The total amount of data to download in bytes.
 
     \c -1 means the size is unknown.
 */
@@ -409,7 +412,8 @@ qint64 QWebEngineDownloadRequest::totalBytes() const
 }
 
 /*!
-    Returns the amount of data in bytes that has been downloaded so far.
+    \property QWebEngineDownloadRequest::receivedBytes
+    \brief The amount of data in bytes that has been downloaded so far.
 
     \c -1 means the size is unknown.
 */
@@ -421,7 +425,8 @@ qint64 QWebEngineDownloadRequest::receivedBytes() const
 }
 
 /*!
-    Returns the download's origin URL.
+    \property QWebEngineDownloadRequest::url
+    \brief The download's origin URL.
 */
 
 QUrl QWebEngineDownloadRequest::url() const
@@ -431,7 +436,8 @@ QUrl QWebEngineDownloadRequest::url() const
 }
 
 /*!
-    Returns the MIME type of the download.
+    \property QWebEngineDownloadRequest::mimeType
+    \brief The MIME type of the download.
 */
 
 QString QWebEngineDownloadRequest::mimeType() const
@@ -441,7 +447,13 @@ QString QWebEngineDownloadRequest::mimeType() const
 }
 
 /*!
-    Returns the download directory path.
+    \property QWebEngineDownloadRequest::downloadDirectory
+    \brief The download directory path.
+
+    The download directory path can only be set in response to the
+    QWebEngineProfile::downloadRequested() signal before the download is
+    accepted. Past that point, this property has no effect on the download
+    item's state.
 */
 
 QString QWebEngineDownloadRequest::downloadDirectory() const
@@ -449,14 +461,6 @@ QString QWebEngineDownloadRequest::downloadDirectory() const
     Q_D(const QWebEngineDownloadRequest);
     return d->downloadDirectory;
 }
-
-/*!
-    Sets \a directory as the directory path to download the file to.
-
-    The download directory path can only be set in response to the QWebEngineProfile::downloadRequested()
-    signal before the download is accepted. Past that point, this function has no effect on the
-    download item's state.
-*/
 
 void QWebEngineDownloadRequest::setDownloadDirectory(const QString &directory)
 {
@@ -483,7 +487,13 @@ void QWebEngineDownloadRequest::setDownloadDirectory(const QString &directory)
 }
 
 /*!
-    Returns the file name to download the file to.
+    \property QWebEngineDownloadRequest::downloadFileName
+    \brief The file name to download the file to.
+
+    The download file name can only be set in response to the
+    QWebEngineProfile::downloadRequested() signal before the download is
+    accepted. Past that point, this property has no effect on the download
+    item's state.
 */
 
 QString QWebEngineDownloadRequest::downloadFileName() const
@@ -491,14 +501,6 @@ QString QWebEngineDownloadRequest::downloadFileName() const
     Q_D(const QWebEngineDownloadRequest);
     return d->downloadFileName;
 }
-
-/*!
-    Sets \a fileName as the file name to download the file to.
-
-    The download file name can only be set in response to the QWebEngineProfile::downloadRequested()
-    signal before the download is accepted. Past that point, this function has no effect on the
-    download item's state.
-*/
 
 void QWebEngineDownloadRequest::setDownloadFileName(const QString &fileName)
 {
@@ -516,7 +518,8 @@ void QWebEngineDownloadRequest::setDownloadFileName(const QString &fileName)
 }
 
 /*!
-    Returns the suggested file name.
+    \property QWebEngineDownloadRequest::suggestedFileName
+    \brief The suggested file name.
 */
 
 QString QWebEngineDownloadRequest::suggestedFileName() const
@@ -553,8 +556,10 @@ bool QWebEngineDownloadRequest::isPaused() const
 }
 
 /*!
-    Returns the format the web page will be saved in if this is a download request for a web page.
-    \sa setSavePageFormat(), isSavePageDownload()
+    \property QWebEngineDownloadRequest::savePageFormat
+    \brief The format the web page will be saved in if this is a download request for a web page.
+
+    \sa isSavePageDownload
 */
 QWebEngineDownloadRequest::SavePageFormat QWebEngineDownloadRequest::savePageFormat() const
 {
@@ -562,11 +567,6 @@ QWebEngineDownloadRequest::SavePageFormat QWebEngineDownloadRequest::savePageFor
     return d->savePageFormat;
 }
 
-/*!
-    Sets the \a format the web page will be saved in if this is a download request for a web page.
-
-    \sa savePageFormat(), isSavePageDownload()
-*/
 void QWebEngineDownloadRequest::setSavePageFormat(QWebEngineDownloadRequest::SavePageFormat format)
 {
   Q_D(QWebEngineDownloadRequest);
@@ -577,9 +577,10 @@ void QWebEngineDownloadRequest::setSavePageFormat(QWebEngineDownloadRequest::Sav
 }
 
 /*!
-    Returns \c true if this is a download request for saving a web page.
+    \property QWebEngineDownloadRequest::isSavePageDownload
+    \brief Whether this is a download request for saving a web page.
 
-    \sa savePageFormat(), setSavePageFormat()
+    \sa savePageFormat
  */
 bool QWebEngineDownloadRequest::isSavePageDownload() const
 {
@@ -588,9 +589,10 @@ bool QWebEngineDownloadRequest::isSavePageDownload() const
 }
 
 /*!
-    Returns the reason why the download was interrupted.
+    \property QWebEngineDownloadRequest::interruptReason
+    \brief The reason why the download was interrupted.
 
-    \sa interruptReasonString()
+    \sa interruptReasonString
 */
 
 QWebEngineDownloadRequest::DownloadInterruptReason QWebEngineDownloadRequest::interruptReason() const
@@ -600,9 +602,10 @@ QWebEngineDownloadRequest::DownloadInterruptReason QWebEngineDownloadRequest::in
 }
 
 /*!
-    Returns a human-readable description of the reason for interrupting the download.
+    \property QWebEngineDownloadRequest::interruptReasonString
+    \brief A human-readable description of the reason for interrupting the download.
 
-    \sa interruptReason()
+    \sa interruptReason
 */
 
 QString QWebEngineDownloadRequest::interruptReasonString() const

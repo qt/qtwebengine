@@ -112,20 +112,20 @@ QWebEngineScript &QWebEngineScript::operator=(const QWebEngineScript &other)
 }
 
 /*!
- * Returns the name of the script. Can be useful to retrieve a particular script from a
- * QWebEngineScriptCollection.
- *
- * \sa QWebEngineScriptCollection::find()
- */
+    \property QWebEngineScript::name
+    \brief The name of the script.
+
+    Can be useful to retrieve a particular script from a
+    QWebEngineScriptCollection.
+
+    \sa QWebEngineScriptCollection::find()
+*/
 
 QString QWebEngineScript::name() const
 {
     return d->name();
 }
 
-/*!
- * Sets the script name to \a scriptName.
- */
 void QWebEngineScript::setName(const QString &scriptName)
 {
     if (scriptName == name())
@@ -134,25 +134,23 @@ void QWebEngineScript::setName(const QString &scriptName)
 }
 
 /*!
- * Returns the remote source location of the user script (if any).
- */
+    \property QWebEngineScript::sourceUrl
+    \brief The remote source location of the user script (if any).
+
+    Unlike setSourceCode(), setting this property allows referring to user scripts that
+    are not already loaded in memory, for instance, when stored on disk.
+
+    Setting this value will change the \l sourceCode of the script.
+
+    \note At present, only file-based sources are supported.
+
+    \sa sourceCode
+*/
 QUrl QWebEngineScript::sourceUrl() const
 {
     return d->sourceUrl();
 }
 
-/*!
- * Sets the remote source location of the user script to \a url.
- *
- * Unlike \l setSourceCode(), this function allows referring to user scripts that
- * are not already loaded in memory, for instance, when stored on disk.
- *
- * Setting this value will change the \l sourceCode of the script.
- *
- * \note At present, only file-based sources are supported.
- *
- * \sa setSourceCode()
- */
 void QWebEngineScript::setSourceUrl(const QUrl &url)
 {
     if (url == sourceUrl())
@@ -178,16 +176,14 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
 }
 
 /*!
-    Returns the source of the script.
- */
+    \property QWebEngineScript::sourceCode
+    \brief The source of the script.
+*/
 QString QWebEngineScript::sourceCode() const
 {
     return d->sourceCode();
 }
 
-/*!
- * Sets the script source to \a scriptSource.
- */
 void QWebEngineScript::setSourceCode(const QString &scriptSource)
 {
     if (scriptSource == sourceCode())
@@ -200,20 +196,18 @@ ASSERT_ENUMS_MATCH(QWebEngineScript::DocumentReady, UserScript::DocumentLoadFini
 ASSERT_ENUMS_MATCH(QWebEngineScript::DocumentCreation, UserScript::DocumentElementCreation)
 
 /*!
- * Returns the point in the loading process at which the script will be executed.
- * The default value is QWebEngineScript::Deferred.
- *
- * \sa setInjectionPoint()
- */
+    \property QWebEngineScript::injectionPoint
+    \brief The point in the loading process at which the script will be executed.
+
+    The default value is QWebEngineScript::Deferred.
+
+    \sa InjectionPoint
+*/
 QWebEngineScript::InjectionPoint QWebEngineScript::injectionPoint() const
 {
     return static_cast<QWebEngineScript::InjectionPoint>(d->injectionPoint());
 }
-/*!
- * Sets the point at which to execute the script to be \a p.
- *
- * \sa InjectionPoint
- */
+
 void QWebEngineScript::setInjectionPoint(QWebEngineScript::InjectionPoint p)
 {
     if (p == injectionPoint())
@@ -222,18 +216,16 @@ void QWebEngineScript::setInjectionPoint(QWebEngineScript::InjectionPoint p)
 }
 
 /*!
-    Returns the world ID defining which world the script is executed in.
- */
+    \property QWebEngineScript::worldId
+    \brief The world ID defining which world the script is executed in.
+
+    Must be between \c 0 and \c 256.
+*/
 quint32 QWebEngineScript::worldId() const
 {
     return d->worldId();
 }
 
-/*!
-    Sets the world ID of the isolated world to \a id when running this script.
-
-    Must be between \c 0 and \c 256.
- */
 void QWebEngineScript::setWorldId(quint32 id)
 {
     if (id == d->worldId())
@@ -242,17 +234,14 @@ void QWebEngineScript::setWorldId(quint32 id)
 }
 
 /*!
-    Returns \c true if the script is executed on every frame in the page, or \c false if it is only
-    ran for the main frame.
- */
+    \property QWebEngineScript::runsOnSubFrames
+    \brief Whether the script is executed on every frame in the page, or only on the main frame.
+*/
 bool QWebEngineScript::runsOnSubFrames() const
 {
     return d->runsOnSubFrames();
 }
 
-/*!
- * Executes the script on sub frames in addition to the main frame if \a on returns \c true.
- */
 void QWebEngineScript::setRunsOnSubFrames(bool on)
 {
     if (runsOnSubFrames() == on)
