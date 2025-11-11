@@ -403,18 +403,6 @@ void InterceptedRequest::ContinueAfterIntercept()
                 if (!current_response_)
                     current_response_ = createResponse(request_);
                 current_response_->encoded_data_length = 0;
-
-                if (!current_response_->headers) {
-                    current_response_->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-                    // Assuming that the users of request interceptor API are aware of the security
-                    // risks
-                    current_response_->headers->AddHeader(
-                            network::cors::header_names::kAccessControlAllowOrigin,
-                            url::Origin::Create(request_.url).Serialize());
-                    current_response_->headers->AddHeader(
-                            network::cors::header_names::kAccessControlAllowCredentials, "true");
-                }
-
                 target_client_->OnReceiveRedirect(redirectInfo, std::move(current_response_));
                 return;
             }
