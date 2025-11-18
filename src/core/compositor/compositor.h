@@ -90,6 +90,7 @@ public:
 
         // There's a new frame ready, time to swapFrame().
         virtual void readyToSwap() = 0;
+        void lockForRelease();
 
     protected:
         Observer() = default;
