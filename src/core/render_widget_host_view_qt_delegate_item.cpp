@@ -374,10 +374,7 @@ public:
     {
         {
             auto comp = compositor();
-            if (comp && comp->hasResources()) {
-                qWarning("Failed to release graphics resources because the clean-up render job was "
-                         "deleted.");
-            }
+            Q_ASSERT(comp && !comp->hasResources());
         }
         unbind();
     }
@@ -426,6 +423,7 @@ void RenderWidgetHostViewQtDelegateItem::releaseResources()
         unbind();
         CleanupJob *job = new CleanupJob();
         job->bind(m_client->compositorId());
+        job->lockForRelease();
         win->scheduleRenderJob(job, QQuickWindow::NoStage);
     } else {
         // TODO: Try to find a proper way to schedule job on the render thread if the window is
