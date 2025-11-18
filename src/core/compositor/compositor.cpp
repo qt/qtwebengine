@@ -11,6 +11,7 @@
 #include <QHash>
 #include <QReadWriteLock>
 #include <QQuickWindow>
+#include <QWaitCondition>
 
 namespace QtWebEngineCore {
 
@@ -40,7 +41,8 @@ struct Compositor::Binding
     const Id id;
     Compositor *compositor = nullptr;
     Observer *observer = nullptr;
-
+    QWaitCondition condition;
+    bool waitForRelease = false;
     Binding(Id id) : id(id) { }
     ~Binding();
 };
@@ -66,6 +68,9 @@ public:
 private:
     QReadWriteLock m_mutex;
     QHash<Id, Binding *> m_map;
+
+    friend class Compositor;
+
 } static g_bindings;
 
 Compositor::Binding::~Binding()
@@ -90,6 +95,10 @@ void Compositor::Observer::unbind()
     g_bindings.lockForWrite();
     if (m_binding) {
         m_binding->observer = nullptr;
+        if (m_binding->waitForRelease) {
+            m_binding->waitForRelease = false;
+            m_binding->condition.wakeOne();
+        }
         if (m_binding->compositor == nullptr)
             delete m_binding;
         m_binding = nullptr;
@@ -111,6 +120,14 @@ Compositor::Observer::~Observer()
     DCHECK(!m_binding); // check that unbind() was called by derived final class
 }
 
+void Compositor::Observer::lockForRelease()
+{
+    g_bindings.lockForWrite();
+    Q_ASSERT(m_binding);
+    m_binding->waitForRelease = true;
+    g_bindings.unlock();
+}
+
 // Compositor
 
 void Compositor::bind(Id id)
@@ -127,6 +144,8 @@ void Compositor::unbind()
 {
     g_bindings.lockForWrite();
     if (m_binding) {
+        if (m_binding->waitForRelease)
+            m_binding->condition.wait(&g_bindings.m_mutex);
         m_binding->compositor = nullptr;
         if (m_binding->observer == nullptr)
             delete m_binding;
