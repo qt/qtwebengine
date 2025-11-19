@@ -54,6 +54,7 @@ private Q_SLOTS:
     void profilePreventsPageInterception_data();
     void profilePreventsPageInterception();
     void download();
+    void redirect();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -1141,6 +1142,35 @@ void tst_QWebEngineUrlRequestInterceptor::download()
     page.download(url);
     QTRY_COMPARE(interceptor.requestInfos.size(), 1);
     QCOMPARE(interceptor.requestInfos.at(0).download, true);
+}
+
+void tst_QWebEngineUrlRequestInterceptor::redirect()
+{
+    HttpServer server;
+    server.setResourceDirs({ ":/resources" });
+    QVERIFY(server.start());
+
+    TestRequestInterceptor interceptor;
+    interceptor.onIntercept = [&](QWebEngineUrlRequestInfo &info) {
+        const auto url = server.url(info.requestUrl().path());
+        if (info.requestUrl() != url) {
+            info.redirect(url);
+            return false;
+        }
+        return true;
+    };
+
+    QWebEnginePage page;
+    page.setUrlRequestInterceptor(&interceptor);
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    const auto url = QUrl(server.url("/cors.html"));
+    page.load(url);
+    QTRY_COMPARE(loadSpy.size(), 1);
+    // We expect 3 requests: cors.html, cors.js and content.html
+    // redirected requests are not counted
+    // We will only get 2 because the request to fetch content.html will never happen
+    QTRY_COMPARE(interceptor.requestInfos.size(), 3);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)
