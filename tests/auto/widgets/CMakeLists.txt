@@ -29,7 +29,9 @@ endif()
 if(QT_FEATURE_webengine_printing_and_pdf)
     add_subdirectory(printing)
 endif()
-if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING AND NOT QT_FEATURE_webengine_native_spellchecker)
+if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING
+    AND NOT QT_FEATURE_webengine_native_spellchecker
+    AND TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qwebengine_convert_dict)
     add_subdirectory(spellchecking)
 endif()
 if(QT_FEATURE_webengine_extensions)

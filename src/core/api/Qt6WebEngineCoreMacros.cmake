@@ -14,6 +14,13 @@ function(qt6_add_webengine_dictionary)
 
     cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    if(NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qwebengine_convert_dict)
+        message(WARNING
+            "qwebengine_convert_dict is not available. Skipping qt6_add_webengine_dictionary."
+        )
+        return()
+    endif()
+
     if (NOT ARGS_SOURCE OR NOT EXISTS "${ARGS_SOURCE}" OR NOT IS_ABSOLUTE "${ARGS_SOURCE}")
         message(FATAL_ERROR "Function qt_add_webengine_dictionary requires an absolute path to SOURCE dictionary.")
     endif()
