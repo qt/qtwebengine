@@ -37,6 +37,7 @@ public:
 #endif
 
     bool isReady() const;
+    bool CanFireEvents() const override;
 
     QtWebEngineCore::BrowserAccessibilityInterface *interface = nullptr;
 };
@@ -161,6 +162,13 @@ bool BrowserAccessibilityQt::isReady() const
     // FIXME: This is just a workaround, remove this when the commented out assert in
     //        BrowserAccessibilityManager::GetFromID(int32_t id) gets fixed.
     return manager()->GetFromID(node()->id()) != nullptr;
+}
+
+bool BrowserAccessibilityQt::CanFireEvents() const
+{
+    if (!node() || !interface || !isReady())
+        return false;
+    return BrowserAccessibility::CanFireEvents();
 }
 
 #if defined(Q_OS_MACOS)
