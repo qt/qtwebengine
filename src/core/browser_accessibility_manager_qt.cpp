@@ -6,6 +6,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+#include <QtCore/qdebug.h>
 #include <QtGui/qtguiglobal.h>
 
 #if QT_CONFIG(accessibility)
@@ -91,6 +92,10 @@ void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
                                                    int action_request_id)
 {
     auto *iface = toQAccessibleInterface(node);
+    if (!iface) {
+        qWarning() << "Trying to fire accessibility event on deinitialized node, ax::mojom::Event:" << (int)event_type;
+        return;
+    }
 
     switch (event_type) {
     case ax::mojom::Event::kFocus: {
