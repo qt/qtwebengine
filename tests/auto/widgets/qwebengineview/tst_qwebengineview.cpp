@@ -1604,19 +1604,19 @@ void tst_QWebEngineView::keyboardEvents()
     // Move back to the radio buttons with the Shift+Tab key combination
     for (int i = 0; i < 10; ++i)
         QTest::keyPress(view.focusProxy(), Qt::Key_Tab, Qt::ShiftModifier);
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio2"));
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio1"));
 
     // Test the Space key by checking a radio button
-    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
+    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
     QTest::keyClick(view.focusProxy(), Qt::Key_Space);
-    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
 
     // Test the Left key by switching the radio button
-    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
-    QTest::keyPress(view.focusProxy(), Qt::Key_Left);
-    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio1"));
     QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
-    QVERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
+    QTest::keyPress(view.focusProxy(), Qt::Key_Left);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio2"));
+    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
 
     // Test the Space key by unchecking a checkbox
     evaluateJavaScriptSync(view.page(), "document.getElementById('checkbox1').focus()");
