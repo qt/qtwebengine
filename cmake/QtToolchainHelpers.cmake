@@ -346,6 +346,9 @@ macro(append_build_type_setup)
     #TODO: refactor to not check for IOS here
     if(NOT QT_FEATURE_webengine_full_debug_info AND NOT IOS)
         list(APPEND gnArgArg blink_symbol_level=0 v8_symbol_level=0)
+        if (MSVC AND NOT CLANG)
+            list(APPEND gnArgArg webrtc_symbol_level=0)
+        endif()
     endif()
 
     extend_gn_list(gnArgArg ARGS use_jumbo_build CONDITION QT_FEATURE_webengine_jumbo_build)
