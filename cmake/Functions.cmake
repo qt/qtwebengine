@@ -529,7 +529,8 @@ function(add_gn_build_artifacts_to_target)
         # TODO: remove once this has been fixed by Apple. See issue FB13667242
         # or QTBUG-122655 for details.
         if(APPLECLANG)
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0" AND
+                    CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17.0.0")
                 target_link_options(${arg_CMAKE_TARGET} PRIVATE -ld_classic)
                 set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
                     QT_NO_DISABLE_WARN_DUPLICATE_LIBRARIES TRUE)
