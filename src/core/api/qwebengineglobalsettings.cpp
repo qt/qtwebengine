@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     \brief A list of server URI templates used for secure DNS-over-HTTPS host resolution.
 
     The \c serverTemplates structure member lists
-    \l{https://datatracker.ietf.org/d7oc/html/rfc6570}{URI templates}.
+    \l{https://datatracker.ietf.org/doc/html/rfc6570}{URI templates}.
     An example of a URI template is https://dns.google/dns-query{?dns}.
 */
 
