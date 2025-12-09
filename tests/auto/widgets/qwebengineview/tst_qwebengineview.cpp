@@ -68,6 +68,10 @@ do { \
     QCOMPARE((__expr), __expected); \
 } while (0)
 
+// The 100 ms autofill throttle in AutofillAgent::ShouldThrottleAskForValuesToFill() requires
+// a delay between AutofillAgent::ShowSuggestions() triggering events.
+#define SKIP_AUTOFILL_THROTTLE() QTest::qWait(100);
+
 QT_BEGIN_NAMESPACE
 namespace QTest {
     int Q_TESTLIB_EXPORT defaultMouseDelay();
@@ -4013,6 +4017,7 @@ void tst_QWebEngineView::datalist()
     QTRY_VERIFY(!listView());
 
     // The first Key Down opens the popup.
+    SKIP_AUTOFILL_THROTTLE()
     QTest::keyClick(view.windowHandle(), Qt::Key_Down);
     QTRY_VERIFY(listView());
 
@@ -4039,6 +4044,7 @@ void tst_QWebEngineView::datalist()
                      ->data(listView()->currentIndex())
                      .toString(),
              QStringLiteral("Chrome"));
+    SKIP_AUTOFILL_THROTTLE()
     QTest::keyClick(view.windowHandle(), Qt::Key_Enter);
     QTRY_COMPARE(
             evaluateJavaScriptSync(view.page(), "document.getElementById('browserInput').value")
@@ -4052,6 +4058,7 @@ void tst_QWebEngineView::datalist()
     QVERIFY(!listView());
 
     // Filter suggestions.
+    SKIP_AUTOFILL_THROTTLE()
     QTest::keyClick(view.windowHandle(), Qt::Key_F);
     QTRY_VERIFY(listView());
     QCOMPARE(listView()->model()->rowCount(), 2);
@@ -4064,6 +4071,7 @@ void tst_QWebEngineView::datalist()
                      ->data(listView()->model()->index(1, 0))
                      .toString(),
              QStringLiteral("Safari"));
+    SKIP_AUTOFILL_THROTTLE()
     QTest::keyClick(view.windowHandle(), Qt::Key_I);
     QTRY_COMPARE(listView()->model()->rowCount(), 1);
     QCOMPARE(listView()->currentIndex(), QModelIndex());
@@ -4071,6 +4079,7 @@ void tst_QWebEngineView::datalist()
                      ->data(listView()->model()->index(0, 0))
                      .toString(),
              QStringLiteral("Firefox"));
+    SKIP_AUTOFILL_THROTTLE()
     QTest::keyClick(view.windowHandle(), Qt::Key_L);
     // Mismatch should close popup.
     QTRY_VERIFY(!listView());

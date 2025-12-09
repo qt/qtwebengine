@@ -65,6 +65,12 @@ TestWebEngineView {
         name: "WebEngineDatalist"
         when: windowShown
 
+        // The 100 ms autofill throttle in AutofillAgent::ShouldThrottleAskForValuesToFill() requires
+        // a delay between AutofillAgent::ShowSuggestions() triggering events.
+        function skipAutofillThrottle() {
+            wait(100);
+        }
+
         function test_showAndHide() {
             webEngineView.loadHtml(webEngineView.html);
             verify(webEngineView.waitForLoadSucceeded());
@@ -106,6 +112,7 @@ TestWebEngineView {
             tryVerify(function() { return listView() == null; });
 
             // The first Key Down opens the popup.
+            skipAutofillThrottle();
             keyClick(Qt.Key_Down);
             tryVerify(function() { return listView() != null; });
 
@@ -167,16 +174,19 @@ TestWebEngineView {
             verify(!listView());
 
             // Filter suggestions.
+            skipAutofillThrottle();
             keyClick(Qt.Key_F);
             tryVerify(function() { return listView() != null; });
             compare(listView().count, 2);
             verify(!listView().currentItem);
             compare(listView().itemAtIndex(0).text, "Firefox");
             compare(listView().itemAtIndex(1).text, "Safari");
+            skipAutofillThrottle();
             keyClick(Qt.Key_I);
             tryVerify(function() { return listView().count == 1; });
             verify(!listView().currentItem);
             compare(listView().itemAtIndex(0).text, "Firefox");
+            skipAutofillThrottle();
             keyClick(Qt.Key_L);
             // Mismatch should close popup.
             tryVerify(function() { return listView() == null; });
