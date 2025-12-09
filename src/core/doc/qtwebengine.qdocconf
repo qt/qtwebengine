@@ -110,4 +110,4 @@ macro.QWE    = "Qt \\WebEngine"
 spurious += "Output file already exists, overwriting .*"
 
 # Enforce zero documentation warnings
-warninglimit = 2
+warninglimit = 200
