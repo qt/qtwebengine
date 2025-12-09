@@ -9,6 +9,7 @@ endif()
 #### Versions
 
 qt_webengine_set_version(cmake ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE})
+qt_webengine_set_version(android_ndk 27)
 qt_webengine_set_version(ninja 1.7.2)
 qt_webengine_set_version(python3 3.8)
 qt_webengine_set_version(nodejs 14.9)
@@ -489,6 +490,15 @@ qt_webengine_configure_check("gcc_for_pdf"
     MESSAGE "GCC version must be at least ${QT_CONFIGURE_CHECK_gcc_for_pdf_version}"
     DOCUMENTATION "Gcc version must be at least ${QT_CONFIGURE_CHECK_gcc_for_pdf_version}"
     TAGS LINUX_PLATFORM
+)
+
+qt_webengine_configure_check("android-ndk"
+    MODULES QtPdf
+    CONDITION NOT ANDROID OR NOT CMAKE_ANDROID_NDK_VERSION
+        VERSION_LESS ${QT_CONFIGURE_CHECK_android_ndk_version}
+    MESSAGE "Android NDK must be at least ${QT_CONFIGURE_CHECK_android_ndk_version}, found: ${CMAKE_ANDROID_NDK_VERSION}"
+    DOCUMENTATION "Android NDK at least version ${QT_CONFIGURE_CHECK_android_ndk_version}"
+    TAGS ANDROID_PALTFORM
 )
 
 if(WIN32)
