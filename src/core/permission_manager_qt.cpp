@@ -469,8 +469,15 @@ QList<QWebEnginePermission> PermissionManagerQt::listPermissions(
     Q_ASSERT(origin.isEmpty() || permissionType == QWebEnginePermission::PermissionType::Unsupported);
 
     QList<QWebEnginePermission> returnList;
-    const GURL gorigin = toGurl(origin).DeprecatedGetOriginAsURL();
-    const std::string originSpec = gorigin.spec();
+    const GURL gorigin = toGurl(origin);
+    std::string originString = url::Origin::Create(gorigin).Serialize();
+
+    if (originString == "null") {
+        // Origin::Serialize() returns "null" for empty URLs.
+        // Set originString to empty string so we don't have to do
+        // string comparisons for every permission in the loop below.
+        originString.clear();
+    }
 
     if (!origin.isEmpty() && !gorigin.is_valid())
         return returnList;
@@ -495,7 +502,7 @@ QList<QWebEnginePermission> PermissionManagerQt::listPermissions(
         Q_ASSERT(prefDict);
 
         for (auto &&entry : *prefDict) {
-            if (!originSpec.empty() && entry.first != originSpec)
+            if (!originString.empty() && entry.first != originString)
                 continue;
 
             auto *pvt = new QWebEnginePermissionPrivate(
@@ -695,7 +702,7 @@ blink::mojom::PermissionStatus PermissionManagerQt::GetPermissionStatus(
     const auto *permissionsDict = pref->GetValue()->GetIfDict();
     Q_ASSERT(permissionsDict);
 
-    const auto requestedPermission = permissionsDict->FindBool(requesting_origin.DeprecatedGetOriginAsURL().spec());
+    const auto requestedPermission = permissionsDict->FindBool(url::Origin::Create(requesting_origin).Serialize());
     if (!requestedPermission)
         return blink::mojom::PermissionStatus::ASK; // Origin is not in the current permission type's database
 
@@ -790,7 +797,7 @@ void PermissionManagerQt::ResetPermission(
         return;
 
     ScopedDictPrefUpdate updater(m_prefService.get(), permissionTypeString(permissionType));
-    updater.Get().Remove(requesting_origin.spec());
+    updater.Get().Remove(url::Origin::Create(requesting_origin).Serialize());
 }
 
 blink::mojom::PermissionStatus PermissionManagerQt::getTransientPermissionStatus(
@@ -829,7 +836,7 @@ void PermissionManagerQt::setPersistentPermission(
         return;
 
     ScopedDictPrefUpdate updater(m_prefService.get(), permissionTypeString(permissionTypeQt));
-    updater.Get().Set(requesting_origin.spec(), granted);
+    updater.Get().Set(url::Origin::Create(requesting_origin).Serialize(), granted);
 
     m_prefService->SchedulePendingLossyWrites();
 }
