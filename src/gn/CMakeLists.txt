@@ -74,6 +74,8 @@ add_custom_command(
         --out-path ${GN_BINARY_DIR}/$<CONFIG>
         --cc ${CMAKE_C_COMPILER}
         --cxx ${CMAKE_CXX_COMPILER}
+        $<$<NOT:$<STREQUAL:${CMAKE_CXX_COMPILER_LAUNCHER},>>:--cxx-wrapper>
+        $<$<NOT:$<STREQUAL:${CMAKE_CXX_COMPILER_LAUNCHER},>>:${CMAKE_CXX_COMPILER_LAUNCHER}>
         --ld ${GN_LINKER}
         --allow-warnings
         --platform ${platform}
@@ -81,8 +83,8 @@ add_custom_command(
         --qt-version "${QT_REPO_MODULE_VERSION}.qtwebengine.qt.io"
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_SYSROOT}>>:--isysroot>
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_SYSROOT}>>:${CMAKE_OSX_SYSROOT}>
-        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:--osx-architectures>
-        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${OSX_ARCH}>>:${OSX_ARCH}>
+        $<$<PLATFORM_ID:Darwin>:--osx-architectures>
+        $<$<PLATFORM_ID:Darwin>:${OSX_ARCH}>
         ${GN_GCC_LEGACY_SUPPORT}
     COMMAND Ninja::ninja ${ninja_flags} -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
