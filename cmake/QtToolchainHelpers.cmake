@@ -427,8 +427,8 @@ macro(append_compiler_linker_sdk_setup)
             list(APPEND gnArgArg
                 android_ndk_root="${CMAKE_ANDROID_NDK}"
                 android_ndk_version="${CMAKE_ANDROID_NDK_VERSION}"
+                android_ndk_api_level=${ANDROID_NATIVE_API_LEVEL}
                 clang_use_default_sample_profile=false
-                #android_ndk_major_version=22
             )
         endif()
     else()
