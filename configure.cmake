@@ -10,6 +10,7 @@ endif()
 
 qt_webengine_set_version(cmake ${QT_SUPPORTED_MIN_CMAKE_VERSION_FOR_BUILDING_WEBENGINE})
 qt_webengine_set_version(android_ndk 27)
+qt_webengine_set_version(android_ndk_api_level 28)
 qt_webengine_set_version(ninja 1.7.2)
 qt_webengine_set_version(python3 3.8)
 qt_webengine_set_version(nodejs 14.9)
@@ -498,6 +499,15 @@ qt_webengine_configure_check("android-ndk"
         VERSION_LESS ${QT_CONFIGURE_CHECK_android_ndk_version}
     MESSAGE "Android NDK must be at least ${QT_CONFIGURE_CHECK_android_ndk_version}, found: ${CMAKE_ANDROID_NDK_VERSION}"
     DOCUMENTATION "Android NDK at least version ${QT_CONFIGURE_CHECK_android_ndk_version}"
+    TAGS ANDROID_PALTFORM
+)
+
+qt_webengine_configure_check("android-ndk-api-level"
+    MODULES QtPdf
+    CONDITION NOT ANDROID OR NOT ANDROID_NATIVE_API_LEVEL
+        VERSION_LESS ${QT_CONFIGURE_CHECK_android_ndk_api_level_version}
+    MESSAGE "Android NDK api level must be at least ${QT_CONFIGURE_CHECK_android_ndk_api_level_version}, found: ${ANDROID_NATIVE_API_LEVEL}"
+    DOCUMENTATION "Android NDK api level at least version ${QT_CONFIGURE_CHECK_android_ndk_api_level_version}"
     TAGS ANDROID_PALTFORM
 )
 
