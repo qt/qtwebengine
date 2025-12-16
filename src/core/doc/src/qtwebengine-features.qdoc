@@ -629,9 +629,6 @@
     It can be tested in \l{WebEngine Widgets Simple Browser Example}{Simple Browser} or
     \l{WebEngine Quick Nano Browser}{Nano Browser}.
 
-    Loading plugins needs to be enabled using QWebEngineSettings::PluginsEnabled or
-    WebEngineSettings::pluginsEnabled in order to use this feature.
-
     This feature can be turned on (default) or off via the QWebEngineSettings::PdfViewerEnabled or
     WebEngineSettings::pdfViewerEnabled setting.
 
