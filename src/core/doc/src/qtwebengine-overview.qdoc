@@ -297,16 +297,15 @@
 
     \section1 Related Modules
 
-    \QWE supersedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
-    module, which is based on the
-    WebKit project, but has not been actively synchronized with the upstream WebKit code since
-    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt \WebKit widgets
-    application to use \QWE widgets, see \l{Porting from Qt WebKit to Qt WebEngine}.
+    You can use the \l{https://doc.qt.io/qt-6/qtpdf-index.html}{Qt PDF} module to render PDF files.
+    Internally, the module is powered by \l{https://pdfium.googlesource.com/pdfium/}{PDFium},
+    which is also used in Chromium.
 
-    The \l{Qt WebView} module allows to use a native web browser on platforms where one is
-    available.
+    With the \l{Qt WebView} module, you can use the OS-provided browser APIs, on platforms where
+    those are available, to embed web content into your application without needing
+    to ship the entire Chromium runtime. On platforms where native APIs are not available,
+    it can also act as a wrapper around WebEngine.
 
     The \l{Qt WebChannel} module can be used to create a bi-directional communication channel
     between QObject objects on the C++ side and JavaScript on the QML side.
-
 */
