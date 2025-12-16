@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
     \c off-the-record is set.
     \value DiskHttpCache Use a disk cache. This is the default if \c off-the-record
     is not set. Falls back to \c MemoryHttpCache if \c off-the-record is set.
-    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
+    \value NoCache Disable both in-memory and disk caching.
 */
 
 /*!
