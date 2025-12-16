@@ -533,6 +533,32 @@
 
     See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
 
+    \section1 HTML5 Permissions
+
+    \QWE has support for several types of web feature permissions via the \l QWebEnginePermission API.
+    Permissions can be granted (or denied) to a web domain whenever a page requests
+    potentially sensitive user information, like access to the users' camera or geolocation.
+
+    Application developers can choose whether to ask the end user for permission
+    or automatically make the decision for them. Moreover, they can preemptively
+    grant or deny certain permissions, in cases where a known domain is expected to
+    request them.
+
+    The \l QWebEngineProfile object stores all permissions that have been granted
+    or denied to individual domains. Unless the current profile is off-the-record,
+    those permissions are stored to disk and recalled the next time an application is opened.
+    However, this behavior can be modified, and developers can choose to only store permissions
+    until application exit, or even to make permission requests trigger every time a website asks for them.
+
+    The full list of currently supported web permissions can be found
+    \l {QWebEnginePermission::PermissionType}{in the QWebEnginePermission documentation}.
+
+    \note Web permissions are different from application permissions, which are
+    governed by the QPermissions API. Web permissions are granted to individual
+    web domains, and not to the full application. However, the two APIs are not mutually
+    exclusive. For example, access to the user's camera and microphone may require
+    granting permission through both APIs.
+
     \section1 Frames
 
     Using the \l QWebEngineFrame API, developers can inspect and interact with individual
