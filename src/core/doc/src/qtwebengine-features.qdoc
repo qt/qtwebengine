@@ -230,8 +230,6 @@
     Dragging files into the browser is not actually part of HTML5, but it is
     supported. It can be tested by opening \l{HTML5 Demos - File API}.
 
-    Support for this feature was added in Qt 5.7.0.
-
     \section1 Favicon
 
     \QWE supports the web site URL icon, \e favicon. Each icon is stored in the internal
@@ -300,8 +298,6 @@
     Widgets Video Player Example}{Video Player} or \l{WebEngine Quick Nano Browser}
     {Nano Browser}, and clicking the full screen icon to go into fullscreen
     mode.
-
-    Support for this feature was added in Qt 5.6.0.
 
     \section1 Hardware Acceleration
 
@@ -516,8 +512,6 @@
     in the \l{WebEngine Widgets Simple Browser Example}{Simple Browser} or
     \l{WebEngine Quick Nano Browser}{Nano Browser} example projects.
 
-    Support for this feature was added in Qt 5.7.0.
-
     \section1 HTML5 Geolocation
 
     \QWE supports JavaScript Geolocation API with \l {Qt Positioning} as a
@@ -538,8 +532,6 @@
     {Let desktop apps access your location}.
 
     See \l{Qt Positioning} for a possible backend setup like the GPS or IP based positioning.
-
-    Support for this feature was added in Qt 5.5.0.
 
     \section1 Frames
 
@@ -612,7 +604,7 @@
     \QWE provides standard dialogs for these functions. In widget-based
     applications, the standard dialogs are based on QDialog, whereas in Qt Quick
     applications, they can be based either on Qt Quick Controls 1 or Qt Quick
-    Controls 2 (since Qt 5.8). The latter are used only on \c eglfs platforms.
+    Controls 2. The latter are used only on \c eglfs platforms.
 
     To explicitly force either dialogs based on Qt Quick Controls 1 or Qt Quick
     Controls 2, set the \c QTWEBENGINE_DIALOG_SET environment variable to either
@@ -623,7 +615,7 @@
     QWebEnginePage::javaScriptConfirm(), and QWebEnginePage::javaScriptPrompt()
     functions.
 
-    Since Qt 5.8, Qt Quick dialogs can be customized by connecting to the
+    Qt Quick dialogs can be customized by connecting to the
     WebEngineView::authenticationDialogRequested(),
     WebEngineView::javaScriptDialogRequested(),
     WebEngineView::colorDialogRequested(),
@@ -643,8 +635,6 @@
     This feature can be turned on (default) or off via the QWebEngineSettings::PdfViewerEnabled or
     WebEngineSettings::pdfViewerEnabled setting.
 
-    Support for this feature was added in Qt 5.13.0.
-
     \section1 Page Lifecycle API
 
     \QWE supports the \l {https://wicg.github.io/page-lifecycle/spec.html}{Page
@@ -655,8 +645,6 @@
 
     For an example of the QML API in use, see the \l {WebEngine Lifecycle
     Example}.
-
-    Support for this feature was added in Qt 5.14.0.
 
     \section2 Overview of Lifecycle States
 
@@ -730,8 +718,6 @@
 
     This feature can be tested using \l{WebEngine Widgets Html2Pdf Example}
     {Html2Pdf}.
-
-    Support for this feature was added in Qt 5.7.0.
 
     \section1 Spellchecker
 
@@ -818,8 +804,6 @@
 
     For more information, see \l{Qt Configure Options}.
 
-    Support for this feature was added in Qt 5.8.0.
-
     \section1 Touch
 
     \QWE supports touch devices for navigating and interacting with web pages.
@@ -864,16 +848,12 @@
     view-source:qt.io
     \endcode
 
-    Support for this feature was added in Qt 5.8.0.
-
     \section1 Web Notifications
 
     Qt WebEngine supports JavaScript \l{Web Notifications API}.
     The application has to explicitly allow the feature by using
     QWebEnginePage::Notifications or \l{WebEngineView::Feature}
     {WebEngineView.Notifications}.
-
-    Support for this feature was added in Qt 5.13.0.
 
     \section1 WebGL
 

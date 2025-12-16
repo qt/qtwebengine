@@ -30,7 +30,7 @@ QT_BEGIN_NAMESPACE
     not accessible from a different one. ScriptWorldId provides some predefined IDs for this
     purpose.
 
-    The following \l Greasemonkey attributes are supported since Qt 5.8:
+    The following \l Greasemonkey attributes are supported:
     \c @exclude, \c @include, \c @name, \c @match, and \c @run-at.
 
     Use QWebEnginePage::scripts() and QWebEngineProfile::scripts() to access

@@ -136,9 +136,9 @@
             the old insecure behavior.
             Disabled by default.
     \value  [since 5.9] AllowGeolocationOnInsecureOrigins
-            Since Qt 5.7, only secure origins such as HTTPS have been able to request
+            Only secure origins such as HTTPS are able to request
             Geolocation features. This provides an override to allow non secure
-            origins to access Geolocation again.
+            origins to access Geolocation.
             Disabled by default.
     \value  [since 5.10] AllowWindowActivationFromJavaScript
             Allows activating windows by using the window.focus() JavaScript

@@ -319,7 +319,7 @@ bool QQuickWebEngineSettings::allowRunningInsecureContent() const
   \qmlproperty bool WebEngineSettings::allowGeolocationOnInsecureOrigins
   \since QtWebEngine 1.5
 
-  Since Qt 5.7, only secure origins such as HTTPS have been able to request
+  Only secure origins such as HTTPS are able to request
   Geolocation features. This provides an override to allow non secure
   origins to access Geolocation again.
 
