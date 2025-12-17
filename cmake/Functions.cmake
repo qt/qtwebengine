@@ -398,7 +398,10 @@ function(add_ninja_command)
             ${arg_BUILDDIR}/${arg_TARGET} # use generator expression in CMAKE 3.20
         BYPRODUCTS ${arg_BYPRODUCTS}
         COMMENT "Running ninja for ${arg_TARGET} in ${arg_BUILDDIR}"
-        COMMAND Ninja::ninja
+        COMMAND ${CMAKE_COMMAND}
+            -E env
+            "NODEJS_EXECUTABLE=${Nodejs_EXECUTABLE}"
+            $<TARGET_FILE:Ninja::ninja>
             ${ninja_flags}
             -C ${arg_BUILDDIR}
             ${arg_TARGET}
