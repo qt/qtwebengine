@@ -541,6 +541,13 @@
 
     Support for this feature was added in Qt 5.5.0.
 
+    \section1 Frames
+
+    Using the \l QWebEngineFrame API, developers can inspect and interact with individual
+    \c {<iframe>} elements within a web page. This can be used to inject JavaScript, or to print
+    only the contents of the frame, ignoring the page it's embedded in. Frames can also
+    be accessed recursively, for cases where frames exist inside other frames.
+
     \section1 HTML5 WebSockets
 
     \QWE supports the WebSocket JavaScript API to communicate with WebSocket servers
