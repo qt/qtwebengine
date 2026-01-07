@@ -131,7 +131,7 @@ ApplicationWindow {
             Shortcut {
                 sequences: [ StandardKey.Find ]
                 onActivated: {
-                    searchField.forceActiveFocus()
+                    searchField.forceActiveFocus(Qt.ShortcutFocusReason)
                     searchField.selectAll()
                 }
             }
@@ -435,28 +435,14 @@ ApplicationWindow {
                 ToolTip.delay: 2000
                 ToolTip.text: "find previous"
             }
-            TextField {
+            SearchField {
                 id: searchField
-                placeholderText: "search"
                 Layout.minimumWidth: 150
                 Layout.fillWidth: true
                 Layout.bottomMargin: 3
                 onAccepted: {
                     sidebar.open()
                     sidebarTabs.setCurrentIndex(1)
-                }
-                Image {
-                    visible: searchField.text !== ""
-                    source: "qrc:/qt/qml/MultiPageModule/resources/edit-clear.svg"
-                    sourceSize.height: searchField.height - 6
-                    anchors {
-                        right: parent.right
-                        verticalCenter: parent.verticalCenter
-                        margins: 3
-                    }
-                    TapHandler {
-                        onTapped: searchField.clear()
-                    }
                 }
             }
             ToolButton {

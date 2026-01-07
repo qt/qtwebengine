@@ -3,7 +3,6 @@
         <file>Viewer.qml</file>
         <file>qmldir</file>
         <file>resources/document-open.svg</file>
-        <file>resources/edit-clear.svg</file>
         <file>resources/edit-copy.svg</file>
         <file>resources/edit-select-all.svg</file>
         <file>resources/go-down-search.svg</file>

@@ -29,7 +29,6 @@ qt_add_qml_module(multipage
         Viewer.qml
     RESOURCES
         resources/document-open.svg
-        resources/edit-clear.svg
         resources/edit-copy.svg
         resources/edit-select-all.svg
         resources/go-down-search.svg
