@@ -119,7 +119,7 @@ public:
     void OnUploadProgress(int64_t current_position, int64_t total_size, OnUploadProgressCallback callback) override;
     void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
     void OnComplete(const network::URLLoaderCompletionStatus &status) override;
-    void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override {}
+    void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr) override;
 
     // network::mojom::URLLoader
     void FollowRedirect(const std::vector<std::string> &removed_headers,
@@ -418,6 +418,11 @@ void InterceptedRequest::ContinueAfterIntercept()
 }
 
 // URLLoaderClient methods.
+
+void InterceptedRequest::OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints)
+{
+    target_client_->OnReceiveEarlyHints(std::move(early_hints));
+}
 
 void InterceptedRequest::OnReceiveResponse(network::mojom::URLResponseHeadPtr head, mojo::ScopedDataPipeConsumerHandle handle, std::optional<mojo_base::BigBuffer> buffer)
 {
