@@ -514,6 +514,20 @@ macro(append_compiler_linker_sdk_setup)
                 clang_version="${clang_version}"
                 fatal_linker_warnings=false
             )
+
+            if(LINUX)
+                #TODO: This is Linux only for now.
+                #      If this is needed on other platforms, factor it out into
+                #      get_clang_resource_dir().
+                execute_process(
+                    COMMAND ${clang_base_path}/bin/clang -print-resource-dir
+                    OUTPUT_VARIABLE clang_resource_dir
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+                list(APPEND gnArgArg
+                    clang_resource_dir="${clang_resource_dir}"
+                )
+            endif()
         endif()
         list(APPEND gnArgArg use_llvm_libatomic=false)
     endif()
