@@ -5,7 +5,12 @@
 #ifndef ACCESSIBILITY_ACTIVATION_OBSERVER_H
 #define ACCESSIBILITY_ACTIVATION_OBSERVER_H
 
+#include <memory>
 #include <QtGui/qaccessible.h>
+
+namespace content {
+class ScopedAccessibilityMode;
+}
 
 namespace QtWebEngineCore {
 
@@ -16,6 +21,9 @@ public:
     ~AccessibilityActivationObserver();
 
     void accessibilityActiveChanged(bool active) override;
+
+private:
+    std::unique_ptr<content::ScopedAccessibilityMode> scoped_accessibility_mode_;
 };
 
 } // namespace QtWebEngineCore
