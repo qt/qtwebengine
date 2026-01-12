@@ -34,7 +34,7 @@ public:
     QPdfViewPrivate(QPdfView *q);
     void init();
 
-    void documentStatusChanged();
+    void documentStatusChanged(QPdfDocument::Status status);
     void currentPageChanged(int currentPage);
     void calculateViewport();
     void setViewport(QRect viewport);

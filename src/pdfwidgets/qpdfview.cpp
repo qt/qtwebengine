@@ -51,9 +51,10 @@ void QPdfViewPrivate::init()
     m_pageRenderer->setRenderMode(QPdfPageRenderer::RenderMode::MultiThreaded);
 }
 
-void QPdfViewPrivate::documentStatusChanged()
+void QPdfViewPrivate::documentStatusChanged(QPdfDocument::Status status)
 {
-    updateDocumentLayout();
+    if (status == QPdfDocument::Status::Ready)
+        updateDocumentLayout();
     invalidatePageCache();
 }
 
@@ -341,12 +342,12 @@ void QPdfView::setDocument(QPdfDocument *document)
     if (d->m_document)
         d->m_documentStatusChangedConnection =
                 connect(d->m_document.data(), &QPdfDocument::statusChanged, this,
-                        [d](){ d->documentStatusChanged(); });
+                        [d](QPdfDocument::Status s){ d->documentStatusChanged(s); });
 
     d->m_pageRenderer->setDocument(d->m_document);
     d->m_linkModel.setDocument(d->m_document);
 
-    d->documentStatusChanged();
+    d->documentStatusChanged(document->status());
 }
 
 QPdfDocument *QPdfView::document() const
