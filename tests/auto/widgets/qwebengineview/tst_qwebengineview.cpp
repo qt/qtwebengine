@@ -2528,6 +2528,7 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     view.hide();
     view.page()->setLifecycleState(QWebEnginePage::LifecycleState::Discarded);
     view.show();
+    QVERIFY(loadFinishedSpy.wait());
     QTRY_COMPARE(selectionChangedSpy.size(), 4);
     QVERIFY(!view.hasSelection());
     QVERIFY(view.page()->selectedText().isEmpty());
@@ -2550,7 +2551,6 @@ void tst_QWebEngineView::textSelectionOutOfInputField()
     QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString().isEmpty());
 
     // Select the whole page by ctrl+a
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, view.geometry().center());
     QTest::keyClick(view.windowHandle(), Qt::Key_A, Qt::ControlModifier);
     QTRY_COMPARE(selectionChangedSpy.size(), 1);
     QVERIFY(view.hasSelection());
