@@ -379,26 +379,30 @@ void RenderWidgetHostViewQtDelegateItem::itemChange(ItemChange change, const Ite
     }
 }
 
-class CleanupJob : public QRunnable, public Compositor::Observer
+class CleanupJob : public QRunnable
 {
 public:
-    CleanupJob() = default;
+    CleanupJob(Compositor::Observer *o) : m_observer(o)
+    {
+        // Note this assumes observer and compositor calls unbind in destructor
+        o->lockForRelease();
+    }
 
     ~CleanupJob() override
     {
         {
-            auto comp = compositor();
+            auto comp = m_observer->compositor();
             Q_ASSERT(comp && !comp->hasResources());
         }
-        unbind();
+        m_observer->unlockForRelease();
     }
-    void readyToSwap() override { };
     void run() override
     {
-        auto comp = compositor();
-        if (comp)
-            comp->releaseResources();
+        auto comp = m_observer->compositor();
+        Q_ASSERT(comp);
+        comp->releaseResources();
     }
+    Compositor::Observer *m_observer;
 };
 
 void RenderWidgetHostViewQtDelegateItem::releaseResources()
@@ -431,13 +435,7 @@ void RenderWidgetHostViewQtDelegateItem::releaseResources()
     }
     QQuickWindow *win = QQuickItem::window();
     if (win->isExposed()) {
-        // we are in main thread and RWHV delegate gets destroyed
-        // make new compositor observer and pass it to clean up job
-        // so it can request compositor in thread safe manner
-        unbind();
-        CleanupJob *job = new CleanupJob();
-        job->bind(m_client->compositorId());
-        job->lockForRelease();
+        CleanupJob *job = new CleanupJob(this);
         win->scheduleRenderJob(job, QQuickWindow::NoStage);
     } else {
         // TODO: Try to find a proper way to schedule job on the render thread if the window is
