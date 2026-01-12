@@ -94,10 +94,8 @@ void Compositor::Observer::unbind()
     g_bindings.lock();
     if (m_binding) {
         m_binding->observer = nullptr;
-        if (m_binding->waitForRelease) {
-            m_binding->waitForRelease = false;
-            m_binding->condition.wakeOne();
-        }
+        while (m_binding->waitForRelease)
+            m_binding->condition.wait(&g_bindings.m_mutex);
         if (m_binding->compositor == nullptr)
             delete m_binding;
         m_binding = nullptr;
@@ -127,6 +125,17 @@ void Compositor::Observer::lockForRelease()
     g_bindings.unlock();
 }
 
+void Compositor::Observer::unlockForRelease()
+{
+    g_bindings.lock();
+    Q_ASSERT(m_binding);
+    if (m_binding->waitForRelease) {
+        m_binding->waitForRelease = false;
+        m_binding->condition.wakeAll();
+    }
+    g_bindings.unlock();
+}
+
 // Compositor
 
 void Compositor::bind(Id id)
@@ -143,7 +152,7 @@ void Compositor::unbind()
 {
     g_bindings.lock();
     if (m_binding) {
-        if (m_binding->waitForRelease)
+        while (m_binding->waitForRelease)
             m_binding->condition.wait(&g_bindings.m_mutex);
         m_binding->compositor = nullptr;
         if (m_binding->observer == nullptr)
