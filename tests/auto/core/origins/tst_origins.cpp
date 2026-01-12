@@ -452,7 +452,6 @@ void tst_Origins::jsUrlCanon()
 void tst_Origins::jsUrlRelative()
 {
     QVERIFY(verifyLoad(QSL("about:blank")));
-    // FIXME comments are wrong after 140
 
     // Schemes with hosts, like http, work as expected.
     QCOMPARE(eval(QSL("new URL('bar', 'http://foo').href")), QVariant(QSL("http://foo/bar")));
@@ -469,13 +468,19 @@ void tst_Origins::jsUrlRelative()
     // this. The following cases all fail with TypeErrors.
     QCOMPARE(eval(QSL("new URL('bar', 'tst:foo').href")), QVariant());
     QCOMPARE(eval(QSL("new URL('baz', 'tst:foo/bar').href")), QVariant());
-    QCOMPARE(eval(QSL("new URL('bar', 'tst://foo').href")), QVariant(QSL("tst://foo/bar")));
-    QCOMPARE(eval(QSL("new URL('bar', 'tst:///foo').href")), QVariant(QSL("tst:///bar")));
 
     // However, registered custom schemes have been patched to allow relative
     // URLs even without an initial slash.
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:foo').href")), QVariant(QSL("qrc:bar")));
     QCOMPARE(eval(QSL("new URL('baz', 'qrc:foo/bar').href")), QVariant(QSL("qrc:foo/baz")));
+
+    // Standard WHATWG URL resolution for custom schemes.
+    QCOMPARE(eval(QSL("new URL('bar', 'tst:/foo').href")), QVariant(QSL("tst:/bar"))); // Host ""; path "/foo" -> "/bar"
+    QCOMPARE(eval(QSL("new URL('bar', 'tst://foo').href")), QVariant(QSL("tst://foo/bar"))); // Host "foo"; path "/" -> "/bar"
+    QCOMPARE(eval(QSL("new URL('bar', 'tst:///foo').href")), QVariant(QSL("tst:///bar"))); // Host ""; path "/foo" -> "/bar"
+
+    // QRC scheme follows the standard authority parsing rules.
+    QCOMPARE(eval(QSL("new URL('bar', 'qrc:/foo').href")), QVariant(QSL("qrc:/bar")));
     QCOMPARE(eval(QSL("new URL('bar', 'qrc://foo').href")), QVariant(QSL("qrc://foo/bar")));
     QCOMPARE(eval(QSL("new URL('bar', 'qrc:///foo').href")), QVariant(QSL("qrc:///bar")));
 
