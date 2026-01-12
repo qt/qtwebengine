@@ -32,6 +32,7 @@ public:
     ~MainWindow();
 
 public slots:
+    void setContinuousMode(bool c);
     void open(const QUrl &docLocation);
 
 private slots:

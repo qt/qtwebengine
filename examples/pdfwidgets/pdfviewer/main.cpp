@@ -17,10 +17,14 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument("file", "The file to open.");
+    parser.addPositionalArgument("file", MainWindow::tr("The file to open."));
+    QCommandLineOption continuousPagesOption(QStringList() << "c" << "continuous",
+        MainWindow::tr("Allow continuous scrolling through all pages in the document."));
+    parser.addOption(continuousPagesOption);
     parser.process(a);
 
     MainWindow w;
+    w.setContinuousMode(parser.isSet(continuousPagesOption));
     w.show();
     if (!parser.positionalArguments().isEmpty())
         w.open(QUrl::fromLocalFile(parser.positionalArguments().constFirst()));
