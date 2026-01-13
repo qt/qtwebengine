@@ -281,10 +281,15 @@ macro(append_build_type_setup)
       # endif()
       get_filename_component(rustBasePath ${Rustc_EXECUTABLE} DIRECTORY)
       get_filename_component(rustBasePath ${rustBasePath} DIRECTORY)
-      get_rustc_version_from_runtime(rustc_version)
+      get_rustc_version_from_runtime(rustc_version_str)
       list(APPEND gnArgArg rust_bindgen_root="${rustBasePath}")
       list(APPEND gnArgArg rust_sysroot_absolute="${rustBasePath}")
-      list(APPEND gnArgArg rustc_version="${rustc_version}")
+      list(APPEND gnArgArg rustc_version="${rustc_version_str}")
+      if(rustc_version_str MATCHES "^rustc ([0-9.]+).*")
+         if(CMAKE_MATCH_1 VERSION_LESS "1.87") # adler2 known to be absent in 1.85 and present in 1.89
+           list(APPEND gnArgArg use_adler2=false)
+         endif()
+      endif()
     else()
       list(APPEND gnArgArg
           enable_rust=false
@@ -419,16 +424,17 @@ function(get_clang_base_path result)
             if(MSVC)
                 set(CLANG_PRINT_PATH_COMMAND /clang:-print-prog-name=clang)
             elseif(LINUX)
-                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang-check)
+                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang-cpp)
             else()
                 set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang)
             endif()
             execute_process(
                 COMMAND ${clang_bin} ${CLANG_PRINT_PATH_COMMAND}
                 OUTPUT_VARIABLE clang_output
+                ERROR_QUIET
                 OUTPUT_STRIP_TRAILING_WHITESPACE
             )
-            cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE)
+            cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE) # $base_path/bin/clang
             set(CLANG_FULL_PATH "${clang_output}" CACHE INTERNAL "internal")
             mark_as_advanced(CLANG_FULL_PATH)
         endif()
