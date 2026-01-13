@@ -601,7 +601,7 @@ if(WIN32)
                 CONDITION NOT MSVC_VERSION LESS 1936
                 MESSAGE "VS compiler version must be at least 14.36"
             )
-        else()
+        elseif(MSVC_TOOLSET_VERSION LESS 142) # Future VS versions are OK
             message(FATAL_ERROR "Build requires Visual Studio 2019 or higher.")
         endif()
     endif()
