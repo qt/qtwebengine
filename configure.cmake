@@ -448,7 +448,7 @@ qt_webengine_configure_check("compiler"
 )
 qt_webengine_configure_check("visual-studio"
     MODULES QtWebEngine QtPdf
-    CONDITION NOT WIN32 OR NOT MSVC OR MSVC_TOOLSET_VERSION EQUAL 142 OR MSVC_TOOLSET_VERSION EQUAL 143
+    CONDITION NOT WIN32 OR NOT MSVC OR MSVC_TOOLSET_VERSION GREATER_EQUAL 142
     MESSAGE "Build requires Visual Studio 2019 or higher."
     DOCUMENTATION "Visual Studio 2019 or higher."
     TAGS WINDOWS_PLATFORM
