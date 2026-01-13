@@ -458,7 +458,7 @@ std::vector<std::u16string> ClipboardQt::GetStandardFormats(ui::ClipboardBuffer 
     if (mimeData->hasHtml())
         types.push_back(ui::kMimeTypeHtml16);
     if (mimeData->hasText())
-        types.push_back(ui::kMimeTypeUtf8PlainText16);
+        types.push_back(ui::kMimeTypePlainText16);
     if (mimeData->hasUrls())
         types.push_back(ui::kMimeTypeUriList16);
     const QStringList formats = mimeData->formats();
