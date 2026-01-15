@@ -62,8 +62,8 @@ else()
         OUT_VAR_DEPS_FOUND sbom_deps_found
         OUT_VAR_REASON_FAILURE_MESSAGE sbom_missing_deps_message
     )
-    find_program(rustc_EXECUTABLE NAMES rustc rustc.exe)
-    find_program(bindgen_EXECUTABLE NAMES bindgen bindgen.exe)
+    find_package(Rust)
+    find_package(Bindgen)
 endif()
 
 #### pkg_config checks
@@ -766,7 +766,7 @@ qt_feature("webengine-system-openh264" PRIVATE
 qt_feature("webengine-rust-build" PRIVATE
     LABEL "Build with rust"
     AUTODETECT OFF
-    CONDITION rustc_EXECUTABLE AND bindgen_EXECUTABLE
+    CONDITION Rust_FOUND AND Bindgen_FOUND
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE

@@ -242,16 +242,6 @@ macro(setup_toolchains)
     unset(toolchain_in_file)
 endmacro()
 
-function(get_rustc_version_from_runtime result)
-    execute_process(
-        COMMAND ${Rustc_EXECUTABLE} -V
-        OUTPUT_VARIABLE rust_output
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-     )
-     set(${result} ${rust_output} PARENT_SCOPE)
-endfunction()
-
 macro(append_build_type_setup)
     list(APPEND gnArgArg
         init_stack_vars=false
@@ -275,23 +265,19 @@ macro(append_build_type_setup)
           enable_tetanus=false # assuming stable rust
           enable_chromium_prelude=false)
 
-      find_program(Rustc_EXECUTABLE NAMES rustc)
-      # if(NOT Rustc_EXECUTABLE)
-      #     set(Rustc_EXECUTABLE "/usr/bin/rustc")
-      # endif()
       get_filename_component(rustBasePath ${Rustc_EXECUTABLE} DIRECTORY)
       get_filename_component(rustBasePath ${rustBasePath} DIRECTORY)
-      get_rustc_version_from_runtime(rustc_version_str)
       list(APPEND gnArgArg rust_bindgen_root="${rustBasePath}")
       list(APPEND gnArgArg rust_sysroot_absolute="${rustBasePath}")
-      list(APPEND gnArgArg rustc_version="${rustc_version_str}")
-      if(rustc_version_str MATCHES "^rustc ([0-9.]+).*")
-         if(CMAKE_MATCH_1 VERSION_LESS "1.87") # adler2 known to be absent in 1.85 and present in 1.89
-           list(APPEND gnArgArg use_adler2=false)
-         endif()
-         if(CMAKE_MATCH_1 VERSION_LESS "1.84")
-           list(APPEND gnArgArg v8_enable_temporal_support=false)
-         endif()
+      list(APPEND gnArgArg rustc_version="${Rust_VERSION}")
+
+      # adler2 known to be absent in 1.85 and present in 1.89
+      if("${Rust_VERSION}" VERSION_LESS "1.87.0")
+          list(APPEND gnArgArg use_adler2=false)
+          # v8_enable_temporal_support is known to build with 1.85 and not with 1.75
+          if("${Rust_VERSION}" VERSION_LESS "1.84.0")
+              list(APPEND gnArgArg v8_enable_temporal_support=false)
+          endif()
       endif()
     else()
       list(APPEND gnArgArg
