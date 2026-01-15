@@ -363,7 +363,6 @@ foreach(arch ${archs})
             enable_library_cdms=true
             enable_media_remoting=false
             enable_message_center=false
-            enable_nacl=false
             enable_oop_printing=false
             enable_plugins=true
             enable_remoting=false
@@ -371,7 +370,6 @@ foreach(arch ${archs})
             enable_resource_allowlist_generation=false
             enable_screen_ai_service=false
             enable_session_service=false
-            enable_skia_graphite_gtests=false
             enable_supervised_users=false
             enable_swiftshader=false
             enable_swiftshader_vulkan=false
@@ -394,7 +392,6 @@ foreach(arch ${archs})
             skia_use_dawn=false
             dawn_use_built_dxc=false
             use_static_angle=true
-            devtools_fast_bundle=false
             devtools_skip_typecheck=false
             headless_use_policy=false
         )
