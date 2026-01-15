@@ -78,3 +78,25 @@ msvc_system_allocator_toolchain("arm64_with_system_allocator") {
     use_clang_coverage = false
   }
 }
+
+msvc_rust_host_build_tools_toolchain("x64_for_rust_host_build_tools") {
+  cl = "clang-cl.exe"
+  environment = "environment.x64"
+  toolchain_args = {
+    current_cpu = "x64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
+
+msvc_rust_host_build_tools_toolchain("arm64_for_rust_host_build_tools") {
+  cl = "clang-cl.exe"
+  environment = "environment.arm64"
+  toolchain_args = {
+    current_cpu = "arm64"
+    current_os = "win"
+    is_clang = true
+    use_clang_coverage = false
+  }
+}
