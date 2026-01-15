@@ -266,7 +266,6 @@ macro(append_build_type_setup)
         use_partition_alloc_as_malloc=false
         use_custom_libcxx=false
         use_custom_libcxx_for_host=false
-        assert_cpp20=false
         enable_constraints=false
     )
     if (QT_FEATURE_webengine_rust_build)
