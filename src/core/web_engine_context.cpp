@@ -902,6 +902,12 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
+#if defined(Q_OS_MACOS)
+    // Skia Graphite is enabled by default on macOS, but we do not yet support Dawn
+    // (or any) Graphite backend. This currently breaks hardware rendering.
+    // TODO: Re-enable once we support Dawn on macOS.
+    disableFeatures.push_back(features::kSkiaGraphite.name);
+#endif
 
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
