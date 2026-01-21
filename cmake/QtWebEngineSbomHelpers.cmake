@@ -102,7 +102,7 @@ execute_process(
     WORKING_DIRECTORY \"${WEBENGINE_ROOT_BUILD_DIR}\"
     COMMAND_ERROR_IS_FATAL ANY
 )
-file(INSTALL \"${output_file_path}\" DESTINATION \"${QT6_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
+file(INSTALL \"${output_file_path}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
 message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
 ")
     file(GENERATE OUTPUT "${generate_sbom_script_path}" CONTENT "${generate_sbom_script_contents}")
@@ -116,7 +116,7 @@ message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
     qt_internal_sbom_get_external_document_ref_spdx_id(${chromium_project_name_lower} document_ref_spdx_id)
     set(external_package_spdx_id "SPDXRef-${chromium_project_name}-Internal-Components")
     qt_internal_sbom_add_external_reference(
-        EXTERNAL_DOCUMENT_FILE_PATH "sbom/${external_output_file_name}"
+        EXTERNAL_DOCUMENT_FILE_PATH "${INSTALL_ARCHDATADIR}/sbom/${external_output_file_name}"
         EXTERNAL_DOCUMENT_SPDX_ID "${document_ref_spdx_id}"
         EXTERNAL_PACKAGE_SPDX_ID "${external_package_spdx_id}"
     )
