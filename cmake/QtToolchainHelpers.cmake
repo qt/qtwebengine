@@ -289,6 +289,9 @@ macro(append_build_type_setup)
          if(CMAKE_MATCH_1 VERSION_LESS "1.87") # adler2 known to be absent in 1.85 and present in 1.89
            list(APPEND gnArgArg use_adler2=false)
          endif()
+         if(CMAKE_MATCH_1 VERSION_LESS "1.84")
+           list(APPEND gnArgArg v8_enable_temporal_support=false)
+         endif()
       endif()
     else()
       list(APPEND gnArgArg
