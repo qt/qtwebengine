@@ -151,6 +151,7 @@ function(add_linker_options target buildDir completeStatic)
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
         # we need libs rsp also when linking process with sandbox lib
         set_property(TARGET ${cmakeTarget} PROPERTY LIBS_RSP ${libs_rsp})
+        set_property(TARGET ${cmakeTarget} PROPERTY ARCHIVES_RSP ${archives_rsp})
     endif()
 endfunction()
 
