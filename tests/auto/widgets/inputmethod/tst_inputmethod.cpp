@@ -1375,11 +1375,12 @@ void tst_InputMethod::imeJSInputEvents()
     view.settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
     view.show();
 
-    auto logLines = [&view]() -> QStringList {
-        return evaluateJavaScriptSync(view.page(), u"log.textContent"_s)
-                .toString()
-                .split(u'\n')
-                .filter(QRegularExpression(u".+"_s));
+    auto logLines = [&view](QStringList *log) -> size_t {
+        *log = evaluateJavaScriptSync(view.page(), u"log.textContent"_s)
+                       .toString()
+                       .split(u'\n')
+                       .filter(QRegularExpression(u".+"_s));
+        return log->size();
     };
 
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
@@ -1406,6 +1407,7 @@ void tst_InputMethod::imeJSInputEvents()
     QTRY_VERIFY_WITH_TIMEOUT(loadFinishedSpy.size(), 10000);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     CLICK_INPUT_TO_FOCUS(view, u"input"_s);
+    QStringList log;
 
     // 1. Commit text (this is how dead keys work on Linux).
     {
@@ -1416,10 +1418,10 @@ void tst_InputMethod::imeJSInputEvents()
     }
 
     // Simply committing text should not trigger any JS composition event.
-    QTRY_COMPARE(logLines().size(), 3);
-    QCOMPARE(logLines()[0], u"[object InputEvent] beforeinput commit"_s);
-    QCOMPARE(logLines()[1], u"[object TextEvent] textInput commit"_s);
-    QCOMPARE(logLines()[2], u"[object InputEvent] input commit"_s);
+    QTRY_COMPARE(logLines(&log), 3);
+    QCOMPARE(log[0], u"[object InputEvent] beforeinput commit"_s);
+    QCOMPARE(log[1], u"[object TextEvent] textInput commit"_s);
+    QCOMPARE(log[2], u"[object InputEvent] input commit"_s);
     CLEAR_LOG_AND_INPUT();
 
     // 2. Start composition then commit text (this is how dead keys work on macOS).
@@ -1429,11 +1431,11 @@ void tst_InputMethod::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().size(), 4);
-    QCOMPARE(logLines()[0], u"[object CompositionEvent] compositionstart "_s);
-    QCOMPARE(logLines()[1], u"[object CompositionEvent] compositionupdate preedit"_s);
-    QCOMPARE(logLines()[2], u"[object InputEvent] beforeinput preedit"_s);
-    QCOMPARE(logLines()[3], u"[object InputEvent] input preedit"_s);
+    QTRY_COMPARE(logLines(&log), 4);
+    QCOMPARE(log[0], u"[object CompositionEvent] compositionstart "_s);
+    QCOMPARE(log[1], u"[object CompositionEvent] compositionupdate preedit"_s);
+    QCOMPARE(log[2], u"[object InputEvent] beforeinput preedit"_s);
+    QCOMPARE(log[3], u"[object InputEvent] input preedit"_s);
 
     {
         QInputMethodEvent event(u""_s, {});
@@ -1442,12 +1444,12 @@ void tst_InputMethod::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], u"[object CompositionEvent] compositionupdate commit"_s);
-    QCOMPARE(logLines()[5], u"[object InputEvent] beforeinput commit"_s);
-    QCOMPARE(logLines()[6], u"[object TextEvent] textInput commit"_s);
-    QCOMPARE(logLines()[7], u"[object InputEvent] input commit"_s);
-    QCOMPARE(logLines()[8], u"[object CompositionEvent] compositionend commit"_s);
+    QTRY_COMPARE(logLines(&log), 9);
+    QCOMPARE(log[4], u"[object CompositionEvent] compositionupdate commit"_s);
+    QCOMPARE(log[5], u"[object InputEvent] beforeinput commit"_s);
+    QCOMPARE(log[6], u"[object TextEvent] textInput commit"_s);
+    QCOMPARE(log[7], u"[object InputEvent] input commit"_s);
+    QCOMPARE(log[8], u"[object CompositionEvent] compositionend commit"_s);
     CLEAR_LOG_AND_INPUT();
 
     // 3. Start composition then cancel it with an empty IME event.
@@ -1457,11 +1459,11 @@ void tst_InputMethod::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().size(), 4);
-    QCOMPARE(logLines()[0], u"[object CompositionEvent] compositionstart "_s);
-    QCOMPARE(logLines()[1], u"[object CompositionEvent] compositionupdate preedit"_s);
-    QCOMPARE(logLines()[2], u"[object InputEvent] beforeinput preedit"_s);
-    QCOMPARE(logLines()[3], u"[object InputEvent] input preedit"_s);
+    QTRY_COMPARE(logLines(&log), 4);
+    QCOMPARE(log[0], u"[object CompositionEvent] compositionstart "_s);
+    QCOMPARE(log[1], u"[object CompositionEvent] compositionupdate preedit"_s);
+    QCOMPARE(log[2], u"[object InputEvent] beforeinput preedit"_s);
+    QCOMPARE(log[3], u"[object InputEvent] input preedit"_s);
 
     {
         QInputMethodEvent event(u""_s, {});
@@ -1469,12 +1471,12 @@ void tst_InputMethod::imeJSInputEvents()
         qApp->processEvents();
     }
 
-    QTRY_COMPARE(logLines().size(), 9);
-    QCOMPARE(logLines()[4], u"[object CompositionEvent] compositionupdate "_s);
-    QCOMPARE(logLines()[5], u"[object InputEvent] beforeinput "_s);
-    QCOMPARE(logLines()[6], u"[object TextEvent] textInput "_s);
-    QCOMPARE(logLines()[7], u"[object InputEvent] input null"_s);
-    QCOMPARE(logLines()[8], u"[object CompositionEvent] compositionend "_s);
+    QTRY_COMPARE(logLines(&log), 9);
+    QCOMPARE(log[4], u"[object CompositionEvent] compositionupdate "_s);
+    QCOMPARE(log[5], u"[object InputEvent] beforeinput "_s);
+    QCOMPARE(log[6], u"[object TextEvent] textInput "_s);
+    QCOMPARE(log[7], u"[object InputEvent] input null"_s);
+    QCOMPARE(log[8], u"[object CompositionEvent] compositionend "_s);
     CLEAR_LOG_AND_INPUT();
 
     // 4. Send empty IME event.
@@ -1486,7 +1488,7 @@ void tst_InputMethod::imeJSInputEvents()
 
     // No JS event is expected.
     QTest::qWait(100);
-    QVERIFY(logLines().isEmpty());
+    QCOMPARE(logLines(&log), 0);
 
 #undef CLEAR_LOG_AND_INPUT
 }
