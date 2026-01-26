@@ -23,17 +23,28 @@ machine_type:
             not_equals_value: Android
     - cores: 16
       enable_if:
-        condition: and
+        condition: or
         conditions:
-          - condition: property
-            property: host.os
-            equals_value: Windows
-          - condition: property
-            property: host.compiler
-            contains_value: MSVC
-          - condition: property
-            property: host.arch
-            equals_value: X86_64
+          - condition: and
+            conditions:
+              - condition: property
+                property: host.os
+                equals_value: Windows
+              - condition: property
+                property: host.compiler
+                contains_value: MSVC
+              - condition: property
+                property: host.arch
+                equals_value: X86_64
+          - condition: and
+            conditions:
+              - condition: property
+                property: host.os
+                equals_value: Linux
+              - condition: property
+                property: host.arch
+                equals_value: AARCH64
+
     - cores: 8
 
   Test:
