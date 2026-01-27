@@ -107,6 +107,7 @@ if (ozone_platform_x11) {
 
 shared_library("QtWebEngineCore") {
   rsp_types = [ "objects", "archives", "libs", "ldir", "lflags" ]
+  lflags_remove = "(--sysroot=)(\\.\\./.*\\S*?)" # ignore sysroot with realative path
   configs += [
     ":cpp20_config",
     ":QtWebEngineCore_config",
