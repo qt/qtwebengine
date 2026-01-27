@@ -51,6 +51,7 @@ config("cpp20_config") {
 static_library("QtPdf") {
   complete_static_lib = true
   rsp_types = [ "objects", "archives", "libs", "ldir", "lflags" ]
+  lflags_remove = "(--sysroot=)(\\.\\./.*\\S*?)" # ignore sysroot with realative path
   configs += [
     ":cpp20_config",
     ":QtPdf_config"
