@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
     \value  AllowPersistentCookies
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
             are only stored to disk for crash recovery. This is the default setting.
-    \value  OnlyPersistentCookies
+    \value [since 6.11] OnlyPersistentCookies
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
             are never stored to disk, even for crash recovery.
     \value  ForcePersistentCookies
