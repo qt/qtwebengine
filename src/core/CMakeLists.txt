@@ -181,6 +181,7 @@ foreach(arch ${archs})
                 renderer_host/web_engine_page_host.cpp renderer_host/web_engine_page_host.h
                 request_controller.h
                 resource_bundle_qt.cpp
+                rhi_gpu_info.cpp rhi_gpu_info.h
                 select_file_dialog_factory_qt.cpp select_file_dialog_factory_qt.h
                 touch_handle_drawable_client.h
                 touch_handle_drawable_qt.cpp touch_handle_drawable_qt.h
