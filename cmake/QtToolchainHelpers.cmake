@@ -340,7 +340,11 @@ macro(append_build_type_setup)
     if(NOT QT_FEATURE_webengine_full_debug_info AND NOT IOS)
         list(APPEND gnArgArg blink_symbol_level=0 v8_symbol_level=0)
         if (MSVC AND NOT CLANG)
+            # We need these to keep the PDB size below the limit on MSVC builds
             list(APPEND gnArgArg webrtc_symbol_level=0)
+            if (QT_FEATURE_webengine_rust_build)
+                list(APPEND gnArgArg rust_symbol_level=0)
+            endif()
         endif()
     endif()
 
