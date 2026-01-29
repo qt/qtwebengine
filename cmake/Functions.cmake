@@ -398,6 +398,12 @@ function(add_lipo_command target buildDir)
     # TODO: this is evil hack, since cmake has no idea about libs
     set(libs_rsp "${buildDir}/x86_64/${ninjaTarget}_libs.rsp")
     target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${libs_rsp}>")
+
+    # Linking Rust libraries adds an additional personality symbol, which exceeds
+    # the compact-unwind limit. Disable it here as a workaround.
+    if (QT_FEATURE_webengine_rust_build)
+        target_link_options(${cmakeTarget} PRIVATE "-Wl,-no_compact_unwind")
+    endif()
 endfunction()
 
 function(qt_internal_add_external_project_dependency_to_root_project name)
