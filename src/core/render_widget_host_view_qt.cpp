@@ -195,8 +195,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
     resetTouchSelectionController();
 
     host()->render_frame_metadata_provider()->AddObserver(this);
-    host()->render_frame_metadata_provider()->ReportAllFrameSubmissionsForTesting(true);
-
     host()->SetView(this);
 }
 
