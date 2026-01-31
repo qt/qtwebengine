@@ -210,5 +210,25 @@ TestWebEngineView {
             tempDir.removeRecursive(webEngineView1.profile.persistentStoragePath)
             tempDir.removeRecursive(webEngineView2.profile.persistentStoragePath)
         }
+
+        function test_iconDatabaseNoSourceSize() {
+            var pixel;
+            var faviconImage = createTemporaryQmlObject("
+                    import QtQuick\n
+                    Image { width: 16; height: 16; cache: false; }", testCase);
+
+            var icon = "image://favicon/" + Qt.resolvedUrl("icons/favicon.png");
+
+            webEngineView.profile = nonOtrProfile.instance();
+            webEngineView.url = Qt.resolvedUrl("favicon.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            tryCompare(webEngineView, "icon", icon);
+            webEngineView.url = "about:blank";
+            verify(webEngineView.waitForLoadSucceeded());
+
+            faviconImage.source = icon;
+            pixel = getFaviconPixel(faviconImage);
+            verify(pixel[0] != 0);
+        }
     }
 }
