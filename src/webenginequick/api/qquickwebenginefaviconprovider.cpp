@@ -105,17 +105,20 @@ void FaviconImageRequester::requestFaviconFromDatabase(QPointer<QQuickWebEngineV
 {
     QtWebEngineCore::ProfileAdapter *profileAdapter = view->d_ptr->profileAdapter();
     bool touchIconsEnabled = view->profile()->settings()->touchIconsEnabled();
+    const int desiredSizeInPixel = m_requestedSize.isValid()
+        ? qMax(m_requestedSize.width(), m_requestedSize.height()) : 0;
+
     if (m_isIconUrl) {
         profileAdapter->requestIconForIconURL(
-                m_imageSource, qMax(m_requestedSize.width(), m_requestedSize.height()),
-                touchIconsEnabled, [this](const QIcon &icon, const QUrl &) {
+                m_imageSource, desiredSizeInPixel, touchIconsEnabled,
+                [this](const QIcon &icon, const QUrl &) {
                     QMetaObject::invokeMethod(this, "iconRequestDone", Qt::QueuedConnection,
                                               Q_ARG(const QIcon &, icon));
                 });
     } else {
         profileAdapter->requestIconForPageURL(
-                m_imageSource, qMax(m_requestedSize.width(), m_requestedSize.height()),
-                touchIconsEnabled, [this](const QIcon &icon, const QUrl &, const QUrl &) {
+                m_imageSource, desiredSizeInPixel, touchIconsEnabled,
+                [this](const QIcon &icon, const QUrl &, const QUrl &) {
                     QMetaObject::invokeMethod(this, "iconRequestDone", Qt::QueuedConnection,
                                               Q_ARG(const QIcon &, icon));
                 });
