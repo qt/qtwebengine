@@ -6,7 +6,7 @@
 
 #include "compositor/compositor.h"
 #include "ozone_util_qt.h"
-#include "web_engine_context.h"
+#include "rhi_gpu_info.h"
 
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
@@ -192,7 +192,7 @@ EGLHelper::EGLHelper()
         return;
     }
 
-    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported();
+    m_isDmaBufSupported = QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported();
 
     // Check extensions.
     if (m_isDmaBufSupported) {

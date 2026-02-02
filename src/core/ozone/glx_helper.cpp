@@ -8,7 +8,7 @@
 
 #include "glx_helper.h"
 #include "ozone_util_qt.h"
-#include "web_engine_context.h"
+#include "rhi_gpu_info.h"
 
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 
@@ -44,7 +44,7 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
     m_display = x11Application->display();
     m_connection = x11Application->connection();
 
-    m_isDmaBufSupported = QtWebEngineCore::WebEngineContext::isGbmSupported()
+    m_isDmaBufSupported = QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported()
             && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
 }
 
