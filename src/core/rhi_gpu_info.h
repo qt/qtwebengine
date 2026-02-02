@@ -7,6 +7,10 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
+#include "build/build_config.h"
+#include "build/buildflag.h"
+#include "ui/base/ozone_buildflags.h"
+
 #include <QtCore/qstring.h>
 
 #include <vector>
@@ -44,8 +48,13 @@ public:
     };
 
     static RhiGpuInfo *instance();
-    static QString vendorIdToString(quint64 vendorId);
+    static QString vendorIdToString(const quint64 vendorId);
+#if QT_CONFIG(webengine_vulkan)
+    static bool isVulkanSupported();
+#endif
 
+    QString backendName() const { return m_backendName; }
+    bool isGbmSupported() const { return m_isGbmSupported; };
     Vendor vendor() const { return m_vendor; }
     QString vendorName() const;
     QString deviceName() const { return m_deviceName; }
@@ -86,6 +95,13 @@ private:
 
     RhiGpuInfo();
 
+    Vendor determineVendor(const quint64 vendorId) const;
+#if BUILDFLAG(IS_OZONE)
+    bool determineGbmSupport() const;
+#endif
+
+    QString m_backendName;
+    bool m_isGbmSupported = false;
     Vendor m_vendor = Unknown;
     QString m_deviceName;
     QString m_adapterLuid;

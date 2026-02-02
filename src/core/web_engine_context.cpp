@@ -112,7 +112,6 @@
 #include <QNetworkProxy>
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtQuick/private/qsgrhisupport_p.h>
 #include <QLoggingCategory>
 
 #if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE)
@@ -237,7 +236,7 @@ static void logContext(const base::CommandLine &cmd)
         log += "Chromium Vulkan Backend: "_L1 + QLatin1StringView(getVulkanType(cmd)) + u'\n';
         log += u'\n';
 
-        log += "QSG RHI Backend: "_L1 + QSGRhiSupport::instance()->rhiBackendName() + u'\n';
+        log += "QSG RHI Backend: "_L1 + RhiGpuInfo::instance()->backendName() + u'\n';
         log += "QSG RHI Backend Supported: "_L1 + (usingSupportedSGBackend() ? "yes"_L1 : "no"_L1)
                 + u'\n';
         log += "QSG RHI Device: "_L1 + RhiGpuInfo::instance()->deviceName() + u'\n';
@@ -248,7 +247,8 @@ static void logContext(const base::CommandLine &cmd)
 #if BUILDFLAG(IS_OZONE)
         log += "Using GLX: "_L1 + (OzoneUtilQt::usingGLX() ? "yes"_L1 : "no"_L1) + u'\n';
         log += "Using EGL: "_L1 + (OzoneUtilQt::usingEGL() ? "yes"_L1 : "no"_L1) + u'\n';
-        log += "Using GBM: "_L1 + (WebEngineContext::isGbmSupported() ? "yes"_L1 : "no"_L1) + u'\n';
+        log += "Using GBM: "_L1 + (RhiGpuInfo::instance()->isGbmSupported() ? "yes"_L1 : "no"_L1)
+                + u'\n';
 #endif // BUILDFLAG(IS_OZONE)
         log += "Using Shared GL: "_L1 + (QOpenGLContext::globalShareContext() ? "yes"_L1 : "no"_L1)
                 + u'\n';
@@ -692,7 +692,7 @@ WebEngineContext::WebEngineContext()
     }
 
 #if BUILDFLAG(IS_OZONE)
-    if (!isGbmSupported()) {
+    if (!RhiGpuInfo::instance()->isGbmSupported()) {
         disableFeatures.push_back(media::kAcceleratedVideoDecodeLinux.name);
         parsedCommandLine.AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
     }
@@ -724,14 +724,9 @@ WebEngineContext::WebEngineContext()
     if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL && usingSupportedSGBackend()) {
         const bool disableGpu = parsedCommandLine.HasSwitch(switches::kDisableGpu);
         const bool usingVulkan = isFeatureEnabled(features::kVulkan.name, parsedCommandLine);
-        if (!disableGpu && !usingVulkan && !isGbmSupported()) {
+        if (!disableGpu && !usingVulkan && !RhiGpuInfo::instance()->isGbmSupported()) {
 #if QT_CONFIG(webengine_vulkan)
-            QVulkanInstance vulkanInstance;
-            vulkanInstance.setApiVersion(QVersionNumber(1, 1));
-            QRhiVulkanInitParams params;
-            params.inst = &vulkanInstance;
-
-            if (vulkanInstance.create() && QRhi::probe(QRhi::Vulkan, &params)) {
+            if (RhiGpuInfo::isVulkanSupported()) {
                 qWarning("GBM is not supported with the current configuration. "
                          "Fallback to Vulkan rendering in Chromium.");
                 parsedCommandLine.AppendSwitchASCII(switches::kUseVulkan,
@@ -954,54 +949,6 @@ bool WebEngineContext::closingDown()
 {
     return m_closingDown;
 }
-
-#if BUILDFLAG(IS_OZONE)
-bool WebEngineContext::isGbmSupported()
-{
-    static bool supported = []() {
-        const static char kForceGbmEnv[] = "QTWEBENGINE_FORCE_USE_GBM";
-        if (Q_UNLIKELY(qEnvironmentVariableIsSet(kForceGbmEnv))) {
-            qWarning("%s environment variable is set and it is for debugging purposes only.",
-                     kForceGbmEnv);
-            bool ok;
-            int forceGbm = qEnvironmentVariableIntValue(kForceGbmEnv, &ok);
-            if (ok) {
-                qWarning("GBM support is force %s.", forceGbm != 0 ? "enabled" : "disabled");
-                return (forceGbm != 0);
-            }
-
-            qWarning("Ignoring invalid value of %s and do not force GBM. "
-                     "Use 0 to force disable or 1 to force enable.",
-                     kForceGbmEnv);
-        }
-
-        if (RhiGpuInfo::instance()->vendor() == RhiGpuInfo::Nvidia) {
-            // FIXME: This disables GBM for Nvidia. Remove this when Nvidia fixes its GBM support.
-            //
-            // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
-            // See: https://download.nvidia.com/XFree86/Linux-x86_64/570.86.16/README/kms.html"
-            //
-            // Chromium uses GBM to allocate scanout buffers. Scanout requires DRM KMS. If KMS is
-            // enabled, gbm_device and gbm_buffer are created without any issues but rendering to
-            // the buffer will malfunction. It is not known how to detect this problem before
-            // rendering so we just disable GBM for Nvidia.
-            return false;
-        }
-
-#if !BUILDFLAG(IS_OZONE_X11)
-        if (OzoneUtilQt::usingGLX()) {
-            qWarning("GLX: Disable GBM because Ozone X11 is not available. "
-                     "Possibly caused by missing libraries for qpa-xcb support.");
-            return false;
-        }
-#endif
-
-        return true;
-    }();
-
-    return supported;
-}
-#endif // BUILDFLAG(IS_OZONE)
 
 void WebEngineContext::registerMainThreadFactories()
 {
