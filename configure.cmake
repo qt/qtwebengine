@@ -64,6 +64,7 @@ else()
     )
     find_package(Rust)
     find_package(Bindgen)
+    find_package(QWELibClang)
 endif()
 
 #### pkg_config checks
@@ -766,7 +767,7 @@ qt_feature("webengine-system-openh264" PRIVATE
 qt_feature("webengine-rust-build" PRIVATE
     LABEL "Build with rust"
     AUTODETECT OFF
-    CONDITION Rust_FOUND AND Bindgen_FOUND
+    CONDITION Rust_FOUND AND Bindgen_FOUND AND QWELibClang_FOUND
 )
 
 qt_feature("webengine-ozone-x11" PRIVATE

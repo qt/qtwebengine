@@ -362,76 +362,14 @@ macro(append_build_type_setup)
     )
 endmacro()
 
-function(get_clang_version_from_runtime_path result)
-    if(CLANG AND CMAKE_CXX_COMPILER)
-        set(clang_bin ${CMAKE_CXX_COMPILER})
-    elseif (MSVC)
-        set(clang_bin "clang-cl.exe")
-    else()
-        set(clang_bin "clang")
-    endif()
-    if(NOT DEFINED CLANG_RUNTIME_PATH)
-        set(CLANG_PRINT_RUNTIME_DIR_COMMAND -print-runtime-dir)
-        if (MSVC)
-            # clang-cl does not accept the argument unless it's piped via /clang:
-            set(CLANG_PRINT_RUNTIME_DIR_COMMAND /clang:-print-runtime-dir)
-        endif()
-        execute_process(
-           COMMAND ${clang_bin} ${CLANG_PRINT_RUNTIME_DIR_COMMAND}
-           OUTPUT_VARIABLE clang_output
-           ERROR_QUIET
-           OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE)
-        set(CLANG_RUNTIME_PATH "${clang_output}" CACHE INTERNAL "internal")
-        mark_as_advanced(CLANG_RUNTIME_PATH)
-     endif()
-     string(REGEX MATCH "\\/([0-9.]+)\\/" clang_run_time_path_version "${CLANG_RUNTIME_PATH}")
+function(get_clang_runtime_path_version result)
+     string(REGEX MATCH "\\/([0-9.]+)\\/" clang_run_time_path_version "${QWELibClang_RUNTIME_PATH}")
      if(clang_run_time_path_version)
          string(REPLACE "/" "" clang_run_time_path_version ${clang_run_time_path_version})
      else()
          string(REGEX MATCH "[0-9]+" clang_run_time_path_version ${CMAKE_CXX_COMPILER_VERSION})
      endif()
      set(${result} ${clang_run_time_path_version} PARENT_SCOPE)
-     unset(clang_bin)
-endfunction()
-
-function(get_clang_base_path result)
-    if(NOT CLANG AND NOT QT_FEATURE_webengine_rust_build AND QT_FEATURE_use_lld_linker)
-        set(CLANG_FULL_PATH ${CMAKE_LINKER})
-    else()
-        if(CLANG AND MACOS)
-            set(clang_bin ${CMAKE_OBJCXX_COMPILER})
-        elseif(CLANG)
-            set(clang_bin ${CMAKE_CXX_COMPILER})
-        elseif(MSVC)
-            set(clang_bin "clang-cl.exe")
-        else()
-            set(clang_bin "clang")
-        endif()
-        if(NOT DEFINED CLANG_FULL_PATH)
-            if(MSVC)
-                set(CLANG_PRINT_PATH_COMMAND /clang:-print-prog-name=clang)
-            elseif(LINUX)
-                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang-cpp)
-            else()
-                set(CLANG_PRINT_PATH_COMMAND -print-prog-name=clang)
-            endif()
-            execute_process(
-                COMMAND ${clang_bin} ${CLANG_PRINT_PATH_COMMAND}
-                OUTPUT_VARIABLE clang_output
-                ERROR_QUIET
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
-            cmake_path(CONVERT "${clang_output}" TO_CMAKE_PATH_LIST clang_output NORMALIZE) # $base_path/bin/clang
-            set(CLANG_FULL_PATH "${clang_output}" CACHE INTERNAL "internal")
-            mark_as_advanced(CLANG_FULL_PATH)
-        endif()
-        unset(clang_bin)
-    endif()
-    get_filename_component(clang_base_path "${CLANG_FULL_PATH}" DIRECTORY) # $base_path/bin
-    get_filename_component(clang_base_path "${clang_base_path}" DIRECTORY) # $base_path
-    set(${result} ${clang_base_path} PARENT_SCOPE)
 endfunction()
 
 macro(append_compiler_linker_sdk_setup)
@@ -445,16 +383,15 @@ macro(append_compiler_linker_sdk_setup)
     extend_gn_list(gnArgArg ARGS is_gcc CONDITION LINUX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
     if(CLANG)
-        get_clang_base_path(clang_base_path)
-        get_clang_version_from_runtime_path(clang_version)
-        if (NOT DEFINED clang_version)
+        get_clang_runtime_path_version(clang_runtime_path_version)
+        if (NOT DEFINED clang_runtime_path_version)
             message(FATAL_ERROR "Clang version for runtime is missing."
-                    "Please open bug report.Found clang runtime path: ${CLANG_RUNTIME_PATH}"
+                    "Please open bug report.Found clang runtime path: ${QWELibClang_RUNTIME_PATH}"
             )
         endif()
         list(APPEND gnArgArg
-            clang_base_path="${clang_base_path}"
-            clang_version="${clang_version}"
+            clang_base_path="${QWELibClang_BASE_PATH}"
+            clang_version="${clang_runtime_path_version}"
             clang_use_chrome_plugins=false
             fatal_linker_warnings=false
         )
@@ -500,30 +437,24 @@ macro(append_compiler_linker_sdk_setup)
         endif()
     else()
         if(QT_FEATURE_use_lld_linker OR QT_FEATURE_webengine_rust_build)
-            get_clang_version_from_runtime_path(clang_version)
-            get_clang_base_path(clang_base_path)
-
-            list(APPEND gnArgArg
-                clang_base_path="${clang_base_path}"
-                clang_version="${clang_version}"
-                fatal_linker_warnings=false
-            )
-
-            if(LINUX)
-                #TODO: This is Linux only for now.
-                #      If this is needed on other platforms, factor it out into
-                #      get_clang_resource_dir().
-                execute_process(
-                    COMMAND ${clang_base_path}/bin/clang -print-resource-dir
-                    OUTPUT_VARIABLE clang_resource_dir
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
-                list(APPEND gnArgArg
-                    clang_resource_dir="${clang_resource_dir}"
-                )
+            list(APPEND gnArgArg clang_base_path="${QWELibClang_BASE_PATH}")
+            if (QT_FEATURE_webengine_rust_build)
+                get_clang_runtime_path_version(clang_runtime_path_version)
+                list(APPEND gnArgArg clang_version="${clang_runtime_path_version}")
+            endif()
+            if(QT_FEATURE_use_lld_linker)
+                list(APPEND gnArgArg fatal_linker_warnings=false)
             endif()
         endif()
         list(APPEND gnArgArg use_llvm_libatomic=false)
+    endif()
+    if(CLANG OR QT_FEATURE_webengine_rust_build)
+        list(APPEND gnArgArg libclang_path="${QWELibClang_LIBRARY_DIR}")
+
+        #TODO: This is Linux specific for now.
+        if(LINUX)
+            list(APPEND gnArgArg clang_resource_dir="${QWELibClang_RESOURCE_PATH}")
+        endif()
     endif()
 
     if(MSVC)
