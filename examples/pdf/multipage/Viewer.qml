@@ -256,7 +256,7 @@ ApplicationWindow {
                     readOnly: true
                     wrapMode: Text.WordWrap
                 }
-                Column {
+                ColumnLayout {
                     spacing: 6
                     Layout.preferredWidth: parent.width - 6
                     Label { font.bold: true; text: qsTr("Title") }
@@ -275,6 +275,15 @@ ApplicationWindow {
                     InfoField { text: doc.creationDate }
                     Label { font.bold: true; text: qsTr("Modification date") }
                     InfoField { text: doc.modificationDate }
+                    Item { id: filler; Layout.fillHeight: true }
+                    Label {
+                        Layout.alignment: Qt.AlignBottom
+                        font.bold: true
+                        textFormat: Text.StyledText
+                        text: qsTr("<a href='https://doc.qt.io/qt-6/qtpdf-multipage-example.html'>PdfMultiPageView example</a><br/>\n"
+                                   + "Qt version %1").arg(Application.version)
+                        onLinkActivated: (link) => Qt.openUrlExternally(link)
+                    }
                 }
                 ListView {
                     id: searchResultsList
