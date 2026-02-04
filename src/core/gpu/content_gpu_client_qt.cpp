@@ -157,7 +157,10 @@ static QString windowsInfo(const gpu::GPUInfo &gpuInfo)
 class GpuObserver : public content::GpuDataManagerObserver
 {
 public:
-    GpuObserver(ContentGpuClientQt *client) : m_client(client)
+    GpuObserver(ContentGpuClientQt *client)
+#if BUILDFLAG(IS_OZONE)
+        : m_client(client)
+#endif
     {
         content::GpuDataManager *manager = content::GpuDataManager::GetInstance();
         if (manager->IsEssentialGpuInfoAvailable())
@@ -210,7 +213,9 @@ public:
     }
 
 private:
+#if BUILDFLAG(IS_OZONE)
     ContentGpuClientQt *m_client;
+#endif
     std::optional<gpu::GPUInfo> m_gpuInfo;
 };
 
