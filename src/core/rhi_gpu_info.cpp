@@ -215,7 +215,7 @@ RhiGpuInfo::Vendor RhiGpuInfo::determineVendor(const quint64 vendorId) const
         return AMD;
     if (m_deviceName.contains("Intel"_L1, Qt::CaseInsensitive))
         return Intel;
-    if (m_deviceName.contains("Nvidia"_L1, Qt::CaseInsensitive))
+    if (m_deviceName.contains("Nvidia"_L1, Qt::CaseInsensitive) || isNouveau())
         return Nvidia;
     if (m_deviceName.contains("VMware"_L1, Qt::CaseInsensitive))
         return VMware;
@@ -247,7 +247,7 @@ bool RhiGpuInfo::determineGbmSupport() const
                  kForceGbmEnv);
     }
 
-    if (m_vendor == Nvidia) {
+    if (m_vendor == Nvidia && !isNouveau()) {
         // FIXME: This disables GBM for Nvidia. Remove this when Nvidia fixes its GBM support.
         //
         // "Buffer allocation and submission to DRM KMS using gbm is not currently supported."
@@ -280,6 +280,21 @@ QString RhiGpuInfo::vendorName() const
     }
 
     return u"Unknown"_s;
+}
+
+bool RhiGpuInfo::isNouveau() const
+{
+    // OpenGL
+    if (m_deviceName.contains("Mesa NV"_L1, Qt::CaseInsensitive)
+        || m_deviceName.contains("nouveau"_L1, Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    // Vulkan and zink
+    if (m_deviceName.contains("(NVK"_L1, Qt::CaseInsensitive))
+        return true;
+
+    return false;
 }
 
 } // namespace QtWebEngineCore

@@ -58,6 +58,7 @@ public:
     Vendor vendor() const { return m_vendor; }
     QString vendorName() const;
     QString deviceName() const { return m_deviceName; }
+    bool isNouveau() const;
     QString getAdapterLuid() const { return m_adapterLuid; }
 
 private:
