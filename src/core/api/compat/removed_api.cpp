@@ -17,3 +17,42 @@ QT_USE_NAMESPACE
 
 #endif // QT_WEBENGINECORE_REMOVED_SINCE(6, 9)
 
+#if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
+
+#include "qwebengineframe.h"
+#include "qwebenginescript.h"
+
+void QWebEngineFrame::runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback)
+{
+    runJavaScript(scriptSource, QWebEngineScript::MainWorld, resultCallback);
+}
+
+void QWebEngineFrame::runJavaScript(const QString &scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
+{
+    if (!resultCallback)
+        return runJavaScriptImpl(scriptSource, worldId, nullptr);
+    runJavaScriptImpl(scriptSource, worldId,
+                      QtPrivate::makeCallableObject<void(*)(const QVariant &)>(resultCallback));
+}
+
+
+#include "qwebenginepage.h"
+
+void QWebEnginePage::runJavaScript(const QString& scriptSource, const std::function<void(const QVariant &)> &resultCallback)
+{
+    runJavaScript(scriptSource, QWebEngineScript::MainWorld, resultCallback);
+}
+
+void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback)
+{
+    if (!resultCallback)
+        return runJavaScriptImpl(scriptSource, worldId, nullptr);
+    runJavaScriptImpl(scriptSource, worldId,
+                      QtPrivate::makeCallableObject<void(*)(const QVariant &)>(resultCallback));
+}
+
+// #include "qotherheader.h"
+// implement removed functions from qotherheader.h
+// order sections alphabetically
+
+#endif // QT_WEBENGINECORE_REMOVED_SINCE(6, 12)

@@ -45,10 +45,9 @@ void QQuickWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
     const auto adapter = m_adapter.lock();
     if (!adapter)
         return;
-    std::function<void(const QVariant &)> wrappedCallback;
     if (!callback.isUndefined()) {
         const QObject *holdingObject = adapter->adapterClient()->holdingQObject();
-        wrappedCallback = [holdingObject, callback](const QVariant &result) {
+        auto wrappedCallback = [holdingObject, callback](const QVariant &result) {
             if (auto engine = qmlEngine(holdingObject)) {
                 QJSValueList args;
                 args.append(engine->toScriptValue(result));
@@ -57,8 +56,10 @@ void QQuickWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
                 qWarning("No QML engine found to execute runJavaScript() callback");
             }
         };
+        QWebEngineFrame::runJavaScript(script, worldId, std::move(wrappedCallback));
+    } else {
+        QWebEngineFrame::runJavaScript(script, worldId);
     }
-    QWebEngineFrame::runJavaScript(script, worldId, wrappedCallback);
 }
 
 void QQuickWebEngineFrame::printToPdf(const QJSValue &callback)

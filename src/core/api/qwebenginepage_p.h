@@ -136,7 +136,7 @@ public:
     void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) override;
     void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) override;
     void runJavaScript(const QString &script, quint32 worldId, quint64 frameId,
-                       const std::function<void(const QVariant &)> &callback) override;
+                       QtPrivate::SlotObjUniquePtr callback) override;
     void didFetchDocumentMarkup(quint64 requestId, const QString &result) override;
     void didFetchDocumentInnerText(quint64 requestId, const QString &result) override;
     void printToPdf(const QString &filePath, const QPageLayout &layout, const QPageRanges &ranges,

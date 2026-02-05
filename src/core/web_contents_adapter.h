@@ -144,7 +144,7 @@ public:
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
     void runJavaScript(const QString &javaScript, quint32 worldId, quint64 frameId,
-                       const std::function<void(const QVariant &)> &callback);
+                       QtPrivate::SlotObjUniquePtr callback);
     void didRunJavaScript(quint64 requestId, const base::Value &result);
     void clearJavaScriptCallbacks();
     quint64 fetchDocumentMarkup();
@@ -274,7 +274,7 @@ private:
     WebContentsAdapterClient *m_adapterClient;
     quint64 m_nextRequestId;
     QQueue<std::tuple<QUrl, bool, int, std::string>> m_pendingMouseLockPermissions;
-    QMap<quint64, std::function<void(const QVariant &)>> m_javaScriptCallbacks;
+    std::map<quint64, QtPrivate::SlotObjUniquePtr> m_javaScriptCallbacks;
     std::map<quint64, std::function<void(QSharedPointer<QByteArray>)>> m_printCallbacks;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;

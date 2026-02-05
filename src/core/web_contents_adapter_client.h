@@ -185,7 +185,7 @@ public:
     virtual void runFileChooser(QSharedPointer<FilePickerController>) = 0;
     virtual void showColorDialog(QSharedPointer<ColorChooserController>) = 0;
     virtual void runJavaScript(const QString &script, quint32 worldId, quint64 frameId,
-                               const std::function<void(const QVariant &)> &callback) = 0;
+                               QtPrivate::SlotObjUniquePtr callback) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void printToPdf(const QString &filePath, const QPageLayout &layout,

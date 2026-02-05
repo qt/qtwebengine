@@ -40,6 +40,7 @@ private Q_SLOTS:
     void size();
     void isMainFrame();
     void runJavaScript();
+    void runJavaScriptMoveOnly();
 #if QT_CONFIG(webengine_printing_and_pdf)
     void printRequestedByFrame();
     void printToPdfFile();
@@ -207,6 +208,31 @@ void tst_QWebEngineFrame::runJavaScript()
     CallbackSpy<QVariant> spy;
     children[0].runJavaScript("window.name", spy.ref());
     auto result = spy.waitForResult();
+    QCOMPARE(result, QString("test-subframe0"));
+}
+
+class DeleteObserver {
+public:
+    static bool s_wasDeleted;
+    DeleteObserver() { s_wasDeleted = false;};
+    ~DeleteObserver() { s_wasDeleted = true; }
+};
+
+bool DeleteObserver::s_wasDeleted;
+
+void tst_QWebEngineFrame::runJavaScriptMoveOnly()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/iframes.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    auto children = page.mainFrame().children();
+    CallbackSpy<QVariant> spy;
+    auto holdThis = std::make_unique<DeleteObserver>();
+    QVERIFY(!DeleteObserver::s_wasDeleted);
+    children[0].runJavaScript("window.name", [spyref = spy.ref(), holdingThis = std::move(holdThis)](const QVariant &res) mutable { spyref(res); });
+    auto result = spy.waitForResult();
+    QVERIFY(DeleteObserver::s_wasDeleted);
     QCOMPARE(result, QString("test-subframe0"));
 }
 

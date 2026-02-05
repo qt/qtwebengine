@@ -286,8 +286,30 @@ public:
     QPointF scrollPosition() const;
     QSizeF contentsSize() const;
 
+    void runJavaScript(const QString &scriptSource, quint32 worldId = 0)
+    {
+        runJavaScriptImpl(scriptSource, worldId, nullptr);
+    }
+    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    void runJavaScript(const QString &script, Functor &&resultCallback)
+    {
+        runJavaScript(script, 0, std::forward<Functor>(resultCallback));
+    }
+    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    void runJavaScript(const QString &script, quint32 worldId, Functor &&resultCallback)
+    {
+        if constexpr (std::is_constructible_v<bool, Functor>) {
+            if (!resultCallback)
+                return runJavaScriptImpl(script, worldId, nullptr);
+        }
+        runJavaScriptImpl(script, worldId,
+                          QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::forward<Functor>(resultCallback)));
+    }
+
+#if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
     void runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback);
-    void runJavaScript(const QString &scriptSource, quint32 worldId = 0, const std::function<void(const QVariant &)> &resultCallback = {});
+    void runJavaScript(const QString &scriptSource, quint32 worldId, const std::function<void(const QVariant &)> &resultCallback);
+#endif
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 
@@ -420,6 +442,7 @@ private:
 #if QT_CONFIG(action)
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
+    void runJavaScriptImpl(const QString &scriptSource, quint32 worldId, QtPrivate::QSlotObjectBase *callback);
 
     friend class QContextMenuBuilder;
     friend class QWebEngineView;

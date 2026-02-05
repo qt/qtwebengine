@@ -1070,11 +1070,14 @@ content::RenderFrameHost *WebContentsAdapter::renderFrameHostFromFrameId(quint64
 }
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId, quint64 frameId,
-                                       const std::function<void(const QVariant &)> &callback)
+                                       QtPrivate::SlotObjUniquePtr callback)
 {
     auto exit = [&] {
-        if (callback)
-            callback(QVariant());
+        if (callback) {
+            QVariant var;
+            void *argv[] = { nullptr, &var };
+            callback->call(nullptr, argv);
+        }
     };
 
     if (!isInitialized())
@@ -1090,7 +1093,7 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
     content::RenderFrameHost::JavaScriptResultCallback internalCallback = base::NullCallback();
     if (callback) {
         internalCallback = base::BindOnce(&callbackOnEvaluateJS, this, m_nextRequestId);
-        m_javaScriptCallbacks.insert(m_nextRequestId, callback);
+        m_javaScriptCallbacks.insert_or_assign(m_nextRequestId, std::move(callback));
         ++m_nextRequestId;
     }
     if (worldId == 0)
@@ -1103,16 +1106,21 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldI
 void WebContentsAdapter::didRunJavaScript(quint64 requestId, const base::Value &result)
 {
     Q_ASSERT(requestId);
-    auto callback = m_javaScriptCallbacks.take(requestId);
-    Q_ASSERT(callback);
-    callback(fromJSValue(&result));
+    auto callbackNode = m_javaScriptCallbacks.extract(requestId);
+    Q_ASSERT(callbackNode);
+    Q_ASSERT(callbackNode.mapped());
+    QVariant qresult = fromJSValue(&result);
+    void *args[] = { nullptr, &qresult };
+    callbackNode.mapped()->call(nullptr, args);
 }
 
 // Called when QWebEnginePage is deleted
 void WebContentsAdapter::clearJavaScriptCallbacks()
 {
-    for (auto varFun : std::as_const(m_javaScriptCallbacks))
-        varFun(QVariant());
+    QVariant var;
+    void *argv[] = { nullptr, &var };
+    for (const auto &[_, callback] : std::as_const(m_javaScriptCallbacks))
+        callback->call(nullptr, argv);
     m_javaScriptCallbacks.clear();
 }
 

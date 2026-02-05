@@ -742,9 +742,9 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId = 0, const std::function<void(const QVariant &)> &resultCallback = {})
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback)
-    \since 5.7
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId = 0)
+    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, Functor &&resultCallback)
+    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, quint32 worldId, Functor &&resultCallback)
 
     Runs the JavaScript code contained in \a scriptSource without checking
     whether the DOM of the page has been constructed. If you need more
@@ -768,6 +768,8 @@
     Supported data types include all of the JSON data types as well as, for
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
+
+    \note In Qt versions prior to 6.12, the callback had to be copyable.
 
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web engine page.
