@@ -20,6 +20,11 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QJSValue;
 
+namespace QtWebEngine {
+template<typename Functor, typename Arg>
+using if_callback_taking_t = std::enable_if_t<QtPrivate::AreFunctionsCompatible<void(*)(Arg), Functor>::value, bool>;
+} // namespace QtWebEngine
+
 class QWebEngineFrame
 {
     Q_GADGET_EXPORT(Q_WEBENGINECORE_EXPORT)
@@ -48,13 +53,32 @@ public:
     Q_WEBENGINECORE_EXPORT QSizeF size() const;
     Q_WEBENGINECORE_EXPORT bool isMainFrame() const;
 
+    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    void runJavaScript(const QString &script, Functor &&callback)
+    {
+        runJavaScript(script, 0, std::forward<Functor>(callback));
+    }
+    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    void runJavaScript(const QString &script, quint32 worldId, Functor &&callback)
+    {
+        if constexpr (std::is_constructible_v<bool, Functor>) {
+            if (!callback)
+                return runJavaScriptImpl(script, worldId, nullptr);
+        }
+        runJavaScriptImpl(script, worldId,
+                          QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::forward<Functor>(callback)));
+    }
+
+#if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
     Q_WEBENGINECORE_EXPORT void
     runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback);
     Q_WEBENGINECORE_EXPORT void
     runJavaScript(const QString &script, quint32 worldId,
                   const std::function<void(const QVariant &)> &callback);
+#endif
     Q_WEBENGINECORE_EXPORT Q_INVOKABLE void runJavaScript(const QString &script,
                                                           quint32 worldId = 0);
+
 #if QT_DEPRECATED_SINCE(6, 10)
     Q_WEBENGINECORE_EXPORT Q_INVOKABLE void runJavaScript(const QString &script,
                                                           const QJSValue &callback);
@@ -81,6 +105,8 @@ private:
     friend class QWebEnginePagePrivate;
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineFrame;
+
+    Q_WEBENGINECORE_EXPORT void runJavaScriptImpl(const QString &scriptSource, quint32 worldId, QtPrivate::QSlotObjectBase *callback);
 
     Q_WEBENGINECORE_EXPORT
     QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapter> adapter, quint64 id);

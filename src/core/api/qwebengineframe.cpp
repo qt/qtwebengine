@@ -139,10 +139,9 @@ bool QWebEngineFrame::isMainFrame() const
     return adapter->mainFrameId() == m_id;
 }
 
-/*! \fn void QWebEngineFrame::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &callback)
-    \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
-    \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, const
-   std::function<void(const QVariant &)> &callback)
+/*! \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
+    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, Functor &&callback)
+    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, Functor &&callback)
 
     Runs the JavaScript code contained in \a script on this frame, without checking
     whether the DOM of the page has been constructed.
@@ -161,6 +160,8 @@ bool QWebEngineFrame::isMainFrame() const
     Supported data types include all of the JSON data types as well as, for
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
+
+    \note In Qt versions prior to 6.12, the callback had to be copyable.
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web engine page.
     \warning We guarantee that the \a callback is always called, but it might be
@@ -169,22 +170,17 @@ bool QWebEngineFrame::isMainFrame() const
    instance inside it.
     \sa QWebEngineScript::ScriptWorldId, QWebEnginePage::runJavaScript, {Script Injection}
  */
-void QWebEngineFrame::runJavaScript(const QString &script,
-                                    const std::function<void(const QVariant &)> &callback)
-{
-    runJavaScript(script, QWebEngineScript::MainWorld, callback);
-}
 
-void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
-                                    const std::function<void(const QVariant &)> &callback)
+void QWebEngineFrame::runJavaScriptImpl(const QString &script, quint32 worldId, QtPrivate::QSlotObjectBase *callback)
 {
+    QtPrivate::SlotObjUniquePtr callbackUniquePtr(callback);
     LOCK_ADAPTER(adapter, );
-    adapter->runJavaScript(script, worldId, m_id, callback);
+    adapter->runJavaScript(script, worldId, m_id, std::move(callbackUniquePtr));
 }
 
 void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
 {
-    runJavaScript(script, worldId, std::function<void(const QVariant &)>{});
+    runJavaScriptImpl(script, worldId, nullptr);
 }
 
 #if QT_DEPRECATED_SINCE(6, 10)
@@ -197,10 +193,9 @@ void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
                                     const QJSValue &callback)
 {
     LOCK_ADAPTER(adapter, );
-    std::function<void(const QVariant &)> wrappedCallback;
     if (!callback.isUndefined()) {
         const QObject *holdingObject = adapter->adapterClient()->holdingQObject();
-        wrappedCallback = [holdingObject, callback](const QVariant &result) {
+        auto wrappedCallback = [holdingObject, callback](const QVariant &result) {
             if (auto engine = qmlEngine(holdingObject)) {
                 QJSValueList args;
                 args.append(engine->toScriptValue(result));
@@ -209,8 +204,10 @@ void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId,
                 qWarning("No QML engine found to execute runJavaScript() callback");
             }
         };
+        runJavaScript(script, worldId, std::move(wrappedCallback));
+    } else {
+        runJavaScript(script, worldId);
     }
-    runJavaScript(script, worldId, wrappedCallback);
 }
 #endif // QT_DEPRECATED_SINCE(6, 10)
 

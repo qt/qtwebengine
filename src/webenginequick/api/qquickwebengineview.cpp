@@ -1348,10 +1348,10 @@ bool QQuickWebEngineView::activeFocusOnPress() const
 
 void QQuickWebEngineViewPrivate::runJavaScript(
         const QString &script, quint32 worldId, quint64 frameId,
-        const std::function<void(const QVariant &)> &callback)
+        QtPrivate::SlotObjUniquePtr callback)
 {
     ensureContentsAdapter();
-    adapter->runJavaScript(script, worldId, frameId, callback);
+    adapter->runJavaScript(script, worldId, frameId, std::move(callback));
 }
 
 void QQuickWebEngineViewPrivate::printToPdf(const QString &filePath, const QPageLayout &layout,
@@ -1549,7 +1549,12 @@ bool QQuickWebEngineView::canGoForward() const
 void QQuickWebEngineView::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QQuickWebEngineView);
-    d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, resultCallback);
+    if (resultCallback) {
+        QtPrivate::SlotObjUniquePtr callback(QtPrivate::makeCallableObject<void(*)(const QVariant &)>(resultCallback));
+        d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, std::move(callback));
+    } else {
+        d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, nullptr);
+    }
 }
 
 void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
@@ -1557,18 +1562,20 @@ void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &c
     runJavaScript(script, QWebEngineScript::MainWorld, callback);
 }
 
-void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, const QJSValue &callback)
+void QQuickWebEngineView::runJavaScript(const QString &script, quint32 worldId, const QJSValue &resultCallback)
 {
     Q_D(QQuickWebEngineView);
-    std::function<void(const QVariant &)> wrappedCallback;
-    if (!callback.isUndefined()) {
-        wrappedCallback = [this, callback](const QVariant &result) {
+    if (!resultCallback.isUndefined()) {
+        auto wrappedCallback = [this, resultCallback](const QVariant &result) {
             QJSValueList args;
             args.append(qmlEngine(this)->toScriptValue(result));
-            callback.call(args);
+            resultCallback.call(args);
         };
+        QtPrivate::SlotObjUniquePtr callback(QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::move(wrappedCallback)));
+        d->runJavaScript(script, worldId, WebContentsAdapter::kUseMainFrameId, std::move(callback));
+    } else {
+        d->runJavaScript(script, worldId, WebContentsAdapter::kUseMainFrameId, nullptr);
     }
-    d->runJavaScript(script, worldId, WebContentsAdapter::kUseMainFrameId, wrappedCallback);
 }
 
 qreal QQuickWebEngineView::zoomFactor() const
