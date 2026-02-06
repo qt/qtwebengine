@@ -1138,11 +1138,10 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 /*!
     \property QQuickWebEngineProfile::userScripts
 
-    \brief The collection of WebEngineScript objects that are injected into
+    \brief The collection of QWebEngineScript objects that are injected into
     all pages that share this profile.
 */
 /*!
-    \property QQuickWebEngineProfile::userScripts
     \qmlproperty WebEngineScriptCollection WebEngineProfile::userScripts
     \since 1.5
     \brief The collection of WebEngineScript objects that are injected into
