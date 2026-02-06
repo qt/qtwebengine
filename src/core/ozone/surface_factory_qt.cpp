@@ -12,7 +12,6 @@
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
@@ -119,38 +118,40 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
     // time when the assert was added.
     Q_ASSERT(!gfx::BufferFormatIsMultiplanar(format));
 
-    gfx::NativePixmapHandle handle;
+    gfx::NativePixmapHandle bufferHandle;
 
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
         auto gbmBuffer =
                 ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
-        if (!gbmBuffer)
-            qFatal("Failed to create GBM buffer for GLX.");
-        handle = gbmBuffer->ExportHandle();
+        if (gbmBuffer)
+            bufferHandle = gbmBuffer->ExportHandle();
+        else
+            qWarning("Failed to create GBM buffer for GLX.");
     }
 #endif
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
-        int fd = -1;
-        int stride;
-        int offset;
-        uint64_t modifiers;
-        EGLHelper::instance()->queryDmaBuf(size.width(), size.height(), &fd, &stride, &offset,
-                                           &modifiers);
-        if (fd == -1)
-            qFatal("Failed to query DRM FD for EGL.");
+        auto gbmBuffer = EGLHelper::instance()->createBuffer(format, size, usage);
+        if (gbmBuffer)
+            bufferHandle = gbmBuffer->ExportHandle();
 
-        const uint64_t planeSize = uint64_t(size.width()) * size.height() * 4;
-        gfx::NativePixmapPlane plane(stride, offset, planeSize, base::ScopedFD(::dup(fd)));
-
-        handle.planes.push_back(std::move(plane));
-        handle.modifier = modifiers;
+        if (bufferHandle.planes.empty()) {
+            qWarning("Failed to create GBM buffer for EGL. Fallback to EGL-based buffer "
+                     "allocation.");
+            bufferHandle = EGLHelper::instance()->exportHandleFromEGLImage(size);
+        }
     }
 #endif
 
-    return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(handle));
+    if (bufferHandle.planes.empty()) {
+        // TODO(QTBUG-120761): Try to fallback to software rendering instead of aborting.
+        qFatal("Failed to create GBM buffer. NativePixmap allocation failed.");
+        return nullptr;
+    }
+
+    return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(bufferHandle));
 #else
     return nullptr;
 #endif // QT_CONFIG(opengl)
@@ -173,77 +174,36 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
     if (OzoneUtilQt::usingGLX()) {
         auto gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
                 size, format, std::move(handle));
-        if (!gbmBuffer)
-            qFatal("Failed to create GBM buffer for GLX.");
-        bufferHandle = gbmBuffer->ExportHandle();
+        if (gbmBuffer)
+            bufferHandle = gbmBuffer->ExportHandle();
+        else
+            qWarning("Failed to create GBM buffer for GLX.");
     }
 #endif
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
-        const size_t numPlanes = handle.planes.size();
-        const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+        // Keep the original handle valid for potential fallback.
+        gfx::NativePixmapHandle clonedHandle = gfx::CloneHandleForIPC(handle);
+        auto gbmBuffer = EGLHelper::instance()->createBufferFromHandle(size, format,
+                                                                       std::move(clonedHandle));
+        if (gbmBuffer)
+            bufferHandle = gbmBuffer->ExportHandle();
 
-        std::vector<EGLAttrib> attrs;
-        attrs.push_back(EGL_WIDTH);
-        attrs.push_back(size.width());
-        attrs.push_back(EGL_HEIGHT);
-        attrs.push_back(size.height());
-        attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
-        attrs.push_back(fourccFormat);
-        for (size_t planeIndex = 0; planeIndex < numPlanes; ++planeIndex) {
-            attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + planeIndex * 3);
-            attrs.push_back(handle.planes[planeIndex].fd.get());
-            attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + planeIndex * 3);
-            attrs.push_back(handle.planes[planeIndex].offset);
-            attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + planeIndex * 3);
-            attrs.push_back(handle.planes[planeIndex].stride);
-            attrs.push_back(EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT + planeIndex * 2);
-            attrs.push_back(handle.modifier & 0xffffffff);
-            attrs.push_back(EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT + planeIndex * 2);
-            attrs.push_back(handle.modifier >> 32);
+        if (bufferHandle.planes.empty()) {
+            qWarning("Failed to create GBM buffer for EGL. Fallback to EGL-based buffer "
+                     "allocation.");
+            bufferHandle = EGLHelper::instance()->exportHandleFromEGLImage(size, format,
+                                                                           std::move(handle));
         }
-        attrs.push_back(EGL_NONE);
-
-        EGLHelper *eglHelper = EGLHelper::instance();
-        auto *eglFun = eglHelper->functions();
-        EGLDisplay eglDisplay = eglHelper->getEGLDisplay();
-
-        EGLImage eglImage =
-                eglFun->eglCreateImage(eglDisplay, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
-                                       (EGLClientBuffer)NULL, attrs.data());
-        if (eglImage == EGL_NO_IMAGE_KHR) {
-            qFatal("Failed to import EGLImage: %s", eglHelper->getLastEGLErrorString());
-        }
-
-        Q_ASSERT(numPlanes <= 3);
-        int fds[3];
-        int strides[3];
-        int offsets[3];
-        if (!eglFun->eglExportDMABUFImageMESA(eglDisplay, eglImage, fds, strides, offsets)) {
-            qFatal("Failed to export EGLImage: %s", eglHelper->getLastEGLErrorString());
-        }
-
-        bufferHandle.modifier = handle.modifier;
-        for (size_t i = 0; i < numPlanes; ++i) {
-            int fd = fds[i];
-            int stride = strides[i];
-            int offset = offsets[i];
-            int planeSize = handle.planes[i].size;
-
-            if (fd == -1) {
-                fd = fds[0];
-                stride = handle.planes[i].stride;
-                offset = handle.planes[i].offset;
-            }
-
-            gfx::NativePixmapPlane plane(stride, offset, planeSize, base::ScopedFD(::dup(fd)));
-            bufferHandle.planes.push_back(std::move(plane));
-        }
-
-        eglFun->eglDestroyImage(eglDisplay, eglImage);
     }
 #endif // QT_CONFIG(egl)
+
+    if (bufferHandle.planes.empty()) {
+        // TODO(QTBUG-120761): Try to fallback to software rendering instead of aborting.
+        qFatal("Failed to create GBM buffer. NativePixmap allocation failed.");
+        return nullptr;
+    }
 
     return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(size, format, std::move(bufferHandle));
 #else
