@@ -1276,13 +1276,13 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::registerProtocolHandlerRequested(RegisterProtocolHandlerRequest request)
+    \qmlsignal WebEngineView::registerProtocolHandlerRequested(registerProtocolHandlerRequest request)
     \since QtWebEngine 1.7
 
     This signal is emitted when the web page tries to register a custom protocol
     by issuing a \l registerProtocolHandler \a request.
 
-    \sa RegisterProtocolHandlerRequest
+    \sa registerProtocolHandlerRequest
 */
 
 /*!
