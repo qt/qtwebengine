@@ -113,5 +113,8 @@ macro.QWE    = "Qt \\WebEngine"
 # documentation generates many of these
 spurious += "Output file already exists, overwriting .*"
 
+# Ignore incorrect link generated for attribution docs
+spurious += "Can't link to 'This is the canonical repository.'"
+
 # Enforce zero documentation warnings
-warninglimit = 2
+warninglimit = 0

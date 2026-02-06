@@ -107,7 +107,6 @@
             Enables displaying the built-in error pages of Chromium. Enabled by default.
     \value  [since 5.6] PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
-            See also \l{Pepper Plugin API}.
     \value  [since 5.6] FullScreenSupportEnabled
             Enables fullscreen support in an application. Disabled by default.
     \value  [since 5.7] ScreenCaptureEnabled

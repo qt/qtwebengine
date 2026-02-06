@@ -78,7 +78,7 @@
     In case of a certificate error, we check whether it came from the main frame, or from a
     resource inside the page. Resource errors automatically trigger a certificate rejection,
     since a user won't have enough context to make a decision.
-    For all other cases, we call the \l{WebEngineCertificateError::}{defer()} QML method to pause
+    For all other cases, we call the \l{webEngineCertificateError::}{defer()} QML method to pause
     the URL request and wait for user input:
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
@@ -88,9 +88,9 @@
 
     We use the Dialog type to prompt users to continue or cancel the loading of the web page.
     If users select \uicontrol Yes, we call the
-    \l{WebEngineCertificateError::}{acceptCertificate()} method to continue loading content from
+    \l{webEngineCertificateError::}{acceptCertificate()} method to continue loading content from
     the URL. If users select \uicontrol No, we call the
-    \l{WebEngineCertificateError::}{rejectCertificate()} method to reject the request and stop
+    \l{webEngineCertificateError::}{rejectCertificate()} method to reject the request and stop
     loading content from the URL:
 
     \skipto Dialog {
@@ -122,9 +122,9 @@
 
     We create a menu item for allowing fullscreen mode in a settings menu that we place on the tool
     bar. Also, we create an action for leaving fullscreen mode by using a keyboard shortcut.
-    We call the \l{FullScreenRequest::}{accept()} method to accept the fullscreen request.
+    We call the \l{fullScreenRequest::}{accept()} method to accept the fullscreen request.
     The methdod sets the \l{WebEngineView::}{isFullScreen} property to be equal to the
-    \l{FullScreenRequest::}{toggleOn} property.
+    \l{fullScreenRequest::}{toggleOn} property.
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
     \skipto onFullScreenRequested
