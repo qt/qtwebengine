@@ -346,11 +346,11 @@ void QQuickWebEngineProfilePrototype::componentComplete()
 }
 
 /*!
-    \qmlmethod QQuickWebEngineProfile *QQuickWebEngineProfilePrototype::instance()
+    \qmlmethod WebEngineProfile WebEngineProfilePrototype::instance()
 
     Returns an instance of WebEngineProfile.
 
-    \note This function will return a null pointer, if the \l persistentStoragePath
+    \note This function returns a null object if \l persistentStoragePath
     is already in use by another profile.
 */
 QQuickWebEngineProfile *QQuickWebEngineProfilePrototype::instance()

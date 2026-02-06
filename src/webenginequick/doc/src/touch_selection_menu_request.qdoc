@@ -61,19 +61,18 @@
     on the web element for which the request was actually generated.
 */
 
+/*!
+    \qmlproperty TouchSelectionCommandFlags TouchSelectionMenuRequest::touchSelectionCommandFlags
+    \readonly
+    \since QtWebEngine 6.3
+    \brief The available operations in the current touch selection menu request.
+*/
 
 /*!
-    \qmlproperty flags QQuickWebEngineTouchSelectionMenuRequest::touchSelectionCommandFlags
-    \readonly
+    \qmlenum TouchSelectionMenuRequest::TouchSelectionCommandFlags
+    \qmlenumeratorsfrom QQuickWebEngineTouchSelectionMenuRequest::TouchSelectionCommandFlag
     \since QtWebEngine 6.3
 
     \note In the default touch selection menu, showing the context menu
     is always available as a separate action.
-
-    \value  QQuickWebEngineTouchSelectionMenuRequest.Cut
-            Cut is available.
-    \value  QQuickWebEngineTouchSelectionMenuRequest.Copy
-            Copy is available.
-    \value  QQuickWebEngineTouchSelectionMenuRequest.Paste
-            Paste is available.
 */

@@ -19,6 +19,7 @@ QQuickWebEngineDownloadRequest::QQuickWebEngineDownloadRequest(QWebEngineDownloa
 }
 
 /*!
+    \internal
     \property QQuickWebEngineDownloadRequest::view
     \brief The WebEngineView the download was requested on.
 
