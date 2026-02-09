@@ -97,7 +97,28 @@ public:
 #endif
 
     Q_WEBENGINECORE_EXPORT Q_INVOKABLE void printToPdf(const QString &filePath);
+    template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QByteArray &> = true>
+    void printToPdf(Functor &&resultCallback)
+    {
+        auto wrappedCallback = [myCallback = std::forward<Functor>(resultCallback)](QSharedPointer<QByteArray> result) mutable {
+            if constexpr (std::is_convertible_v<Functor, bool>) {
+                if (myCallback)
+                    myCallback(result ? *result : QByteArray());
+            } else {
+                myCallback(result ? *result : QByteArray());
+            }
+        };
+        printToPdfImpl(QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
+    }
+#if QT_DEPRECATED_SINCE(6, 12)
+    Q_WEBENGINECORE_EXPORT void printToPdf(std::nullptr_t)
+    {
+        printToPdfImpl(nullptr);
+    }
+#endif
+#if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
     Q_WEBENGINECORE_EXPORT void printToPdf(const std::function<void(const QByteArray &)> &callback);
+#endif
 #if QT_DEPRECATED_SINCE(6, 10)
     Q_WEBENGINECORE_EXPORT Q_INVOKABLE void printToPdf(const QJSValue &callback);
 #endif
@@ -117,6 +138,7 @@ private:
     friend class QQuickWebEngineFrame;
 
     Q_WEBENGINECORE_EXPORT void runJavaScriptImpl(const QString &scriptSource, quint32 worldId, QtPrivate::QSlotObjectBase *callback);
+    Q_WEBENGINECORE_EXPORT void printToPdfImpl(QtPrivate::QSlotObjectBase *callback);
 
     Q_WEBENGINECORE_EXPORT
     QWebEngineFrame(QWeakPointer<QtWebEngineCore::WebContentsAdapter> adapter, quint64 id);

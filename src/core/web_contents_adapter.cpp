@@ -1386,7 +1386,7 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QPageRa
 }
 
 void WebContentsAdapter::printToPDFCallbackResult(
-        std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &pageLayout,
+        QtPrivate::SlotObjUniquePtr callback, const QPageLayout &pageLayout,
         const QPageRanges &pageRanges, bool colorMode, quint64 frameId)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
@@ -1410,11 +1410,11 @@ void WebContentsAdapter::printToPDFCallbackResult(
 void WebContentsAdapter::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
 {
     Q_ASSERT(requestId);
-    auto mapIt = m_printCallbacks.find(requestId);
-    Q_ASSERT(mapIt != m_printCallbacks.end());
-    Q_ASSERT(mapIt->second);
-    mapIt->second(std::move(result));
-    m_printCallbacks.erase(mapIt);
+    auto callbackNode = m_printCallbacks.extract(requestId);
+    Q_ASSERT(callbackNode);
+    Q_ASSERT(callbackNode.mapped());
+    void *args[] = { nullptr, &result };
+    callbackNode.mapped()->call(nullptr, args);
 }
 
 QPointF WebContentsAdapter::lastScrollOffset() const

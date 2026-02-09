@@ -23,6 +23,7 @@ class tst_Printing : public QObject
     Q_OBJECT
 private slots:
     void printToPdfBasic();
+    void printToPdfMoveOnly();
     void printRequest();
     void pdfContent();
     void printFromPdfViewer();
@@ -71,6 +72,33 @@ void tst_Printing::printToPdfBasic()
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
     view.page()->printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().size(), 0);
+}
+
+class DeleteObserver {
+public:
+    static bool s_wasDeleted;
+    DeleteObserver() { s_wasDeleted = false;};
+    ~DeleteObserver() { s_wasDeleted = true; }
+};
+bool DeleteObserver::s_wasDeleted;
+
+void tst_Printing::printToPdfMoveOnly()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    QWebEngineView view;
+    QSignalSpy spy(&view, &QWebEngineView::loadFinished);
+    view.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_VERIFY(spy.size() == 1);
+
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    CallbackSpy<QByteArray> successfulSpy;
+    auto holdThis = std::make_unique<DeleteObserver>();
+    QVERIFY(!DeleteObserver::s_wasDeleted);
+    view.page()->printToPdf([spyref = successfulSpy.ref(), holdingThis = std::move(holdThis)](const QByteArray &res) mutable { spyref(res); },
+                            layout);
+    QVERIFY(successfulSpy.waitForResult().size() > 0);
+    QVERIFY(DeleteObserver::s_wasDeleted);
 }
 
 void tst_Printing::printRequest()

@@ -190,7 +190,7 @@ public:
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void printToPdf(const QString &filePath, const QPageLayout &layout,
                             const QPageRanges &ranges, quint64 frameId) = 0;
-    virtual void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+    virtual void printToPdf(QtPrivate::SlotObjUniquePtr callback,
                             const QPageLayout &layout, const QPageRanges &ranges,
                             quint64 frameId) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;

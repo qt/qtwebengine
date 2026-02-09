@@ -1514,10 +1514,13 @@ void QWebEngineView::print(QPrinter *printer)
 
     dPage->currentPrinter = printer;
     dPage->ensureInitialized();
-    std::function callback = [dPage](QSharedPointer<QByteArray> result) {
+    auto callback = [dPage](QSharedPointer<QByteArray> result) {
         dPage->didPrintPage(std::move(result));
     };
-    dPage->adapter->printToPDFCallbackResult(std::move(callback), printer->pageLayout(),
+    QtPrivate::SlotObjUniquePtr slotCallback(
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(callback)));
+
+    dPage->adapter->printToPDFCallbackResult(std::move(slotCallback), printer->pageLayout(),
                                              printer->pageRanges(),
                                              printer->colorMode() == QPrinter::Color,
                                              QtWebEngineCore::WebContentsAdapter::kUseMainFrameId);

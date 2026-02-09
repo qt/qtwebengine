@@ -80,8 +80,10 @@ void QQuickWebEngineFrame::printToPdf(const QJSValue &callback)
             }
         };
     }
+    QtPrivate::SlotObjUniquePtr slotCallback(
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    adapter->adapterClient()->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(std::move(slotCallback), layout, QPageRanges(), m_id);
 }
 
 QT_END_NAMESPACE

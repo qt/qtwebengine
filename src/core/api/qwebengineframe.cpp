@@ -242,24 +242,24 @@ void QWebEngineFrame::printToPdf(const QString &filePath)
 }
 
 /*!
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QByteArray &> = true> void QWebEngineFrame::printToPdf(Functor &&resultCallback)
     Renders the current content of the frame into a PDF document and returns a byte array containing
-    the PDF data as parameter to \a callback. Printing uses a page size of A4, portrait layout, and
+    the PDF data as parameter to \a resultCallback. Printing uses a page size of A4, portrait layout, and
     includes the full range of pages.
 
-    The \a callback must take a const reference to a QByteArray as parameter. If printing was
+    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was
     successful, this byte array will contain the PDF data, otherwise, the byte array will be empty.
+
+    \note Before Qt 6.12 \a resultCallback had to be copyable.
 
     \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 */
-void QWebEngineFrame::printToPdf(const std::function<void(const QByteArray &)> &callback)
+void QWebEngineFrame::printToPdfImpl(QtPrivate::QSlotObjectBase *callback)
 {
     LOCK_ADAPTER(adapter, );
-    std::function wrappedCallback = [callback](QSharedPointer<QByteArray> result) {
-        if (callback)
-            callback(result ? *result : QByteArray());
-    };
+    QtPrivate::SlotObjUniquePtr callbackUniquePtr(callback);
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    adapter->adapterClient()->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(std::move(callbackUniquePtr), layout, QPageRanges(), m_id);
 }
 
 #if QT_DEPRECATED_SINCE(6, 10)
@@ -279,8 +279,10 @@ void QWebEngineFrame::printToPdf(const QJSValue &callback)
             }
         };
     }
+    QtPrivate::SlotObjUniquePtr slotCallback(
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
-    adapter->adapterClient()->printToPdf(std::move(wrappedCallback), layout, QPageRanges(), m_id);
+    adapter->adapterClient()->printToPdf(std::move(slotCallback), layout, QPageRanges(), m_id);
 }
 #endif // QT_DEPRECATED_SINCE(6, 10)
 
