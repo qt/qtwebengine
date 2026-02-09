@@ -37,8 +37,8 @@ private Q_SLOTS:
     void uninstallOutsideFromProfileDir();
     void loadFailures();
     void actionPopupUrl();
-    void loadInIncognito();
-    void installInIncognito();
+    void loadOffTheRecord();
+    void installOffTheRecord();
     void loadInstalledExtensions();
     void serviceWorkerMessaging();
 
@@ -307,7 +307,7 @@ void tst_QWebEngineExtension::actionPopupUrl()
     QVERIFY(!extension.actionPopupUrl().isEmpty());
 }
 
-void tst_QWebEngineExtension::loadInIncognito()
+void tst_QWebEngineExtension::loadOffTheRecord()
 {
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
@@ -320,7 +320,7 @@ void tst_QWebEngineExtension::loadInIncognito()
     QVERIFY(!extension.error().isEmpty());
 }
 
-void tst_QWebEngineExtension::installInIncognito()
+void tst_QWebEngineExtension::installOffTheRecord()
 {
     QWebEngineProfile profile;
     QWebEnginePage page(&profile);
