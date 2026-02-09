@@ -7,16 +7,11 @@
 
 #include <QtCore/qglobal.h>
 #include <QtWebEngineCore/qtwebenginecore-config.h>
+#include <QtWebEngineCore/qtwebenginecoreexports.h>
 
 QT_BEGIN_NAMESPACE
 
 class QUrl;
-
-#if defined(BUILDING_CHROMIUM)
-#  define Q_WEBENGINECORE_EXPORT Q_DECL_EXPORT
-#else
-#  define Q_WEBENGINECORE_EXPORT Q_DECL_IMPORT
-#endif
 
 #define ASSERT_ENUMS_MATCH(A, B) Q_STATIC_ASSERT_X(static_cast<int>(A) == static_cast<int>(B), "The enum values must match");
 

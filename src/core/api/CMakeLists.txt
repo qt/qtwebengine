@@ -8,6 +8,7 @@ set(qtWebEngineProcessName QtWebEngineProcess)
 
 qt_internal_add_module(WebEngineCore
      SOURCES
+        compat/removed_api.cpp
         qtwebenginecoreglobal.cpp qtwebenginecoreglobal.h qtwebenginecoreglobal_p.h
         qwebenginecertificateerror.cpp qwebenginecertificateerror.h
         qwebengineclientcertificateselection.cpp qwebengineclientcertificateselection.h
@@ -47,7 +48,6 @@ qt_internal_add_module(WebEngineCore
         qwebenginewebauthuxrequest.cpp qwebenginewebauthuxrequest.h qwebenginewebauthuxrequest_p.h
         qwebengineprofilebuilder.cpp qwebengineprofilebuilder.h qwebengineprofilebuilder_p.h
     DEFINES
-        BUILDING_CHROMIUM
         TOOLKIT_QT
     INCLUDE_DIRECTORIES
         ../
@@ -57,6 +57,8 @@ qt_internal_add_module(WebEngineCore
         ../../3rdparty/chromium/third_party/perfetto/include
         ../../3rdparty/chromium/third_party/boringssl/src/include
         ../../3rdparty/chromium/base/allocator/partition_allocator/src
+    NO_PCH_SOURCES
+        compat/removed_api.cpp
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
@@ -68,7 +70,6 @@ qt_internal_add_module(WebEngineCore
         Qt::Quick
     EXTRA_CMAKE_FILES
         "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}WebEngineCoreDeploySupport.cmake"
-    NO_GENERATE_CPP_EXPORTS
     SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
 )
 

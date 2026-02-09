@@ -83,7 +83,6 @@ foreach(arch ${archs})
                 QT_USE_QSTRINGBUILDER
                 QTWEBENGINECORE_VERSION_STR=${QT_REPO_MODULE_VERSION}
                 QTWEBENGINEPROCESS_NAME=${qtWebEngineProcessName}
-                BUILDING_CHROMIUM
                 "${forwardDeclarationMacro}"
             CXX_COMPILE_OPTIONS
                 ${gnCxxCompileOptions}
