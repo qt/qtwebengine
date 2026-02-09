@@ -14,7 +14,7 @@ ApplicationWindow {
     width: 800
     height: 1024
     color: "lightgrey"
-    title: document.title
+    title: pdfDocument.title
     visible: true
     required property url source // for main.cpp
     property real scaleStep: Math.sqrt(2)
@@ -92,7 +92,7 @@ ApplicationWindow {
             SpinBox {
                 id: currentPageSB
                 from: 1
-                to: document.pageCount
+                to: pdfDocument.pageCount
                 editable: true
                 value: view.currentPage + 1
                 onValueModified: view.goToPage(value - 1)
@@ -148,7 +148,7 @@ ApplicationWindow {
         id: fileDialog
         title: "Open a PDF file"
         nameFilters: [ "PDF files (*.pdf)" ]
-        onAccepted: document.source = selectedFile
+        onAccepted: pdfDocument.source = selectedFile
     }
 
     Dialog {
@@ -168,22 +168,22 @@ ApplicationWindow {
             onAccepted: passwordDialog.accept()
         }
         onOpened: function() { passwordField.forceActiveFocus() }
-        onAccepted: document.password = passwordField.text
+        onAccepted: pdfDocument.password = passwordField.text
     }
 
     Dialog {
         id: errorDialog
-        title: "Error loading " + document.source
+        title: "Error loading " + pdfDocument.source
         standardButtons: Dialog.Close
         modal: true
         closePolicy: Popup.CloseOnEscape
         anchors.centerIn: parent
         width: 300
-        visible: document.status === PdfDocument.Error
+        visible: pdfDocument.status === PdfDocument.Error
 
         contentItem: Label {
             id: errorField
-            text: document.error
+            text: pdfDocument.error
         }
     }
 
@@ -192,7 +192,7 @@ ApplicationWindow {
         anchors.fill: parent
         anchors.leftMargin: searchDrawer.position * searchDrawer.width
         document: PdfDocument {
-            id: document
+            id: pdfDocument
             source: Qt.resolvedUrl(root.source)
             onPasswordRequired: passwordDialog.open()
         }
@@ -304,11 +304,11 @@ ApplicationWindow {
             }
             Label {
                 Layout.fillWidth: true
-                property size implicitPointSize: document.pagePointSize(view.currentPage)
-                text: "page " + (view.currentPage + 1) + " of " + document.pageCount +
+                property size implicitPointSize: pdfDocument.pagePointSize(view.currentPage)
+                text: "page " + (view.currentPage + 1) + " of " + pdfDocument.pageCount +
                       " scale " + view.renderScale.toFixed(2) +
                       " original " + implicitPointSize.width.toFixed(1) + "x" + implicitPointSize.height.toFixed(1) + "pts"
-                visible: document.status === PdfDocument.Ready
+                visible: pdfDocument.status === PdfDocument.Ready
             }
         }
     }
