@@ -288,7 +288,7 @@ void QWebEnginePagePrivate::printToPdf(const QString &filePath, const QPageLayou
     adapter->printToPDF(layout, ranges, filePath, frameId);
 }
 
-void QWebEnginePagePrivate::printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+void QWebEnginePagePrivate::printToPdf(QtPrivate::SlotObjUniquePtr callback,
                                        const QPageLayout &layout, const QPageRanges &ranges,
                                        quint64 frameId)
 {
@@ -2359,6 +2359,10 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 }
 
 /*!
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QByteArray &> = true> void QWebEnginePage::printToPdf(
+                    Functor &&resultCallback,
+                    const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
+                    const QPageRanges &ranges = {})
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
     The page size and orientation of the produced PDF document are taken from the values specified in \a layout,
@@ -2369,25 +2373,27 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 
     \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 
+    \note Before Qt 6.12 \a resultCallback had to be copyable.
+
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 */
-void QWebEnginePage::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
+void QWebEnginePage::printToPdfImpl(QtPrivate::QSlotObjectBase *resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_D(QWebEnginePage);
     d->ensureInitialized();
-    std::function wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
-        if (resultCallback && result)
-            resultCallback(*result);
-    };
-    d->printToPdf(std::move(wrappedCallback), layout, ranges, WebContentsAdapter::kUseMainFrameId);
+    QtPrivate::SlotObjUniquePtr callback(resultCallback);
+    d->printToPdf(std::move(callback), layout, ranges, WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(layout);
     Q_UNUSED(ranges);
-    if (resultCallback)
-        resultCallback(QByteArray());
+    if (resultCallback) {
+        QByteArray res;
+        void *args[] = { nullptr, &res };
+        resultCallback->call(nullptr, args);
+    }
 #endif
 }
 

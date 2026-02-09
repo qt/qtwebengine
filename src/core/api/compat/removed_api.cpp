@@ -19,6 +19,7 @@ QT_USE_NAMESPACE
 
 #if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
 
+#include "qtwebenginecoreglobal_p.h"
 #include "qwebengineframe.h"
 #include "qwebenginescript.h"
 
@@ -35,6 +36,22 @@ void QWebEngineFrame::runJavaScript(const QString &scriptSource, quint32 worldId
                       QtPrivate::makeCallableObject<void(*)(const QVariant &)>(resultCallback));
 }
 
+void QWebEngineFrame::printToPdf(const std::function<void(const QByteArray&)> &resultCallback)
+{
+#if QT_CONFIG(webengine_printing_and_pdf)
+    std::function wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
+        if (resultCallback)
+            resultCallback(result ? *result : QByteArray());
+    };
+    auto *callback =
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback));
+
+    printToPdfImpl(callback);
+#else
+    if (resultCallback)
+        resultCallback(QByteArray());
+#endif
+}
 
 #include "qwebenginepage.h"
 
@@ -51,8 +68,23 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
                       QtPrivate::makeCallableObject<void(*)(const QVariant &)>(resultCallback));
 }
 
-// #include "qotherheader.h"
-// implement removed functions from qotherheader.h
-// order sections alphabetically
+void QWebEnginePage::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
+{
+#if QT_CONFIG(webengine_printing_and_pdf)
+    auto wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
+        if (resultCallback)
+            resultCallback(result ? *result : QByteArray());
+    };
+    auto *callback =
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback));
+
+    printToPdfImpl(callback, layout, ranges);
+#else
+    Q_UNUSED(layout);
+    Q_UNUSED(ranges);
+    if (resultCallback)
+        resultCallback(QByteArray());
+#endif
+}
 
 #endif // QT_WEBENGINECORE_REMOVED_SINCE(6, 12)

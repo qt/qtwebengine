@@ -211,7 +211,7 @@ public:
     void leaveDrag();
 #endif // QT_CONFIG(draganddrop)
     void printToPDF(const QPageLayout &, const QPageRanges &, const QString &, quint64 frameId);
-    void printToPDFCallbackResult(std::function<void(QSharedPointer<QByteArray>)> &&,
+    void printToPDFCallbackResult(QtPrivate::SlotObjUniquePtr callback,
                                   const QPageLayout &, const QPageRanges &, bool colorMode,
                                   quint64 frameId);
     void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result);
@@ -275,7 +275,7 @@ private:
     quint64 m_nextRequestId;
     QQueue<std::tuple<QUrl, bool, int, std::string>> m_pendingMouseLockPermissions;
     std::map<quint64, QtPrivate::SlotObjUniquePtr> m_javaScriptCallbacks;
-    std::map<quint64, std::function<void(QSharedPointer<QByteArray>)>> m_printCallbacks;
+    std::map<quint64, QtPrivate::SlotObjUniquePtr> m_printCallbacks;
     std::unique_ptr<content::DropData> m_currentDropData;
     uint m_currentDropAction;
     bool m_updateDragActionCalled;

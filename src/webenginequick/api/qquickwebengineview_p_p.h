@@ -101,7 +101,7 @@ public:
     void didFetchDocumentInnerText(quint64, const QString&) override { }
     void printToPdf(const QString &filePath, const QPageLayout &layout, const QPageRanges &ranges,
                     quint64 frameId) override;
-    void printToPdf(std::function<void(QSharedPointer<QByteArray>)> &&callback,
+    void printToPdf(QtPrivate::SlotObjUniquePtr callback,
                     const QPageLayout &layout, const QPageRanges &ranges, quint64 frameId) override;
     void didPrintPageToPdf(const QString &filePath, bool success) override;
     bool passOnFocus(bool reverse) override;

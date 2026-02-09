@@ -1361,7 +1361,7 @@ void QQuickWebEngineViewPrivate::printToPdf(const QString &filePath, const QPage
 }
 
 void QQuickWebEngineViewPrivate::printToPdf(
-        std::function<void(QSharedPointer<QByteArray>)> &&callback, const QPageLayout &layout,
+        QtPrivate::SlotObjUniquePtr callback, const QPageLayout &layout,
         const QPageRanges &ranges, quint64 frameId)
 {
     adapter->printToPDFCallbackResult(std::move(callback), layout, ranges, /*colorMode*/ true,
@@ -1667,7 +1667,7 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QPageRanges ranges;
 
-    if (callback.isUndefined())
+    if (!callback.isCallable())
         return;
 
     d->ensureContentsAdapter();
@@ -1676,8 +1676,9 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
         args.append(qmlEngine(this)->toScriptValue(*result));
         callback.call(args);
     };
-
-    d->printToPdf(std::move(wrappedCallback), pageLayout, ranges,
+    QtPrivate::SlotObjUniquePtr slotCallback(
+            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
+    d->printToPdf(std::move(slotCallback), pageLayout, ranges,
                   WebContentsAdapter::kUseMainFrameId);
 #else
     Q_UNUSED(pageSizeId);
