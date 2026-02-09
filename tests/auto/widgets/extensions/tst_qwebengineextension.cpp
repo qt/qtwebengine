@@ -37,6 +37,7 @@ private Q_SLOTS:
     void uninstallOutsideFromProfileDir();
     void loadFailures();
     void actionPopupUrl();
+    void listExtensionsOffTheRecord();
     void loadOffTheRecord();
     void installOffTheRecord();
     void loadInstalledExtensions();
@@ -305,6 +306,15 @@ void tst_QWebEngineExtension::actionPopupUrl()
     extension = loadExtensionSync(resourcesPath() + u"action_popup_ext");
     QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
     QVERIFY(!extension.actionPopupUrl().isEmpty());
+}
+
+void tst_QWebEngineExtension::listExtensionsOffTheRecord()
+{
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+    QWebEngineExtensionManager *manager = profile.extensionManager();
+    // Should not crash - QTBUG-142247
+    QVERIFY(!manager->extensions().isEmpty());
 }
 
 void tst_QWebEngineExtension::loadOffTheRecord()
