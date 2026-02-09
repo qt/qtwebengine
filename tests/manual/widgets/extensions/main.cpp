@@ -10,6 +10,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTabWidget>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QWebEngineProfileBuilder>
@@ -22,6 +23,8 @@
 
 // Test for extension management APIs using QWebEngineExtensionManager
 // and QWebEngineExtensionInfo
+
+using namespace Qt::StringLiterals;
 
 class ExtensionsListModel : public QAbstractListModel
 {
@@ -256,31 +259,36 @@ private:
     QListView m_extensionsView;
 };
 
+QWidget *createTabPage(QWebEngineProfile *profile)
+{
+    auto *tabPage = new QWidget();
+    auto *layout = new QHBoxLayout(tabPage);
+    auto *extensionManager = profile->extensionManager();
+    auto *view = new QWebEngineView(profile);
+    view->setUrl(QUrl("https://www.google.com"_L1));
+    layout->addWidget(view);
+    layout->addWidget(new ExtensionsWidget(profile, extensionManager));
+    return tabPage;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication::setOrganizationName("QtExamples");
     QApplication app(argc, argv);
-    QMainWindow window;
-    window.setCentralWidget(new QWidget);
 
-    auto *layout = new QHBoxLayout;
-    window.centralWidget()->setLayout(layout);
-
-    QTemporaryDir tempDir;
     QWebEngineProfileBuilder profileBuilder;
-    QWebEngineProfile *profile = profileBuilder.createProfile("ExtensionsManualTest");
+    std::unique_ptr<QWebEngineProfile> normalProfile{ profileBuilder.createProfile(
+            "ExtensionsManualTest") };
+    std::unique_ptr<QWebEngineProfile> otrProfile{ profileBuilder.createOffTheRecordProfile() };
 
-    auto *extensionManager = profile->extensionManager();
-    qDebug() << "installPath" << extensionManager->installPath();
+    QMainWindow window;
+    auto *tabWidget = new QTabWidget();
+    window.setCentralWidget(tabWidget);
 
-    QWebEngineView view(profile);
-    view.setUrl(QUrl(QStringLiteral("https://www.google.com")));
-    view.resize(1024, 750);
+    tabWidget->addTab(createTabPage(normalProfile.get()), u"Normal Profile"_s);
+    tabWidget->addTab(createTabPage(otrProfile.get()), u"Off-the-Record Profile"_s);
 
-    window.centralWidget()->layout()->addWidget(&view);
-    window.centralWidget()->layout()->addWidget(
-            new ExtensionsWidget(profile, extensionManager));
-
+    window.resize(1024, 750);
     window.show();
 
     return app.exec();
