@@ -109,7 +109,8 @@ void QWebEngineExtensionManager::installExtension(const QString &path)
 */
 void QWebEngineExtensionManager::unloadExtension(const QWebEngineExtensionInfo &extension)
 {
-    d_ptr->unloadExtension(extension.d_ptr->id());
+    if (extension.d_ptr)
+        d_ptr->unloadExtension(extension.d_ptr->id());
 }
 
 /*!
@@ -125,7 +126,8 @@ void QWebEngineExtensionManager::unloadExtension(const QWebEngineExtensionInfo &
 */
 void QWebEngineExtensionManager::uninstallExtension(const QWebEngineExtensionInfo &extension)
 {
-    d_ptr->uninstallExtension(extension.d_ptr->id());
+    if (extension.d_ptr)
+        d_ptr->uninstallExtension(extension.d_ptr->id());
 }
 
 /*!
@@ -139,7 +141,8 @@ void QWebEngineExtensionManager::uninstallExtension(const QWebEngineExtensionInf
 void QWebEngineExtensionManager::setExtensionEnabled(const QWebEngineExtensionInfo &extension,
                                                      bool enabled)
 {
-    d_ptr->setExtensionEnabled(extension.d_ptr->id(), enabled);
+    if (extension.d_ptr)
+        d_ptr->setExtensionEnabled(extension.d_ptr->id(), enabled);
 }
 
 /*!

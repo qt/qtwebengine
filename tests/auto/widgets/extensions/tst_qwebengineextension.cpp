@@ -35,6 +35,7 @@ private Q_SLOTS:
     void uninstallOutsideFromProfileDir();
     void loadFailures();
     void actionPopupUrl();
+    void usingDefaultConstructedExtensionInfo();
     void listExtensionsOffTheRecord();
     void loadOffTheRecord();
     void installOffTheRecord();
@@ -303,6 +304,25 @@ void tst_QWebEngineExtension::actionPopupUrl()
     extension = loadExtensionSync(resourcesPath() + u"action_popup_ext");
     QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
     QVERIFY(!extension.actionPopupUrl().isEmpty());
+}
+
+void tst_QWebEngineExtension::usingDefaultConstructedExtensionInfo()
+{
+    QSignalSpy unloadSpy(m_manager, SIGNAL(unloadFinished(QWebEngineExtensionInfo)));
+    QSignalSpy uninstallSpy(m_manager, SIGNAL(uninstallFinished(QWebEngineExtensionInfo)));
+
+    QWebEngineExtensionInfo nullInfo;
+    m_manager->unloadExtension(nullInfo);
+    m_manager->uninstallExtension(nullInfo);
+    m_manager->setExtensionEnabled(nullInfo, false);
+    m_manager->setExtensionEnabled(nullInfo, true);
+    int lastExtensionCount = extensionCount();
+    QWebEngineExtensionInfo packedExtension =
+            installExtensionSync(resourcesPath() + u"packed_ext.zip");
+    uninstallExtensionSync(packedExtension);
+    QCOMPARE(extensionCount(), lastExtensionCount);
+    QCOMPARE(unloadSpy.size(), 0);
+    QCOMPARE(uninstallSpy.size(), 1);
 }
 
 void tst_QWebEngineExtension::listExtensionsOffTheRecord()
