@@ -22,9 +22,7 @@ class tst_QWebEngineExtension : public QObject
 
 public Q_SLOTS:
     void cleanup();
-    void cleanupTestCase();
     void init();
-    void initTestCase();
 
 private Q_SLOTS:
     void installExtension();
@@ -57,6 +55,7 @@ private:
     QWebEngineProfile *m_profile;
     QWebEngineExtensionManager *m_manager;
     QString m_resourcesPath;
+    QTemporaryDir m_tempDir;
 };
 
 int tst_QWebEngineExtension::installedFiles()
@@ -124,25 +123,23 @@ void tst_QWebEngineExtension::cleanup()
 {
     QVERIFY(QDir(m_manager->installPath()).removeRecursively());
     QCOMPARE(installedFiles(), 0);
-    for (auto extension : m_manager->extensions())
-        m_manager->unloadExtension(extension);
-}
-
-void tst_QWebEngineExtension::cleanupTestCase()
-{
     delete m_page;
+    delete m_profile;
+
+    // Workaround for temp dir failing to cleanup with early deletion.
+    QTRY_VERIFY(m_tempDir.remove());
 }
 
-void tst_QWebEngineExtension::init() { }
-
-void tst_QWebEngineExtension::initTestCase()
+void tst_QWebEngineExtension::init()
 {
-    QTemporaryDir tempDir(QDir::tempPath() + u"tst_QWebEngineExtension-XXXXXX");
+    m_tempDir = QTemporaryDir(QDir::tempPath() + u"/tst_QWebEngineExtension-XXXXXX");
+    m_tempDir.setAutoRemove(false);
     QWebEngineProfileBuilder profileBuilder;
-    profileBuilder.setPersistentStoragePath(tempDir.path());
+    profileBuilder.setPersistentStoragePath(m_tempDir.path());
     m_profile = profileBuilder.createProfile("Test");
     m_page = new QWebEnginePage(m_profile);
     m_manager = m_profile->extensionManager();
+    QCOMPARE(m_manager->extensions().size(), 2);
 
     m_resourcesPath = QDir(QT_TESTCASE_SOURCEDIR).canonicalPath()
             + u"/resources/"_s;
