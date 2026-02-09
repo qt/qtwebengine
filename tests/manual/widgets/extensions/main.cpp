@@ -175,24 +175,32 @@ private:
             delete oldModel;
     }
 
-    QWebEngineExtensionInfo getSelectedExtension()
+    template<typename Functor>
+    void doWithCurrentExtension(Functor &&f)
     {
         QModelIndex idx = m_extensionsView.currentIndex();
         QVariant var = m_extensionsView.model()->data(idx, Qt::UserRole);
-        QWebEngineExtensionInfo extension = var.value<QWebEngineExtensionInfo>();
-        return extension;
+        auto *maybeExtension = get_if<QWebEngineExtensionInfo>(&var);
+        if (maybeExtension) {
+            f(*maybeExtension);
+            update();
+        } else {
+            showInfoDialog("No extension is selected");
+        }
     }
 
     void enable()
     {
-        m_extensionManager->setExtensionEnabled(getSelectedExtension(), true);
-        update();
+        doWithCurrentExtension([this](QWebEngineExtensionInfo info) {
+            m_extensionManager->setExtensionEnabled(info, true);
+        });
     }
 
     void disable()
     {
-        m_extensionManager->setExtensionEnabled(getSelectedExtension(), false);
-        update();
+        doWithCurrentExtension([this](QWebEngineExtensionInfo info) {
+            m_extensionManager->setExtensionEnabled(info, false);
+        });
     }
 
     void loadUnpacked()
@@ -218,28 +226,32 @@ private:
 
     void unload()
     {
-        m_extensionManager->unloadExtension(getSelectedExtension());
-        update();
+        doWithCurrentExtension([this](QWebEngineExtensionInfo info) {
+            m_extensionManager->unloadExtension(info);
+        });
     }
 
     void uninstall()
     {
-        m_extensionManager->uninstallExtension(getSelectedExtension());
-        update();
+        doWithCurrentExtension([this](QWebEngineExtensionInfo info) {
+            m_extensionManager->uninstallExtension(info);
+        });
     }
 
     void openActionsMenu()
     {
-        const auto url = getSelectedExtension().actionPopupUrl();
-        if (url.isEmpty()) {
-            showInfoDialog("No popup page set for this extension");
-            return;
-        }
+        doWithCurrentExtension([this](QWebEngineExtensionInfo info) {
+            const auto url = info.actionPopupUrl();
+            if (url.isEmpty()) {
+                showInfoDialog("No popup page set for this extension");
+                return;
+            }
 
-        auto *view = new QWebEngineView(m_profile);
-        view->setAttribute(Qt::WA_DeleteOnClose, true);
-        view->load(url);
-        view->show();
+            auto *view = new QWebEngineView(m_profile);
+            view->setAttribute(Qt::WA_DeleteOnClose, true);
+            view->load(url);
+            view->show();
+        });
     }
 
     void showInfoDialog(const QString &msg)
