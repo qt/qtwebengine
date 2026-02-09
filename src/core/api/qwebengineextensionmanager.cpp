@@ -32,7 +32,9 @@ QT_BEGIN_NAMESPACE
 
     Each \l QWebEngineProfile has its own \l QWebEngineExtensionManager, so every page that shares
     the same profile will share the same extensions too.
-    Extensions can't be loaded into off-the-record profiles.
+    Extensions can't be loaded into off-the-record profiles. However, all profiles, including
+    off-the-record ones, contain two built-in and enabled by default extensions: Google Hangouts and
+    Chromium PDF. These can be disabled and/or unloaded if desired.
 
     \note Only ManifestV3 extensions are supported, other versions won't be loaded nor installed
 
