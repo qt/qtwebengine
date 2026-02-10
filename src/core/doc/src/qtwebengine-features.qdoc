@@ -30,6 +30,7 @@
         \li \l{Page Lifecycle API}
         \li \l{Print to PDF}
         \li \l{Process Models}
+        \li \l{Push Notifications}
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
@@ -814,6 +815,15 @@
     For debugging purposes only, a single process mode can be enabled using the
     command-line argument \c{--single-process}. See \l{Using Command-Line
     Arguments} and \l{Qt WebEngine Debugging and Profiling}.
+
+    \section1 Push Notifications
+
+    \QWE supports the JavaScript \l{https://www.w3.org/TR/push-api/}{Push API} to
+    subscribe to and receive push notifications. For more information, see
+    QWebEngineProfile::setPushServiceEnabled() and \l{WebEngineProfile::isPushServiceEnabled}
+    {WebEngineProfile.setPushServiceEnabled}.
+
+    This feature can be tested with the \l{WebEngine Push Notifications Example}.
 
     \section1 Spellchecker
 
