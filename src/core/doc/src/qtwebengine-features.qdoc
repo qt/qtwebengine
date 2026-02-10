@@ -28,6 +28,7 @@
         \li \l{PDF File Viewing}
         \li \l{Page Lifecycle API}
         \li \l{Print to PDF}
+        \li \l{Push Notifications}
         \li \l{Spellchecker}
         \li \l{Touch}
         \li \l{View Source}
@@ -678,6 +679,15 @@
 
     This feature can be tested using \l{WebEngine Widgets Html2Pdf Example}
     {Html2Pdf}.
+
+    \section1 Push Notifications
+
+    \QWE supports the JavaScript \l{https://www.w3.org/TR/push-api/}{Push API} to
+    subscribe to and receive push notifications. For more information, see
+    QWebEngineProfile::setPushServiceEnabled() and \l{WebEngineProfile::isPushServiceEnabled}
+    {WebEngineProfile.setPushServiceEnabled}.
+
+    This feature can be tested with the \l{WebEngine Push Notifications Example}.
 
     \section1 Spellchecker
 
