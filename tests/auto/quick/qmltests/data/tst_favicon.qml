@@ -25,6 +25,7 @@ TestWebEngineView {
     }
 
     function removeFaviconProviderPrefix(url) {
+        // image://favicon/
         return url.toString().substring(16)
     }
 
@@ -170,6 +171,27 @@ TestWebEngineView {
             compare(iconChangedSpy.count, 0);
             iconUrl = removeFaviconProviderPrefix(webEngineView.icon);
             compare(iconUrl, Qt.resolvedUrl("icons/favicon.png"));
+        }
+
+        function test_extlessFavicon_data() {
+            return [
+                   { tag: "OTR", profile: defaultProfile },
+                   { tag: "non-OTR", profile: nonOTRProfile },
+            ];
+        }
+
+        function test_extlessFavicon(row) {
+            webEngineView.profile = row.profile
+            compare(iconChangedSpy.count, 0)
+
+            var url = Qt.resolvedUrl("favicon-extless.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+            tryCompare(iconChangedSpy, "count", 1)
+
+            tryCompare(favicon, "status", Image.Ready)
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
         }
 
         function test_noFavicon_data() {

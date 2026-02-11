@@ -118,11 +118,11 @@ TestWebEngineView {
             compare(pixel[0], webEngineView.profile.offTheRecord ? 0 : 165);
 
             // This should pass with OTR too because icon is requested for the current page.
-            faviconImage.source = "image://favicon/" + Qt.resolvedUrl("favicon-shortcut.html");
+            faviconImage.source = "image://favicondb/" + Qt.resolvedUrl("favicon-shortcut.html");
             pixel = getFaviconPixel(faviconImage);
             compare(pixel[0], 251);
 
-            faviconImage.source = "image://favicon/" + Qt.resolvedUrl("favicon.html");
+            faviconImage.source = "image://favicondb/" + Qt.resolvedUrl("favicon.html");
             pixel = getFaviconPixel(faviconImage);
             compare(pixel[0], webEngineView.profile.offTheRecord ? 0 : 165);
 
