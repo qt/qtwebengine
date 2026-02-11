@@ -26,7 +26,8 @@ public:
     void initializeEngine(QQmlEngine *engine, const char *uri) override
     {
         Q_UNUSED(uri);
-        engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
+        engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider());
+        engine->addImageProvider(QQuickWebEngineFaviconDBProvider::identifier(), new QQuickWebEngineFaviconDBProvider());
         engine->addImageProvider(QQuickWebEngineTouchHandleProvider::identifier(), new QQuickWebEngineTouchHandleProvider);
     }
     void registerTypes(const char *uri) override {

@@ -307,7 +307,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : m_profile(nullptr)
     , adapter(QSharedPointer<WebContentsAdapter>::create())
     , m_history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this, [] (const QUrl &url) {
-        return QQuickWebEngineFaviconProvider::faviconProviderUrl(url);
+        return QQuickWebEngineFaviconDBProvider::faviconProviderUrl(url);
     })))
     , contextMenuExtraItems(nullptr)
     , loadProgress(0)
