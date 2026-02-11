@@ -70,6 +70,20 @@ instructions:
         condition: property
         property: features
         contains_value: Packaging
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+      variableValue: " -DFEATURE_webengine_precompiled_headers=OFF"
+      enable_if:
+        condition: property
+        property: features
+        contains_value: Sccache
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+      variableValue: " -DFEATURE_webengine_precompiled_headers=OFF"
+      enable_if:
+        condition: property
+        property: features
+        contains_value: Sccache
     - type: EnvironmentVariable
       variableName: VERIFY_SOURCE_SBOM
       variableValue: "ON"
