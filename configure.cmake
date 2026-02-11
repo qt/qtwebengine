@@ -777,6 +777,11 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND qpa_xcb_support_check
 )
 
+qt_feature("webengine-precompiled-headers" PRIVATE
+    LABEL "Use precompiled headers for 3rdparty"
+    CONDITION BUILD_WITH_PCH
+)
+
 #FIXME: fix version numbers when qt_feature_with_configure_check megred as
 #it requires diffrent evaluation order
 qt_feature("webengine-gcc-legacy-support" PRIVATE
@@ -794,6 +799,7 @@ qt_configure_add_summary_entry(ARGS "webengine-build-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
 qt_configure_add_summary_entry(ARGS "webengine-rust-build")
+qt_configure_add_summary_entry(ARGS "webengine-precompiled-headers")
 qt_configure_add_summary_section(NAME "Build QtWebEngine Modules")
 qt_configure_add_summary_entry(ARGS "qtwebengine-core-build")
 qt_configure_add_summary_entry(ARGS "qtwebengine-widgets-build")
