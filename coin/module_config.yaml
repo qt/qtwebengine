@@ -84,6 +84,9 @@ instructions:
       variableName: CMAKE_BUILD_OUTPUT_TIMEOUT
       variableValue: "3600"
     - type: EnvironmentVariable
+      variableName: NINJAFLAGS
+      variableValue: "-j{{.NumCPU}}"
+    - type: EnvironmentVariable
       variableName: QTWEBENGINE_GN_THREADS
       variableValue: "1"
       enable_if:
