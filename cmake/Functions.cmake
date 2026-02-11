@@ -981,7 +981,7 @@ macro(append_build_type_setup)
 
     extend_gn_list(gnArgArg
         ARGS enable_precompiled_headers
-        CONDITION BUILD_WITH_PCH AND NOT LINUX
+        CONDITION QT_FEATURE_webengine_precompiled_headers
     )
     extend_gn_list(gnArgArg
         ARGS dcheck_always_on

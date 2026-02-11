@@ -435,6 +435,11 @@ qt_feature("webengine-ozone-x11" PRIVATE
         AND XKBFILE_FOUND
 )
 
+qt_feature("webengine-precompiled-headers" PRIVATE
+    LABEL "Use precompiled headers for 3rdparty"
+    CONDITION BUILD_WITH_PCH
+)
+
 #### Support Checks
 if(WIN32 AND (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"
         OR CMAKE_CROSSCOMPILING))
@@ -624,6 +629,7 @@ qt_configure_add_summary_entry(ARGS "webengine-build-ninja")
 qt_configure_add_summary_entry(ARGS "webengine-build-gn")
 qt_configure_add_summary_entry(ARGS "webengine-jumbo-build")
 qt_configure_add_summary_entry(ARGS "webengine-developer-build")
+qt_configure_add_summary_entry(ARGS "webengine-precompiled-headers")
 qt_configure_add_summary_section(NAME "Build QtWebEngine Modules")
 qt_configure_add_summary_entry(ARGS "qtwebengine-core-build")
 qt_configure_add_summary_entry(ARGS "qtwebengine-widgets-build")
