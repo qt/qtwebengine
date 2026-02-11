@@ -1,0 +1,64 @@
+type: Group
+instructions:
+
+  - type: Group
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Linux
+
+    instructions:
+    - type: WriteFile
+      filename: "{{.Env.HOME}}/create_swap.sh"
+      fileMode: 0700
+      fileContents: |
+        #!/bin/bash -x
+
+        PERM=no
+
+        if [ "$1" = --permanent ]
+        then
+            PERM=yes; shift
+        fi
+
+        if echo "$1" | grep -qE '^[0-9]+$'
+        then
+            SZ=$1
+        else
+            echo "ERROR: Missing number argument, for size of swap file in GB."  1>&2
+            exit 1
+        fi
+
+        # Put it under /home because some of our images have bigger FS there.
+        SWPATH=/home
+        SWFILE=$SWPATH/swapfile-2.img
+        fstype=`findmnt -n -o FSTYPE --target $SWPATH`
+        if  [ "$fstype" = btrfs ]
+        then
+            truncate -s 0  "$SWFILE"
+            chattr +C  "$SWFILE"    # set no-COW
+        fi
+        fallocate -l "${SZ}"G  "$SWFILE"
+        chmod 600  "$SWFILE"
+        mkswap  "$SWFILE"
+        swapon  "$SWFILE"
+        ret=$?
+        sysctl -w vm.swappiness=1
+
+        if [ "$PERM" = yes ]
+        then
+            echo "$SWFILE  none  swap  defaults  0  0"  >> /etc/fstab
+        fi
+
+        echo "=====================BEGIN system info======================"
+        uname -a
+        df -hT
+        free -h
+        cat /proc/swaps
+        echo "=====================END   system info======================"
+        exit $ret
+    - type: ExecuteCommand
+      command: "sudo {{.Env.HOME}}/create_swap.sh 64"
+      maxTimeInSeconds: 120
+      userMessageOnFailure: "Failed to enable swap file"
+      maxTimeBetweenOutput: 120
