@@ -231,15 +231,27 @@ ApplicationWindow {
             currentIndex: 2 // bookmarks by default
             TabButton {
                 text: qsTr("Info")
+                width: implicitWidth
             }
             TabButton {
                 text: qsTr("Search Results")
+                width: implicitWidth + spinner.width * 2 + 6
+                BusyIndicator {
+                    id: spinner
+                    running: view.searchModel.status === PdfSearchModel.Searching
+                    x: 2
+                    width: height
+                    height: parent.height * 0.9
+                    anchors.verticalCenter: parent.contentItem.verticalCenter
+                }
             }
             TabButton {
                 text: qsTr("Bookmarks")
+                width: implicitWidth
             }
             TabButton {
                 text: qsTr("Pages")
+                width: implicitWidth
             }
         }
 

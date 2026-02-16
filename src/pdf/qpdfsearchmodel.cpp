@@ -137,6 +137,34 @@ int QPdfSearchModel::count() const
     return rowCount(QModelIndex());
 }
 
+/*!
+    \since 6.12
+    \enum QPdfSearchModel::Status
+
+    This enum describes the current status of the search model.
+
+    \value Null The initial status before the first search has begun.
+    \value Searching The status while the search is being conducted.
+    \value Finished The status when all possible search results have been found on all pages.
+
+    \sa QPdfSearchModel::status()
+*/
+
+/*!
+    \since 6.12
+    \property QPdfSearchModel::status
+    \brief the search status
+
+    This property tells whether a search is in progress.
+
+    \sa count()
+*/
+QPdfSearchModel::Status QPdfSearchModel::status() const
+{
+    Q_D(const QPdfSearchModel);
+    return d->status;
+}
+
 void QPdfSearchModel::updatePage(int page)
 {
     Q_D(QPdfSearchModel);
@@ -226,6 +254,9 @@ void QPdfSearchModel::timerEvent(QTimerEvent *event)
             qCDebug(qLcS) << "done updating search results on" << d->searchResults.size() << "pages";
         killTimer(d->updateTimerId);
         d->updateTimerId = -1;
+        d->setStatus(QPdfSearchModel::Status::Finished);
+    } else if (!d->searchString.isEmpty()) {
+        d->setStatus(QPdfSearchModel::Status::Searching);
     }
     d->doSearch(d->nextPageToUpdate++);
 }
@@ -366,6 +397,16 @@ int QPdfSearchModelPrivate::rowsBeforePage(int page)
     for (int i = 0; i < page; ++i)
         ret += searchResults[i].size();
     return ret;
+}
+
+void QPdfSearchModelPrivate::setStatus(QPdfSearchModel::Status s)
+{
+    Q_Q(QPdfSearchModel);
+    if (status == s)
+        return;
+
+    status = s;
+    emit q->statusChanged(status);
 }
 
 QT_END_NAMESPACE

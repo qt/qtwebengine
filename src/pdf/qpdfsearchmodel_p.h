@@ -37,6 +37,7 @@ public:
     };
     PageAndIndex pageAndIndexForResult(int resultIndex);
     int rowsBeforePage(int page);
+    void setStatus(QPdfSearchModel::Status s);
 
     QPdfDocument *document = nullptr;
     QString searchString;
@@ -45,6 +46,7 @@ public:
     int rowCountSoFar = 0;
     int updateTimerId = -1;
     int nextPageToUpdate = 0;
+    QPdfSearchModel::Status status = QPdfSearchModel::Status::Null;
 
     QMetaObject::Connection documentConnection;
 };

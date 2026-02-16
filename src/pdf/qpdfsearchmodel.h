@@ -20,6 +20,7 @@ class Q_PDF_EXPORT QPdfSearchModel : public QAbstractListModel
     Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged REVISION(6, 8) FINAL)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged REVISION(6, 12) FINAL)
 
 public:
     enum class Role : int {
@@ -31,6 +32,14 @@ public:
         NRoles
     };
     Q_ENUM(Role)
+
+    enum class Status {
+        Null,
+        Searching,
+        Finished
+    };
+    Q_ENUM(Status)
+
     QPdfSearchModel() : QPdfSearchModel(nullptr) {}
     explicit QPdfSearchModel(QObject *parent);
     ~QPdfSearchModel() override;
@@ -47,6 +56,8 @@ public:
 
     int count() const;
 
+    Status status() const;
+
 public Q_SLOTS:
     void setSearchString(const QString &searchString);
     void setDocument(QPdfDocument *document);
@@ -55,6 +66,7 @@ Q_SIGNALS:
     void documentChanged();
     void searchStringChanged();
     Q_REVISION(6, 8) void countChanged();
+    Q_REVISION(6, 12) void statusChanged(QPdfSearchModel::Status status);
 
 protected:
     void updatePage(int page);

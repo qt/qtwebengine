@@ -50,13 +50,21 @@ void tst_QPdfSearchModel::findText()
     QFETCH(QRect, expectedMatchBounds);
 
     QPdfDocument document;
-    QCOMPARE(document.load(pdfPath), QPdfDocument::Error::None);
-
     QPdfSearchModel model;
+    QSignalSpy statusChangedSpy(&model, &QPdfSearchModel::statusChanged);
     model.setDocument(&document);
-    model.setSearchString(searchString);
+    QCOMPARE(statusChangedSpy.count(), 0);
 
-    QTRY_COMPARE(model.count(), expectedMatchCount); // wait for the timer
+    QCOMPARE(document.load(pdfPath), QPdfDocument::Error::None);
+    QCOMPARE(model.status(), QPdfSearchModel::Status::Null);
+
+    model.setSearchString(searchString);
+    QTRY_COMPARE(model.status(), QPdfSearchModel::Status::Searching); // wait for the timer to start
+    QCOMPARE(statusChangedSpy.count(), 1);
+
+    QTRY_COMPARE(model.status(), QPdfSearchModel::Status::Finished); // wait for the timer to stop
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(model.count(), expectedMatchCount);
     QPdfLink match = model.resultAtIndex(matchIndexToCheck);
     qCDebug(lcTests) << match;
     QList<QRectF> rects = match.rectangles();
