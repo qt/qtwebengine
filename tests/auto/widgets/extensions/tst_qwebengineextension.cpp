@@ -380,6 +380,11 @@ void tst_QWebEngineExtension::serviceWorkerMessaging()
     m_page->load(QUrl("qrc:///resources/index.html"));
     QTRY_COMPARE(loadSpy.size(), 1);
     QTRY_COMPARE(evaluateJavaScriptSync(m_page, "document.body.childElementCount"), 1);
+
+    // Shouldn't crash
+    QSignalSpy clearCacheSpy(m_profile, SIGNAL(clearHttpCacheCompleted()));
+    m_profile->clearHttpCache();
+    QTRY_COMPARE(clearCacheSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)
