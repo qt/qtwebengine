@@ -21,7 +21,7 @@ QQuickWebEngineNewWindowRequest::QQuickWebEngineNewWindowRequest(DestinationType
 }
 
 /*!
-    \qmlmethod WebEngineNewWindowRequest::openIn(WebEngineView view)
+    \qmlmethod void WebEngineNewWindowRequest::openIn(WebEngineView view)
     Opens the requested page in the new web engine view \a view. State and history of the
     view and the page possibly loaded in it will be lost.
     \sa WebEngineView::newWindowRequested
