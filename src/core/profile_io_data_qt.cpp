@@ -192,6 +192,7 @@ std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 #endif
 }
 
+// Adapted from ProfileNetworkContextService::ConfigureNetworkContextParamsInternal()
 void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
                                                     const base::FilePath &relative_partition_path,
                                                     network::mojom::NetworkContextParams *network_context_params,
@@ -230,10 +231,6 @@ void ProfileIODataQt::ConfigureNetworkContextParams(bool in_memory,
     }
 
     network_context_params->enforce_chrome_ct_policy = false;
-
-    // Should be initialized with existing per-profile CORS access lists.
-    network_context_params->cors_origin_access_list =
-        m_profile->GetSharedCorsOriginAccessList()->GetOriginAccessList().CreateCorsOriginAccessPatternsList();
 
     m_proxyConfigMonitor->AddToNetworkContextParams(network_context_params);
 
