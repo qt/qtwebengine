@@ -14,12 +14,9 @@ TestWebEngineView {
 
     TempDir { id: tempDir }
 
-    property QtObject defaultProfile: WebEngineProfile {
-        offTheRecord: true
-    }
-
-    property QtObject nonOTRProfile: WebEngineProfile {
-        offTheRecord: false
+    WebEngineProfilePrototype { id: otrProfile }
+    WebEngineProfilePrototype {
+        id: nonOtrProfile
         storageName: 'WebEngineFavicon'
         persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
     }
@@ -56,13 +53,13 @@ TestWebEngineView {
 
         function test_faviconLoad_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_faviconLoad(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon.html")
@@ -78,13 +75,13 @@ TestWebEngineView {
 
         function test_faviconLoadEncodedUrl_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_faviconLoadEncodedUrl(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon2.html?favicon=load should work with#whitespace!")
@@ -100,13 +97,13 @@ TestWebEngineView {
 
         function test_faviconLoadAfterHistoryNavigation_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_faviconLoadAfterHistoryNavigation(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var iconUrl
@@ -141,13 +138,13 @@ TestWebEngineView {
 
         function test_faviconLoadPushState_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_faviconLoadPushState(row) {
-            webEngineView.profile = row.profile;
+            webEngineView.profile = row.profile.instance();
             compare(iconChangedSpy.count, 0);
 
             var iconUrl;
@@ -174,13 +171,13 @@ TestWebEngineView {
 
         function test_noFavicon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_noFavicon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("test1.html")
@@ -195,13 +192,13 @@ TestWebEngineView {
 
         function test_aboutBlank_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_aboutBlank(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("about:blank")
@@ -216,13 +213,13 @@ TestWebEngineView {
 
         function test_unavailableFavicon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_unavailableFavicon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-unavailable.html")
@@ -237,13 +234,13 @@ TestWebEngineView {
 
         function test_errorPageEnabled_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_errorPageEnabled(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             webEngineView.settings.errorPageEnabled = true
 
             compare(iconChangedSpy.count, 0)
@@ -260,13 +257,13 @@ TestWebEngineView {
 
         function test_errorPageDisabled_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_errorPageDisabled(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             webEngineView.settings.errorPageEnabled = false
 
             compare(iconChangedSpy.count, 0)
@@ -283,13 +280,13 @@ TestWebEngineView {
 
         function test_bestFavicon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_bestFavicon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
             var url, iconUrl
 
@@ -324,13 +321,13 @@ TestWebEngineView {
 
         function test_touchIcon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_touchIcon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-touch.html")
@@ -360,13 +357,13 @@ TestWebEngineView {
 
         function test_multiIcon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_multiIcon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var url = Qt.resolvedUrl("favicon-multi.html")
@@ -381,13 +378,13 @@ TestWebEngineView {
 
         function test_dynamicFavicon_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_dynamicFavicon(row) {
-            webEngineView.profile = row.profile
+            webEngineView.profile = row.profile.instance()
             compare(iconChangedSpy.count, 0)
 
             var faviconImage = Qt.createQmlObject("
@@ -433,14 +430,14 @@ TestWebEngineView {
 
         function test_touchIconWithSameURL_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
         function test_touchIconWithSameURL(row)
         {
-            webEngineView.profile = row.profile;
+            webEngineView.profile = row.profile.instance();
             compare(iconChangedSpy.count, 0);
 
             var icon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
@@ -484,7 +481,7 @@ TestWebEngineView {
 
         function test_iconsDisabled(row) {
             webEngineView.settings.autoLoadIconsForPage = false
-            webEngineView.profile = defaultProfile
+            webEngineView.profile = otrProfile.instance()
             compare(iconChangedSpy.count, 0)
 
             webEngineView.url = row.url
@@ -507,7 +504,7 @@ TestWebEngineView {
 
         function test_touchIconsEnabled(row) {
             webEngineView.settings.touchIconsEnabled = true
-            webEngineView.profile = defaultProfile
+            webEngineView.profile = otrProfile.instance()
             compare(iconChangedSpy.count, 0)
 
             webEngineView.url = row.url

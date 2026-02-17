@@ -14,12 +14,9 @@ TestWebEngineView {
 
     TempDir { id: tempDir }
 
-    property QtObject defaultProfile: WebEngineProfile {
-        offTheRecord: true
-    }
-
-    property QtObject nonOTRProfile: WebEngineProfile {
-        offTheRecord: false
+    WebEngineProfilePrototype { id: otrProfile }
+    WebEngineProfilePrototype {
+        id: nonOtrProfile
         storageName: 'WebEngineFavicon'
         persistentStoragePath: tempDir.path() + '/WebEngineFavicon'
     }
@@ -74,13 +71,13 @@ TestWebEngineView {
         }
 
         function cleanupTestCase() {
-            tempDir.removeRecursive(nonOTRProfile.persistentStoragePath);
+            tempDir.removeRecursive(nonOtrProfile.persistentStoragePath);
         }
 
         function test_iconDatabase_data() {
             return [
-                   { tag: "OTR", profile: defaultProfile },
-                   { tag: "non-OTR", profile: nonOTRProfile },
+                   { tag: "OTR", profile: otrProfile },
+                   { tag: "non-OTR", profile: nonOtrProfile },
             ];
         }
 
@@ -89,7 +86,7 @@ TestWebEngineView {
             if (Screen.devicePixelRatio !== 1.0)
                 skip("This test is not supported on High DPI screens.");
 
-            webEngineView.profile = row.profile;
+            webEngineView.profile = row.profile.instance();
             compare(iconChangedSpy.count, 0);
 
             var faviconImage = Qt.createQmlObject("
@@ -127,7 +124,7 @@ TestWebEngineView {
             compare(pixel[0], webEngineView.profile.offTheRecord ? 0 : 165);
 
             faviconImage.destroy();
-            webEngineView.profile = defaultProfile;
+            webEngineView.profile = otrProfile.instance();
         }
 
         function test_iconDatabaseMultiView()
@@ -143,29 +140,29 @@ TestWebEngineView {
 
             var webEngineView1 = Qt.createQmlObject("
                     import QtWebEngine\n
-                    import Test.util\n
                     import '../../qmltests/data'\n
                     TestWebEngineView {\n
-                        TempDir { id: tempDir }
-                        profile: WebEngineProfile {\n
-                            offTheRecord: false\n
-                            storageName: 'WebEngineFavicon1'\n
-                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon1'\n
-                        }\n
                     }", testCase);
+            var profilePrototype1 = Qt.createQmlObject("
+                    import QtWebEngine\n
+                    WebEngineProfilePrototype {\n
+                        storageName: 'WebEngineFavicon1'\n
+                        persistentStoragePath: '" + tempDir.path() + "/WebEngineFavicon1'\n
+                    }", testCase);
+            webEngineView1.profile = profilePrototype1.instance();
 
             var webEngineView2 = Qt.createQmlObject("
                     import QtWebEngine\n
-                    import Test.util\n
                     import '../../qmltests/data'\n
                     TestWebEngineView {\n
-                        TempDir { id: tempDir }
-                        profile: WebEngineProfile {\n
-                            offTheRecord: false\n
-                            storageName: 'WebEngineFavicon2'\n
-                            persistentStoragePath: tempDir.path() + '/WebEngineFavicon2'\n
-                        }\n
                     }", testCase);
+            var profilePrototype2 = Qt.createQmlObject("
+                    import QtWebEngine\n
+                    WebEngineProfilePrototype {\n
+                        storageName: 'WebEngineFavicon2'\n
+                        persistentStoragePath: '" + tempDir.path() + "/WebEngineFavicon2'\n
+                    }", testCase);
+            webEngineView2.profile = profilePrototype2.instance();
 
             // Moke sure the icons have not been stored in the database yet.
             var icon1 = "image://favicon/" + Qt.resolvedUrl("icons/favicon.png");
