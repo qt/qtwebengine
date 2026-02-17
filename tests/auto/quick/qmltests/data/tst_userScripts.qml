@@ -35,7 +35,7 @@ Item {
         return script
     }
 
-    WebEngineProfile { id: testProfile }
+    WebEngineProfilePrototype { id: testProfilePrototype }
 
     TestWebEngineView {
         id: webEngineView
@@ -94,6 +94,7 @@ Item {
         }
 
         function test_profileScripts() {
+            let testProfile = testProfilePrototype.instance()
             // assusme it is the same type as in View
             let t1 = String(testProfile.userScripts), t2 = String(webEngineView.userScripts)
             compare(t1.substr(0, t1.indexOf('(')), t2.substr(0, t2.indexOf('(')))

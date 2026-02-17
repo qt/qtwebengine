@@ -11,7 +11,6 @@ TestWebEngineView {
     id: webEngineView
     width: 200
     height: 200
-    profile: testDownloadProfile
 
     property int totalBytes: 0
     property int receivedBytes: 0
@@ -41,14 +40,53 @@ TestWebEngineView {
 
     SignalSpy {
         id: downLoadRequestedSpy
-        target: testDownloadProfile
+        target: webEngineView.profile
         signalName: "downloadRequested"
     }
 
     SignalSpy {
         id: downloadFinishedSpy
-        target: testDownloadProfile
+        target: webEngineView.profile
         signalName: "downloadFinished"
+    }
+
+    Connections {
+        id: profileConnections
+        target: webEngineView.profile
+
+        function onDownloadRequested(download) {
+            webEngineView.profile.downloadPath = tempDir.path()
+            downloadState.push(download.state)
+            downloadItemConnections.target = download
+            if (cancelDownload) {
+                download.cancel()
+            } else {
+                totalBytes = download.totalBytes
+
+                if (downloadedSetPath.length != 0) {
+                    download.path = webEngineView.profile.downloadPath + downloadedSetPath
+                    downloadedPath = download.path
+                } else {
+                    if (setDirectoryFirst && downloadDirectory.length != 0)
+                        download.downloadDirectory = webEngineView.profile.downloadPath + downloadDirectory
+
+                    if (downloadFileName.length != 0)
+                        download.downloadFileName = downloadFileName
+
+                    if (!setDirectoryFirst && downloadDirectory.length != 0)
+                        download.downloadDirectory = webEngineView.profile.downloadPath + downloadDirectory
+
+                    downloadedPath = download.downloadDirectory + download.downloadFileName
+                }
+
+                download.accept()
+            }
+            downloadUrl = download.url
+            suggestedFileName = download.suggestedFileName
+        }
+        function onDownloadFinished(download) {
+            receivedBytes = download.receivedBytes;
+        }
     }
 
     Connections {
@@ -71,44 +109,6 @@ TestWebEngineView {
     property var loadInfoArray: []
     onLoadingChanged: function(load) {
         loadInfoArray.push(load);
-    }
-
-    WebEngineProfile {
-        id: testDownloadProfile
-
-        onDownloadRequested: function(download) {
-            testDownloadProfile.downloadPath = tempDir.path()
-            downloadState.push(download.state)
-            downloadItemConnections.target = download
-            if (cancelDownload) {
-                download.cancel()
-            } else {
-                totalBytes = download.totalBytes
-
-                if (downloadedSetPath.length != 0) {
-                    download.path = testDownloadProfile.downloadPath + downloadedSetPath
-                    downloadedPath = download.path
-                } else {
-                    if (setDirectoryFirst && downloadDirectory.length != 0)
-                        download.downloadDirectory = testDownloadProfile.downloadPath + downloadDirectory
-
-                    if (downloadFileName.length != 0)
-                        download.downloadFileName = downloadFileName
-
-                    if (!setDirectoryFirst && downloadDirectory.length != 0)
-                        download.downloadDirectory = testDownloadProfile.downloadPath + downloadDirectory
-
-                    downloadedPath = download.downloadDirectory + download.downloadFileName
-                }
-
-                download.accept()
-            }
-            downloadUrl = download.url
-            suggestedFileName = download.suggestedFileName
-        }
-        onDownloadFinished: function(download) {
-            receivedBytes = download.receivedBytes;
-        }
     }
 
     TestCase {
@@ -190,11 +190,11 @@ TestWebEngineView {
             var tmpPath = urlToPath(StandardPaths.writableLocation(StandardPaths.TempLocation));
             var downloadPath = urlToPath(StandardPaths.writableLocation(StandardPaths.DownloadLocation));
 
-            testDownloadProfile.downloadPath = tmpPath;
-            compare(testDownloadProfile.downloadPath, tmpPath);
+            webEngineView.profile.downloadPath = tmpPath;
+            compare(webEngineView.profile.downloadPath, tmpPath);
 
-            testDownloadProfile.downloadPath = downloadPath;
-            compare(testDownloadProfile.downloadPath, downloadPath);
+            webEngineView.profile.downloadPath = downloadPath;
+            compare(webEngineView.profile.downloadPath, downloadPath);
         }
 
         function test_downloadToDirectoryWithFileName_data() {
@@ -218,7 +218,7 @@ TestWebEngineView {
             compare(suggestedFileName, "download.zip");
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
             tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
-            compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + downloadFileName);
+            compare(downloadedPath, webEngineView.profile.downloadPath + downloadDirectory + downloadFileName);
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
             downloadFinishedSpy.wait();
@@ -240,7 +240,7 @@ TestWebEngineView {
             compare(suggestedFileName, "download.zip");
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
             tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
-            compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
+            compare(downloadedPath, webEngineView.profile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
             downloadFinishedSpy.wait();
@@ -262,7 +262,7 @@ TestWebEngineView {
             compare(suggestedFileName, "download.zip");
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
             tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
-            compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download.zip");
+            compare(downloadedPath, webEngineView.profile.downloadPath + downloadDirectory + "download.zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 0);
             downloadFinishedSpy.wait();
@@ -284,7 +284,7 @@ TestWebEngineView {
             compare(suggestedFileName, "download.zip");
             compare(downloadState[0], WebEngineDownloadRequest.DownloadRequested);
             tryCompare(downloadState, "1", WebEngineDownloadRequest.DownloadInProgress);
-            compare(downloadedPath, testDownloadProfile.downloadPath + downloadDirectory + "download (1).zip");
+            compare(downloadedPath, webEngineView.profile.downloadPath + downloadDirectory + "download (1).zip");
             compare(downloadDirectoryChanged, 1);
             compare(downloadFileNameChanged, 1);
             downloadFinishedSpy.wait();
