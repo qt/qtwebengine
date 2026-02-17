@@ -6,9 +6,6 @@ import QtTest
 import QtWebEngine
 
 Item {
-
-    WebEngineProfile { id: testProfile }
-
     TestWebEngineView {
         id: webEngineView
         width: 400

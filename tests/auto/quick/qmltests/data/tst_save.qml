@@ -7,7 +7,6 @@ TestWebEngineView {
     id: webEngineView
     width: 200
     height: 200
-    profile: testSaveProfile
 
     property url downloadUrl: ""
     property int totalBytes: 0
@@ -25,20 +24,20 @@ TestWebEngineView {
 
     SignalSpy {
         id: downLoadRequestedSpy
-        target: testSaveProfile
+        target: webEngineView.profile
         signalName: "downloadRequested"
     }
 
     SignalSpy {
         id: downloadFinishedSpy
-        target: testSaveProfile
+        target: webEngineView.profile
         signalName: "downloadFinished"
     }
 
-    WebEngineProfile {
-        id: testSaveProfile
+    Connections {
+        target: webEngineView.profile
 
-        onDownloadRequested: function(download) {
+        function onDownloadRequested(download) {
             downloadState.push(download.state)
             downloadUrl = download.url
             savePageFormat = download.savePageFormat
@@ -49,7 +48,8 @@ TestWebEngineView {
             if (autoCancel)
                 download.cancel()
         }
-        onDownloadFinished: function(download) {
+
+        function onDownloadFinished(download) {
             receivedBytes = download.receivedBytes
             totalBytes = download.totalBytes
             downloadState.push(download.state)
