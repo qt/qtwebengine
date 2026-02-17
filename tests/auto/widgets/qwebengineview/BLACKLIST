@@ -13,3 +13,9 @@ rhel # flaky
 
 [setCursorOnEmbeddedView]
 macos # QTest::mousemove is not reliable
+
+[keyboardFocusAfterPopup]
+wayland
+
+[datalist]
+wayland

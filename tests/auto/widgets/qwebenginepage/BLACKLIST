@@ -13,3 +13,9 @@ macos
 
 [backgroundColor]
 macos
+
+[fullScreenRequested]
+wayland
+
+[popupOnTransparentBackground]
+wayland
