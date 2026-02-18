@@ -7,7 +7,17 @@ accept_configuration:
 
 machine_type:
   Build:
-    cores: 8
+    - cores: 16
+      enable_if:
+        condition: and
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: MacOS
+          - condition: property
+            property: host.arch
+            equals_value: X86_64
+    - cores: 8
   Test:
     cores: 4
 
