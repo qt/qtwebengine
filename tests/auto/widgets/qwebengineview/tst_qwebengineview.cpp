@@ -1908,10 +1908,11 @@ void tst_QWebEngineView::webUIURLs_data()
     QTest::newRow("discards") << QUrl("chrome://discards") << true << false;
     QTest::newRow("download-internals") << QUrl("chrome://download-internals") << true << false;
     QTest::newRow("downloads") << QUrl("chrome://downloads") << true << false;
-    QTest::newRow("extensions OTR") << QUrl("chrome://extensions") << true << false;
 #if QT_CONFIG(webengine_extensions)
+    QTest::newRow("extensions OTR") << QUrl("chrome://extensions") << true << true;
     QTest::newRow("extensions non-OTR") << QUrl("chrome://extensions") << false << true;
 #else
+    QTest::newRow("extensions OTR") << QUrl("chrome://extensions") << true << false;
     QTest::newRow("extensions non-OTR") << QUrl("chrome://extensions") << false << false;
 #endif // QT_CONFIG(webengine_extensions)
     QTest::newRow("extensions-internals") << QUrl("chrome://extensions-internals") << true << false;

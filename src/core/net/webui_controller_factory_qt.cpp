@@ -115,10 +115,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 //#endif  // USE_NSS_CERTS && USE_AURA
 #if QT_CONFIG(webengine_extensions)
     if (url.host_piece() == chrome::kChromeUIExtensionsHost) {
-        if (profile->IsIncognitoProfile()) {
-            qWarning("chrome://extensions is not supported with an off-the-record profile.");
-            return nullptr;
-        }
         return &NewWebUI<ExtensionsUIQt>;
     }
 #endif
