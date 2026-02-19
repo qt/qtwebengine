@@ -771,7 +771,7 @@ qt_feature("webengine-ozone-x11" PRIVATE
 
 qt_feature("webengine-precompiled-headers" PRIVATE
     LABEL "Use precompiled headers for 3rdparty"
-    CONDITION BUILD_WITH_PCH
+    CONDITION BUILD_WITH_PCH AND NOT LINUX
 )
 
 #FIXME: fix version numbers when qt_feature_with_configure_check megred as
