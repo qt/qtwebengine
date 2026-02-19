@@ -332,6 +332,7 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     Q_UNUSED(child_process_id);
 
     url::CustomScheme::SaveSchemes(command_line);
+    WebEngineLibraryInfo::appendPathOverridesToCommandLine(command_line);
 
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
     if (processType == switches::kZygoteProcess)
