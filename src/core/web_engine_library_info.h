@@ -17,6 +17,10 @@ enum {
     QT_FRAMEWORK_BUNDLE = 5004
 };
 
+namespace base {
+class CommandLine;
+}
+
 class WebEngineLibraryInfo {
 public:
     static base::FilePath getPath(int key, bool showWarnings = false);
@@ -24,6 +28,7 @@ public:
     static std::u16string getApplicationName();
     static std::string getResolvedLocale();
     static std::string getApplicationLocale();
+    static void appendPathOverridesToCommandLine(base::CommandLine* commandLine);
 #if defined(Q_OS_WIN)
     static bool isRemoteDrivePath(const QString &path);
     static bool isUNCPath(const QString &path);
