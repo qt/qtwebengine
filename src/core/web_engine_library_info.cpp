@@ -8,9 +8,11 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/files/file_util.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "sandbox/policy/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
@@ -41,6 +43,34 @@ using namespace QtWebEngineCore;
 Q_WEBENGINE_LOGGING_CATEGORY(webEngineLibraryInfoLog, "qt.webengine.libraryinfo")
 
 namespace {
+
+static const char kQtWebEngineLocalesPath[] = "webengine-locales-path";
+static const char kQtWebEngineDictionariesPath[] = "webengine-dictionaries-path";
+static const char kQtWebEngineResourcesPath[] = "webengine-resources-path";
+
+QString maybeGetOverridePath(const char *switchName, const char *envVar, bool showWarnings)
+{
+    QString overridePath;
+    // First, try to get a path from the command line. We always expect this for the renderer,
+    // but check for the main process as well, since users may want to pass values this way, too
+    if (base::CommandLine::InitializedForCurrentProcess()) {
+        base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+        overridePath = QString::fromStdString(parsedCommandLine->GetSwitchValueASCII(switchName));
+        std::string processType = parsedCommandLine->GetSwitchValueASCII(switches::kProcessType);
+        if (showWarnings
+                && (processType == switches::kRendererProcess || processType == switches::kZygoteProcess)
+                && overridePath.isEmpty()) {
+            LOG(WARNING) << "Command line switch --" << std::string(switchName) << " not passed to renderer process";
+        }
+    }
+
+    // If no path is found in the command line arguments, check the environment variable
+    if (overridePath.isEmpty()) {
+        overridePath = qEnvironmentVariable(envVar);
+    }
+
+    return overridePath;
+}
 
 QString fallbackDir() {
     static const QString directory =
@@ -191,9 +221,13 @@ QString localesPath()
     if (potentialLocalesPath.isEmpty()) {
         QStringList candidatePaths;
         const QString translationPakFilename =
-                QLatin1StringView(WebEngineLibraryInfo::getResolvedLocale()) % ".pak"_L1;
+            QLatin1StringView(WebEngineLibraryInfo::getResolvedLocale()) % ".pak"_L1;
+
         bool includeOverrideMessage = false;
-        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_LOCALES_PATH"); fromEnv.isEmpty()) {
+        QString overridePath = maybeGetOverridePath(kQtWebEngineLocalesPath, "QTWEBENGINE_LOCALES_PATH", true);
+        if (!overridePath.isEmpty()) {
+            candidatePaths.append(overridePath);
+        } else {
             includeOverrideMessage = true;
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle()) % QDir::separator()
@@ -202,16 +236,13 @@ QString localesPath()
             candidatePaths << QLibraryInfo::path(QLibraryInfo::TranslationsPath) % QDir::separator()
                             % "qtwebengine_locales"_L1;
             candidatePaths << fallbackDir();
-        } else {
-            // Only search in QTWEBENGINE_LOCALES_PATH if set
-            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % translationPakFilename)) {
                 potentialLocalesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %ls",
-                        qUtf16Printable(candidate));
+                    qUtf16Printable(candidate));
                 break;
             }
         }
@@ -241,15 +272,18 @@ QString dictionariesPath(bool showWarnings)
     static QString potentialDictionariesPath;
     static QString warningMessage;
     static bool initialized = false;
-    QStringList candidatePaths;
     if (!initialized) {
         initialized = true;
 
+        QStringList candidatePaths;
+
         bool includeOverrideMessage = false;
-        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_DICTIONARIES_PATH");
-            fromEnv.isEmpty()) {
-            includeOverrideMessage = true;
+        QString overridePath = maybeGetOverridePath(kQtWebEngineDictionariesPath, "QTWEBENGINE_DICTIONARIES_PATH", showWarnings);
+        if (!overridePath.isEmpty()) {
+            candidatePaths.append(overridePath);
+        } else {
             // First try to find dictionaries near the application.
+            includeOverrideMessage = true;
 #ifdef Q_OS_DARWIN
             QString resourcesDictionariesPath = getMainApplicationResourcesPath()
                     % QDir::separator() % "qtwebengine_dictionaries"_L1;
@@ -269,19 +303,17 @@ QString dictionariesPath(bool showWarnings)
             QString libraryDictionariesPath = QLibraryInfo::path(QLibraryInfo::DataPath)
                     % QDir::separator() % "qtwebengine_dictionaries"_L1;
             candidatePaths.append(std::move(libraryDictionariesPath));
-        } else {
-            // Only search in QTWEBENGINE_DICTIONARIES_PATH if set
-            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 potentialDictionariesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %ls",
-                        qUtf16Printable(candidate));
+                    qUtf16Printable(candidate));
                 break;
             }
         }
+
         if (potentialDictionariesPath.isEmpty()) {
             warningMessage +=
                     "The following paths were searched for Qt WebEngine dictionaries:\n"_L1;
@@ -314,9 +346,12 @@ QString resourcesPath()
 #else
         const auto resourcesPakFilename = "qtwebengine_resources.debug.pak"_L1;
 #endif
+
         bool includeOverrideMessage = false;
-        if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_RESOURCES_PATH");
-            fromEnv.isEmpty()) {
+        QString overridePath = maybeGetOverridePath(kQtWebEngineResourcesPath, "QTWEBENGINE_RESOURCES_PATH", true);
+        if (!overridePath.isEmpty()) {
+            candidatePaths.append(overridePath);
+        } else {
             includeOverrideMessage = true;
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle());
@@ -326,16 +361,13 @@ QString resourcesPath()
             candidatePaths << QLibraryInfo::path(QLibraryInfo::DataPath);
             candidatePaths << QCoreApplication::applicationDirPath();
             candidatePaths << fallbackDir();
-        } else {
-            // Only search in QTWEBENGINE_RESOURCES_PATH if set
-            candidatePaths.append(std::move(fromEnv));
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % resourcesPakFilename)) {
                 potentialResourcesPath = candidate;
                 qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %ls",
-                        qUtf16Printable(candidate));
+                    qUtf16Printable(candidate));
                 break;
             }
         }
@@ -446,6 +478,20 @@ std::string WebEngineLibraryInfo::getApplicationLocale()
     return parsedCommandLine->HasSwitch(switches::kLang)
         ? parsedCommandLine->GetSwitchValueASCII(switches::kLang)
         : QLocale().bcp47Name().toStdString();
+}
+
+// static
+void WebEngineLibraryInfo::appendPathOverridesToCommandLine(base::CommandLine* commandLine)
+{
+    if (!localesPath().isEmpty())
+        commandLine->AppendSwitchASCII(kQtWebEngineLocalesPath, localesPath().toStdString());
+
+    if (!resourcesPath().isEmpty())
+        commandLine->AppendSwitchASCII(kQtWebEngineResourcesPath, resourcesPath().toStdString());
+#if QT_CONFIG(webengine_spellchecker)
+    if (!dictionariesPath(false).isEmpty())
+        commandLine->AppendSwitchASCII(kQtWebEngineDictionariesPath, dictionariesPath(false).toStdString());
+#endif
 }
 
 #if defined(Q_OS_WIN)
