@@ -118,7 +118,14 @@
     \endlist
 
     Alternatively, a resources directory path can be set as a value of the
-    \c QTWEBENGINE_RESOURCES_PATH environment variable.
+    \c QTWEBENGINE_RESOURCES_PATH environment variable, or via the command-line:
+
+    \badcode
+    --webEngineArgs --webengine-resources-path=<path>
+    \endcode
+
+    When an override is set, the application looks for resources only inside the
+    provided directory, and nowhere else.
 
     \section2 Translations
 
@@ -132,7 +139,14 @@
     \endlist
 
     Alternatively, a locales directory path can be set as a value of the
-    \c QTWEBENGINE_LOCALES_PATH environment variable.
+    \c QTWEBENGINE_LOCALES_PATH environment variable, or via the command-line:
+
+    \badcode
+    --webEngineArgs --webengine-locales-path=<path>
+    \endcode
+
+    When an override is set, the application looks for locales only inside the
+    provided directory, and nowhere else.
 
     \section2 JavaScript Files in Qt Resource Files
 

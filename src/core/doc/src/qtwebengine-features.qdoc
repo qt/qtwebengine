@@ -719,11 +719,19 @@
     a \c qtwebengine_dictionaries target, which your project can use a
     dependency.
 
-    If \c QTWEBENGINE_DICTIONARIES_PATH is set, the spellchecker uses the
-    dictionaries in the specified directory without looking anywere else.
-    Otherwise, it uses the \e qtwebengine_dictionaries directory relative to the
-    executable if it exists. If it does not exist, it will look in \c
-    QT_INSTALL_PREFIX/qtwebengine_dictionaries.
+    By default, \QWE searches for dictionaries inside the \e qtwebengine_dictionaries
+    directory relative to the executable if it exists. If it does not exist, it will
+    look in \c QT_INSTALL_PREFIX/qtwebengine_dictionaries.
+
+    Alternatively, a dictionaries directory path can be set as a value of the
+    \c QTWEBENGINE_DICTIONARIES_PATH environment variable, or via the command-line:
+
+    \badcode
+    --webEngineArgs --webengine-dictionaries-path=<path>
+    \endcode
+
+    When an override is set, the application looks for dictionaries only inside the
+    provided directory, and nowhere else.
 
     On macOS, depending on how \QWE is configured at build time, there
     are two possibilities how spellchecking data is found:
