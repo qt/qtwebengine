@@ -59,7 +59,7 @@ QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
 }
 
 /*!
-    \qmlmethod webEngineScript WebEngine::script
+    \qmlmethod webEngineScript WebEngine::script()
     //! \nativetype QWebEngineScript
     \since QtWebEngine 6.2
 
