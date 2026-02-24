@@ -4,11 +4,14 @@
 import QtQuick
 import QtTest
 import QtWebEngine
+import Test.util
 
 TestWebEngineView {
     id: webEngineView
     width: 350
     height: 480
+
+    PopupWindowUtil { id: popupWindowUtil }
 
     TestCase {
         id: testCase
@@ -113,6 +116,18 @@ TestWebEngineView {
             setFocusToElement("first_hyperlink");
             keyPress(Qt.Key_Enter);
             verify(webEngineView.waitForLoadSucceeded());
+
+            // Test that keyboard input works for popups
+            if (Qt.platform.pluginName == "offscreen") {
+                skip("Can't test popup on offscreen platform");
+            }
+            setFocusToElement("combobox");
+            keyClick(Qt.Key_Space);
+            tryVerify(function() { return popupWindowUtil.getActivePopupWindow() != undefined; }, 5000, "Popup isn't open");
+            keyPress(Qt.Key_Down);
+            keyClick(Qt.Key_Enter);
+            tryVerify(function() { return popupWindowUtil.getActivePopupWindow() == undefined; }, 5000, "Popup didn't close");
+            compareElementValue("combobox", "b");
         }
     }
 }

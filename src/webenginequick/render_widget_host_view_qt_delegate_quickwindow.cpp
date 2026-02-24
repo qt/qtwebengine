@@ -85,6 +85,7 @@ void RenderWidgetHostViewQtDelegateQuickWindow::InitAsPopup(const QRect &rect)
         setGeometry(rect);
     }
     m_realDelegate->show();
+    m_realDelegate->forceActiveFocus(Qt::FocusReason::PopupFocusReason);
     raise();
     show();
 }
