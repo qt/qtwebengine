@@ -277,8 +277,7 @@ foreach(arch ${archs})
                 renderer/web_channel_ipc_transport.cpp renderer/web_channel_ipc_transport.h
                 renderer_host/web_channel_ipc_transport_host.cpp renderer_host/web_channel_ipc_transport_host.h
         )
-
-        extend_gn_target(${buildGn}
+        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
             SOURCES
                 common/extensions/extensions_api_provider_qt.cpp common/extensions/extensions_api_provider_qt.h
                 common/extensions/extensions_client_qt.cpp common/extensions/extensions_client_qt.h
@@ -302,9 +301,6 @@ foreach(arch ${archs})
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
                 renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
                 renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
-        )
-        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_extensions
-            SOURCES
                 extensions/api/management_api_delegate_qt.cpp extensions/api/management_api_delegate_qt.h
                 extensions/extension_manager.cpp extensions/extension_manager.h
                 extensions/extension_loader.cpp extensions/extension_loader.h
@@ -314,7 +310,8 @@ foreach(arch ${archs})
                 extensions/webui/select_file_dialog.cpp extensions/webui/select_file_dialog.h
         )
 
-        extend_gn_target(${buildGn} CONDITION QT_FEATURE_webengine_printing_and_pdf
+        extend_gn_target(${buildGn}
+            CONDITION QT_FEATURE_webengine_printing_and_pdf AND QT_FEATURE_webengine_extensions
             SOURCES
                 extensions/pdf_iframe_navigation_throttle_qt.cpp extensions/pdf_iframe_navigation_throttle_qt.h
                 printing/pdf_stream_delegate_qt.cpp printing/pdf_stream_delegate_qt.h
@@ -357,7 +354,6 @@ foreach(arch ${archs})
             enable_background_mode=false
             enable_bluetooth_emulation=false
             enable_compose=false
-            enable_extensions=true
             enable_ipc_fuzzer=false
             enable_ipc_logging=false
             enable_java_templates=false
@@ -450,6 +446,10 @@ foreach(arch ${archs})
         extend_gn_list(gnArgArg
             ARGS enable_webenginedriver
             CONDITION QT_FEATURE_webenginedriver
+        )
+        extend_gn_list(gnArgArg
+            ARGS enable_extensions
+            CONDITION QT_FEATURE_webengine_extensions
         )
 
         if(LINUX)

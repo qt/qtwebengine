@@ -602,7 +602,6 @@ group("qtwebengine_resources") {
   deps = [
       "//chrome/app:generated_resources",
       "//chrome/browser:resources",
-      "//chrome/browser/resources:component_extension_resources",
       "//chrome/common:resources",
       "//chrome/browser/resources/device_log:resources",
       "//components/resources:components_resources",
@@ -612,6 +611,10 @@ group("qtwebengine_resources") {
       ":qtwebengine_repack_resources_devtools",
       ":qtwebengine_repack_locales_pack"
    ]
+
+   if(enable_extensions) {
+     deps += [ "//chrome/browser/resources:component_extension_resources" ]
+   }
 }
 
 repack("qtwebengine_repack_resources") {

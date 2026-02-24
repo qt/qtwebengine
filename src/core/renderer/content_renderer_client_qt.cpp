@@ -443,7 +443,10 @@ bool ContentRendererClientQt::OverrideCreatePlugin(content::RenderFrame *render_
         return true;
     }
 #endif
-    *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)->plugin();
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    *plugin = LoadablePluginPlaceholderQt::CreateLoadableMissingPlugin(render_frame, params)
+                      ->plugin();
+#endif // ENABLE_EXTENSIONS
 #endif // BUILDFLAG(ENABLE_PLUGINS)
     return true;
 }
