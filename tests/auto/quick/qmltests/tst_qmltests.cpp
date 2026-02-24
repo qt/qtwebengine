@@ -157,6 +157,23 @@ private:
     bool m_visible = false;
 };
 
+class PopupWindowUtil : public QObject {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE static QQuickWindow *getActivePopupWindow() {
+        QWindowList allWindows = QGuiApplication::allWindows();
+
+        for (auto *win : allWindows) {
+            if (win->type() == Qt::Popup
+                    && win->transientParent() != nullptr) {
+                return static_cast<QQuickWindow *>(win);
+            }
+        }
+        return nullptr;
+    }
+};
+
 QT_BEGIN_NAMESPACE
 namespace QTest {
     int Q_TESTLIB_EXPORT defaultMouseDelay();
@@ -250,6 +267,7 @@ int main(int argc, char **argv)
     qmlRegisterType<TempDir>("Test.util", 1, 0, "TempDir");
     qmlRegisterType<TestInputContext>("Test.util", 1, 0, "TestInputContext");
     qmlRegisterType<TestInputEvent>("Test.util", 1, 0, "TestInputEvent");
+    qmlRegisterType<PopupWindowUtil>("Test.util", 1, 0, "PopupWindowUtil");
 
     QTEST_SET_MAIN_SOURCE_PATH
     qmlRegisterSingletonType<TestEnvironment>(
