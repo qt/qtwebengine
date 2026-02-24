@@ -63,6 +63,7 @@ configure_gn_target(
 
 set(gn_arg gen ${build_dir})
 list(APPEND gn_arg
+     --ignore-asserts=enable_extensions_core,enable_extensions
      --script-executable=${Python3_EXECUTABLE}
      --root=${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium)
 
