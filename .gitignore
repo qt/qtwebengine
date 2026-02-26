@@ -1,5 +1,6 @@
 .qmake.cache
 .qmake.stash
+.DS_Store
 src/3rdparty_upstream/patches
 src/3rdparty_upstream/gn
 src/3rdparty_upstream/ninja
