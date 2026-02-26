@@ -14,6 +14,10 @@
 #include <QDir>
 #include <QStandardPaths>
 
+#if QT_CONFIG(ssl)
+#include <QtNetwork/qsslcertificate.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -305,6 +309,7 @@ void QQuickWebEngineProfilePrototype::componentComplete()
             d_ptr->m_persistentCookiesPolicy = QQuickWebEngineProfile::NoPersistentCookies;
     }
 
+#if QT_CONFIG(ssl)
     QList<QSslCertificate> additionalCertificates;
     for (const auto &certFileName : std::as_const(d_ptr->m_additionalTrustedCertificateFiles)) {
         QFile certFile(certFileName);
@@ -325,6 +330,7 @@ void QQuickWebEngineProfilePrototype::componentComplete()
                              << QStringLiteral(" is not found. It will be skipped.");
         }
     }
+#endif
 
     auto profileAdapter = new QtWebEngineCore::ProfileAdapter(
             d_ptr->m_storageName, d_ptr->m_persistentStoragePath, d_ptr->m_cachePath,
