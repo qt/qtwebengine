@@ -260,6 +260,7 @@ macro(append_build_type_setup)
     )
     if (QT_FEATURE_webengine_rust_build)
       list(APPEND gnArgArg
+          toolchain_supports_rust_thin_lto=false # depends on unstable flag -Zsplit-lto-unit
           enable_rust=true
           enable_rust_cxx=true
           enable_tetanus=false # assuming stable rust
