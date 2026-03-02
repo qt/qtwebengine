@@ -39,6 +39,7 @@ function(qt6_add_webengine_dictionary)
         set(spellcheckerDir ${ARGS_OUTPUT_DIRECTORY}/qtwebengine_dictionaries)
     endif()
 
+    _qt_internal_get_tool_wrapper_script_path(tool_wrapper)
     get_filename_component(dictName ${ARGS_SOURCE} NAME_WE)
     add_custom_command(
         OUTPUT ${spellcheckerDir}/${dictName}.bdic
@@ -46,6 +47,7 @@ function(qt6_add_webengine_dictionary)
         COMMENT "Running qwebengine_convert_dict for ${ARGS_SOURCE}"
         COMMAND ${CMAKE_COMMAND} -E make_directory ${spellcheckerDir}
         COMMAND ${CMAKE_COMMAND} -E env
+        ${tool_wrapper}
         $<TARGET_FILE:${QT_CMAKE_EXPORT_NAMESPACE}::qwebengine_convert_dict>
         ${ARGS_SOURCE} ${spellcheckerDir}/${dictName}.bdic
         ${copyCommand}
