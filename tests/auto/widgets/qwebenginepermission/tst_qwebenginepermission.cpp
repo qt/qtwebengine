@@ -101,6 +101,14 @@ void tst_QWebEnginePermission::cleanup()
     }
 }
 
+static void selectFirstScreenIfAvailable(const QWebEngineDesktopMediaRequest &request)
+{
+    if (request.screensModel()->hasIndex(0, 0))
+        request.selectScreen(request.screensModel()->index(0));
+    else
+        request.cancel();
+}
+
 static QString MediaAudioCapture_trigger =
     "navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(s => { data = s; done = true; })"
     ".catch(err => { skipReason = err.message; done = true; });"_L1;
@@ -219,9 +227,7 @@ void tst_QWebEnginePermission::triggerFromJavascript()
 
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
-    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, [&](const QWebEngineDesktopMediaRequest &request) {
-        request.selectScreen(request.screensModel()->index(0));
-    });
+    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, &selectFirstScreenIfAvailable);
 
     bool grant = true;
     QWebEnginePermission permission;
@@ -292,9 +298,7 @@ void tst_QWebEnginePermission::preGrant()
 
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
-    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, [&](const QWebEngineDesktopMediaRequest &request) {
-        request.selectScreen(request.screensModel()->index(0));
-    });
+    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, &selectFirstScreenIfAvailable);
 
     QWebEnginePermission permission = m_profile->queryPermission(page.url(), permissionType);
     QVERIFY(permission.state() == QWebEnginePermission::State::Ask);
@@ -336,9 +340,7 @@ void tst_QWebEnginePermission::iframe()
 
     page.settings()->setAttribute(QWebEngineSettings::ScreenCaptureEnabled, true);
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
-    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, [&](const QWebEngineDesktopMediaRequest &request) {
-        request.selectScreen(request.screensModel()->index(0));
-    });
+    connect(&page, &QWebEnginePage::desktopMediaRequested, &page, &selectFirstScreenIfAvailable);
 
     bool grant = true;
     QWebEnginePermission permission;
