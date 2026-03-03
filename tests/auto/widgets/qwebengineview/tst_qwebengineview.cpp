@@ -1350,9 +1350,7 @@ void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
 
     containerWidget->resize(300, 200);
     containerWidget->setLayout(layout);
-    containerWidget->show();
-    containerWidget->window()->windowHandle()->requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(containerWidget.data()));
+    MAKE_WINDOW_ACTIVE(*containerWidget);
 
     // Load the content, and check that focus is not set.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
@@ -1701,9 +1699,7 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     QSignalSpy loadFinishedSpy(window.webView, &QWebEngineView::loadFinished);
     connect(window.lineEdit, &QLineEdit::editingFinished, [&] { window.webView->setHtml(html); });
     window.webView->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, true);
-    window.show();
-    window.window()->windowHandle()->requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    MAKE_WINDOW_ACTIVE(window);
 
     // Focus will initially go to the QLineEdit.
     QTRY_COMPARE(QApplication::focusWidget(), window.lineEdit);
@@ -1943,10 +1939,7 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
                          "</body></html>"));
     QVERIFY(loadFinishedSpy.wait());
 
-    view.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.window()->windowHandle()->requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    MAKE_WINDOW_ACTIVE(view);
 
     auto inputFieldValue = [&view] () -> QString {
         return evaluateJavaScriptSync(view.page(),
@@ -4186,11 +4179,7 @@ void tst_QWebEngineView::setCursorOnEmbeddedView()
 
     QSignalSpy firstPaintSpy(&page, &PageWithPaintListeners::largestContentfulPaint);
     view.setHtml(html);
-    parentWidget.show();
-    view.show();
-    parentWidget.window()->windowHandle()->requestActivate();
-
-    QVERIFY(QTest::qWaitForWindowActive(&parentWidget));
+    MAKE_WINDOW_ACTIVE(parentWidget);
 
     QTRY_VERIFY_WITH_TIMEOUT(firstPaintSpy.size(), 10000);
 
