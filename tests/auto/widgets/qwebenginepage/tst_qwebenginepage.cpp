@@ -3252,10 +3252,7 @@ void tst_QWebEnginePage::mouseMovementProperties()
     view.setPage(&page);
     view.resize(640, 480);
     QTest::mouseMove(&view, QPoint(10, 10));
-    view.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.window()->windowHandle()->requestActivate();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    MAKE_WINDOW_ACTIVE(view);
 
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     page.setHtml(QStringLiteral(
