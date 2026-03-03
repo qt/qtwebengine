@@ -1613,10 +1613,6 @@ void tst_QWebEngineView::inputFieldOverridesShortcuts()
 {
     SKIP_IF_NO_WINDOW_ACTIVATION();
 
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
-                QPlatformIntegration::WindowActivation))
-        QSKIP("Cannot test on platforms without window activation capability");
-
     QWebEngineView view;
     bool actionTriggered = false;
     QAction *action = new QAction(&view);
