@@ -1256,6 +1256,8 @@ void tst_QWebEngineView::focusOnNavigation()
     QFETCH(bool, focusOnNavigation);
     QFETCH(bool, viewReceivedFocus);
 
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
 #define triggerJavascriptFocus()\
     evaluateJavaScriptSync(webView->page(), "document.getElementById(\"input\").focus()");
 #define loadAndTriggerFocusAndCompare()\
@@ -1281,8 +1283,7 @@ void tst_QWebEngineView::focusOnNavigation()
     layout->addWidget(webView);
 
     containerWidget->setLayout(layout);
-    containerWidget->show();
-    QVERIFY(QTest::qWaitForWindowExposed(containerWidget.data()));
+    MAKE_WINDOW_ACTIVE(*containerWidget);
 
     // Load the content, invoke javascript focus on the view, and check which widget has focus.
     QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
