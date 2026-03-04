@@ -43,7 +43,7 @@ void initialize()
         if (api == QSGRendererInterface::OpenGL || (api != QSGRendererInterface::Vulkan
                 && api != QSGRendererInterface::Metal && api != QSGRendererInterface::Direct3D11)) {
             qWarning("QtWebEngineQuick::initialize() called with QCoreApplication object already created and should be call before. "\
-                     "This is depreciated and may fail in the future.");
+                     "This is deprecated and may fail in the future.");
         }
         QtWebEngineCore::initialize();
         return;
