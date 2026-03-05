@@ -12,14 +12,17 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "content/browser/devtools/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 using namespace Qt::StringLiterals;
 using content::DevToolsAgentHost;
@@ -135,6 +138,42 @@ void DevToolsManagerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
     }
     else
         qWarning("Couldn't start the inspector server on bind address. In case of invalid input, try something like: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's interface).");
+}
+
+void DevToolsManagerDelegateQt::HandleCommand(content::DevToolsAgentHostClientChannel *channel,
+                                              base::span<const uint8_t> message,
+                                              NotHandledCallback callback)
+{
+    auto findMethodAndGetId = [](base::span<const uint8_t> message,
+                                 const char *substring) -> std::optional<int> {
+        std::string_view messageRaw(reinterpret_cast<const char *>(message.data()), message.size());
+        if (messageRaw.find(substring) == std::string_view::npos)
+            return std::nullopt;
+
+        std::string messageJSON;
+        crdtp::Status status = crdtp::json::ConvertCBORToJSON(message, &messageJSON);
+        if (!status.ok())
+            return std::nullopt;
+
+        std::optional<base::Value> parsed = base::JSONReader::Read(messageJSON);
+        if (!parsed || !parsed->is_dict())
+            return std::nullopt;
+
+        return parsed->GetDict().FindInt("id");
+    };
+
+    if (auto id = findMethodAndGetId(message, "Autofill.")) {
+        std::string responseJSON = "{\"id\":" + std::to_string(*id) + ",\"result\":{}}";
+        std::vector<uint8_t> responseCBOR;
+        crdtp::Status status =
+                crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(responseJSON), &responseCBOR);
+        if (status.ok()) {
+            channel->DispatchProtocolMessageToClient(std::move(responseCBOR));
+            return;
+        }
+    }
+
+    std::move(callback).Run(message);
 }
 
 std::string DevToolsManagerDelegateQt::GetDiscoveryPageHTML()
