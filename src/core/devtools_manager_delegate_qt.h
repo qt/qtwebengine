@@ -45,6 +45,8 @@ public:
     bool HasBundledFrontendResources() override;
 
     void Initialized(const net::IPEndPoint *ip_address) override;
+    void HandleCommand(content::DevToolsAgentHostClientChannel *channel,
+                       base::span<const uint8_t> message, NotHandledCallback callback) override;
 };
 
 } // namespace QtWebEngineCore
