@@ -7,6 +7,8 @@
 #include <QWebEngineSettings>
 #include <QWebEngineFullScreenRequest>
 
+using namespace Qt::StringLiterals;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_view(new QWebEngineView(this))
@@ -17,7 +19,33 @@ MainWindow::MainWindow(QWidget *parent)
             &QWebEnginePage::fullScreenRequested,
             this,
             &MainWindow::fullScreenRequested);
-    m_view->load(QUrl(QStringLiteral("qrc:/index.html")));
+
+    const QUrl baseUrl = QUrl(u"https://www.qt.io"_s);
+    const QString videoUrl = u"https://www.youtube.com/embed/CjyjEUFn_FI"_s;
+    const QString html = u"<!doctype html>"
+                         "<html lang='en'>"
+                         "     <head>"
+                         "         <meta charset='utf-8'>"
+                         "         <style type='text/css'>"
+                         "             #ytplayer {"
+                         "                 position: absolute;"
+                         "                 top: 0;"
+                         "                 left: 0;"
+                         "                 width: 100%;"
+                         "                 height: 100%;"
+                         "             }"
+                         "         </style>"
+                         "     </head>"
+                         "     <body>"
+                         "         <iframe"
+                         "             id='ytplayer'"
+                         "             src='%1'"
+                         "             frameborder='0'"
+                         "             allowfullscreen>"
+                         "         </iframe>"
+                         "     </body>"
+                         "</html>"_s.arg(videoUrl);
+    m_view->setHtml(html, baseUrl);
 }
 
 void MainWindow::fullScreenRequested(QWebEngineFullScreenRequest request)
