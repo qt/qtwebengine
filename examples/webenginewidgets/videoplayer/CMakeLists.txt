@@ -32,20 +32,6 @@ target_link_libraries(videoplayer PUBLIC
     Qt::WebEngineWidgets
 )
 
-# Resources:
-set(videoplayer_resource_files
-    "data/index.html"
-)
-
-qt_add_resources(videoplayer "videoplayer"
-    PREFIX
-        "/"
-    BASE
-        "data"
-    FILES
-        ${videoplayer_resource_files}
-)
-
 install(TARGETS videoplayer
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"

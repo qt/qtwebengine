@@ -89,11 +89,15 @@
     enabled but clicking on it will have no effect as Javascript's full screen
     request will be denied.
 
-    Finally, we load some HTML (see
-    \c webenginewidgets/videoplayer/data/index.html included with
-    the example) into our \l QWebEngineView:
+    Finally, we load some HTML into our \l QWebEngineView:
 
-    \printline load
+    \printuntil m_view->setHtml
+
+    \note The example does not load the content from a local file URL. Youtube's
+    security policy requires embedded players to verify the request origin.
+    This example bypasses that restriction by using the \l QWebEngineView::setHtml
+    API and setting the \c baseUrl parameter so the request appears to originate
+    from \c https://www.qt.io satisfying the origin verification requirement.
 
     The second part of \c MainWindow is handling the full screen requests:
 
