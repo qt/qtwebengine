@@ -212,18 +212,22 @@ static std::string getCurrentKeyboardLayout()
 bool OzonePlatformQt::InitializeUI(const ui::OzonePlatform::InitParams &)
 {
 #if BUILDFLAG(USE_XKBCOMMON)
+    // The expected xkb path is hard-coded in XkbKeyboardLayoutEngine.
     std::string xkb_path("/usr/share/X11/xkb");
     std::string layout = getCurrentKeyboardLayout();
-    if (layout.empty() || !std::filesystem::exists(xkb_path) || std::filesystem::is_empty(xkb_path)) {
-        LOG(WARNING) << "Failed to load keymap file, falling back to StubKeyboardLayoutEngine";
-        m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
-    } else {
+    if (!layout.empty() && std::filesystem::exists(xkb_path)
+        && !std::filesystem::is_empty(xkb_path)) {
         m_keyboardLayoutEngine = std::make_unique<XkbKeyboardLayoutEngine>(m_xkbEvdevCodeConverter);
         m_keyboardLayoutEngine->SetCurrentLayoutByName(layout, base::DoNothing());
+        VLOG(1) << "Keymap file loaded for: " << layout;
+    } else {
+        VLOG(1) << "Failed to load keymap file for: " << layout;
+        VLOG(1) << "Falling back to StubKeyboardLayoutEngine.";
     }
-#else
-    m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
 #endif // BUILDFLAG(USE_XKBCOMMON)
+
+    if (!m_keyboardLayoutEngine)
+        m_keyboardLayoutEngine = std::make_unique<StubKeyboardLayoutEngine>();
 
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(m_keyboardLayoutEngine.get());
 
