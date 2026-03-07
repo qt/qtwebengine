@@ -8,7 +8,7 @@
     \ingroup webengine-widgetexamples
     \brief Displays full screen video using \l QWebEngineView.
 
-    \image videoplayer-example.png
+    \image videoplayer-example.png {YouTube video player interface}
 
     \e {Video Player} demonstrates how to support full screen playback of HTML5
     video using \l QWebEngineView.

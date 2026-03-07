@@ -7,7 +7,7 @@
     \ingroup webengine-examples
     \brief A web browser implemented using the WebEngineView QML type.
 
-    \image quicknanobrowser-demo.jpg
+    \image quicknanobrowser-demo.jpg {Browser demo}
     \examplecategory {Application Examples}
     \examplecategory {Web Technologies}
 

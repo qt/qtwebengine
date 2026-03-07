@@ -8,7 +8,8 @@
     \ingroup webengine-widgetexamples
     \brief A cookie browser based on \QWE Widgets.
 
-    \image cookiebrowser.png
+    \image cookiebrowser.png {Web page with cookie list showing activated cookies
+           and options to view or delete them}
 
     \e {Cookie Browser} demonstrates how to use the \l{Qt WebEngine Widgets C++ Classes}
     {Qt WebEngine C++ classes} to manage cookies. The browser can be used to view cookie content as

@@ -8,7 +8,8 @@
     \brief Integrates a spellchecker into a simple HTML form.
     \examplecategory {Web Technologies}
 
-    \image spellchecker-example.png
+    \image spellchecker-example.png {Form with name, email, and message fields
+           showing context menu with spelling correction and language options}
 
     \e {Spellchecker} demonstrates how to integrate spellchecking support into
     an HTML form that enables users to submit spellchecked messages.

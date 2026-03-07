@@ -10,7 +10,8 @@
     \title PDF Multipage Viewer Example
     \brief A Qt Quick PDF viewer that allows scrolling through the pages.
 
-    \image multipageviewer.png
+    \image multipageviewer.png {PDF viewer displaying PdfMultiPageView QML Type
+           documentation}
 
     \e {PDF Multipage Viewer} demonstrates how to use the PdfMultiPageView
     component to render PDF documents and search for text in them.

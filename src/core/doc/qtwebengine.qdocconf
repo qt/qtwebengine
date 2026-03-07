@@ -118,3 +118,6 @@ spurious += "Can't link to 'This is the canonical repository.'"
 
 # Enforce zero documentation warnings
 warninglimit = 0
+
+# Report warnings for images without alt text
+reportmissingalttextforimages = true

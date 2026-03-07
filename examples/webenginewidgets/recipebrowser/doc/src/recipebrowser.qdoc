@@ -10,7 +10,8 @@
     tool for a custom markup language.
     \examplecategory {Web Technologies}
 
-    \image recipebrowser.webp
+    \image recipebrowser.webp {Recipe browser with dish list on left and selected
+           recipe details on right}
 
     \e {Recipe Browser} is a small hybrid web browser application. It demonstrates how to
     use the \l{Qt WebEngine Widgets C++ Classes} {Qt WebEngine C++ classes} to combine

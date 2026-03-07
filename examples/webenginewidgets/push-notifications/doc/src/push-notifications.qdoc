@@ -37,7 +37,7 @@ implementation will deliver a push message. However, to show it, a service worke
 be registered. As the service worker runs in the background, it allows displaying notifications
 even if a website, which has installed it, is no longer opened.
 
-\image push-notifications.png
+\image push-notifications.png {A flow diagram showing how web push notifications work}
 
 Let's go more into implementation details. We start with implementing our custom
 push service using NodeJS with two modules:
@@ -190,11 +190,11 @@ messaging with the call QWebEngineProfile::setPushServiceEnabled for the created
 
 When the application runs it displays:
 
-\image website.png
+\image website.png {Application with text field for entering notification interval}
 
 After granting the permission we can send our ping request:
 
-\image permissions.png
+\image permissions.png {Permission dialog requesting notification access}
 
 We should see the coming push notification:
 
