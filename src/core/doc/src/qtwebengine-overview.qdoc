@@ -16,7 +16,9 @@
 
     \section1 Qt WebEngine Architecture
 
-    \image qtwebengine-architecture.png
+    \image qtwebengine-architecture.png {A block diagram of the Qt WebEngine architecture showing how
+           Qt WebEngine Widgets, Qt WebEngine, and Qt WebEngine Process interact with Qt WebEngine
+           Core, which is built on top of the Chromium engine}
 
     The functionality in \QWE is divided into the following modules:
 
@@ -32,7 +34,8 @@
 
     \section2 Qt WebEngine Widgets Module
 
-    \image qtwebenginewidgets-model.png
+    \image qtwebenginewidgets-model.png {Diagram showing the class relationship structure of the Qt
+           WebEngine Widgets module and how the main classes interact and depend on each other}
 
     A \e {web engine view} is the main widget component of the \QWE module. It can be used
     in various applications to load web content. Within a view, a \e {web engine page} holds a main
@@ -54,7 +57,9 @@
 
     \section2 Qt WebEngine Module
 
-    \image qtwebengine-model.png
+    \image qtwebengine-model.png {Diagram showing the class relationships in the Qt
+           WebEngine module. The View class connects to Action, History, and Profile.
+           The Profile class links to Settings, Script, and Cookie}
 
     The \QWE QML implementation contains the same elements as the \QWE Widgets
     implementation, except that there is no separately accessible web engine page.

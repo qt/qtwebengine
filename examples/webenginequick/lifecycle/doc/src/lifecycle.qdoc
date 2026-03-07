@@ -8,7 +8,8 @@
     \brief Freezes and discards background tabs to reduce CPU and memory usage.
     \examplecategory {Web Technologies}
 
-    \image lifecycle.png
+    \image lifecycle.png {Web page with Manual lifecycle control popup showing
+           Active, Frozen, and Discarded options}
 
     \e {WebEngine Lifecycle Example} demonstrates how the \l
     {WebEngineView::}{lifecycleState} and \l {WebEngineView::}{recommendedState}
@@ -48,7 +49,7 @@
 
     \section2 Manual Lifecycle Control
 
-    \image lifecycle-manual.png
+    \image lifecycle-manual.png {Manual lifecycle control menu}
 
     Manual control is provided by context menus on the tab bar buttons (\c
     {WebTabButton.qml}). The menu has three radio buttons, one for each
@@ -60,7 +61,8 @@
 
     \section2 Automatic Lifecycle Control
 
-    \image lifecycle-automatic.png
+    \image lifecycle-automatic.png {Settings for Automatic lifecycle control,
+           Freeze after delay, and Discard after delay options}
 
     Automatic control is implemented with a \l {Timer} in the \c {WebTab}
     component (\c {WebTab.qml}). The timer is started whenever the \l

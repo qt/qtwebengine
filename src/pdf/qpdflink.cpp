@@ -136,7 +136,8 @@ QString QPdfLink::contextAfter() const
     search result on the page where it was found. If the text wraps around to
     multiple lines on the page, there may be multiple rectangles:
 
-    \image wrapping-search-result.png
+    \image wrapping-search-result.png {PDF viewer with search results panel
+           showing entries for "the code" and highlighted result on page}
 
     \sa QPdfSearchModel::resultsOnPage(), QPdfSearchModel::resultAtIndex()
 */

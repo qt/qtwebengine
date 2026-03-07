@@ -8,7 +8,7 @@
     \ingroup webengine-widgetexamples
     \brief A simple client certificate authentication scenario using \QWE and \l QSslServer.
 
-    \image selection.png
+    \image selection.png {Window showing list of client certificates}
 
     In this example we are going to show a client certificate authentication workflow.
     The presented authentication scenario can be for example implemented
@@ -156,5 +156,5 @@
     To run the example, start the \c server and then the \c client. After you select
     the certificate, the \c {Access Granted} page is displayed.
 
-    \image granted.png
+    \image granted.png {Page displaying Access Granted message}
 */

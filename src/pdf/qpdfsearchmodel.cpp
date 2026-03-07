@@ -34,7 +34,8 @@ static const int ContextChars = 64;
     and to iterate through them using the "search forward" / "search backward"
     buttons and shortcuts that would be found in a typical document-viewing UI:
 
-    \image search-results.png
+    \image search-results.png {PDF viewer with search results panel showing
+           entries for "sand" and highlighted result on page}
 */
 
 /*!

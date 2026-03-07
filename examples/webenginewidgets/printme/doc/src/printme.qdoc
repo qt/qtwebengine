@@ -8,7 +8,8 @@
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to print web pages using Qt WebEngine Widgets.
 
-    \image printme-example.png
+    \image printme-example.png {Window with print button and shortcuts for print
+           preview, direct print, and JavaScript print options}
 
     \e PrintMe demonstrates how to use the \l{QWebEnginePage} and
     \l{QPrintDialog} classes to print a web page. Further, it shows how

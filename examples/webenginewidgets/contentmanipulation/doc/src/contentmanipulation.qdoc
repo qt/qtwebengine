@@ -8,7 +8,7 @@
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to load and manipulate web content.
 
-    \image contentmanipulation-example.png
+    \image contentmanipulation-example.png {Web page with highlighted keywords}
 
     \e{Content Manipulation} shows how to use JQuery with \l {Qt WebEngine Widgets} to
     create a web browser with special effects and content manipulation.

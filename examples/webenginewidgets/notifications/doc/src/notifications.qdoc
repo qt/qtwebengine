@@ -8,7 +8,8 @@
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to pass HTML5 web notifications to users.
 
-    \image notifications-example.png
+    \image notifications-example.png {Notification window with options to send
+           notifications that appear at bottom right of screen}
 
     \e {\WebEngine Notifications} demonstrates how to use the
     \l QWebEngineProfile::setNotificationPresenter() method and

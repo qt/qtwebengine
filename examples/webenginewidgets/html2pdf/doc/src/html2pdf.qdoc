@@ -8,7 +8,8 @@
     \ingroup webengine-widgetexamples
     \brief Converts web pages to PDF documents using \QWE.
 
-    \image html2pdf-example.png
+    \image html2pdf-example.png {Terminal window showing commands for
+           converting web page to PDF using html2pdf script}
 
     \e {Html2Pdf} demonstrates how to use \QWE to implement a
     command-line application for converting web pages into PDF documents.

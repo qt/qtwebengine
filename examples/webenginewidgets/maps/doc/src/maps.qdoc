@@ -8,7 +8,7 @@
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to handle geolocation requests.
 
-    \image maps-example.png
+    \image maps-example.png {Maps application showing geolocation}
 
     \e {Maps} demonstrates how to handle geolocation requests originating from
     a \l QWebEnginePage.

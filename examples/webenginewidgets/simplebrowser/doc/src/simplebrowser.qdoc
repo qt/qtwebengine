@@ -8,7 +8,7 @@
     \brief A simple browser based on \QWE Widgets.
     \examplecategory {Web Technologies}
 
-    \image simplebrowser.png
+    \image simplebrowser.png {Simple browser displaying web page}
 
     \e {Simple Browser} demonstrates how to use the
     \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine C++ classes} to develop a
@@ -33,7 +33,10 @@
     We start with sketching a diagram of the main classes that we are going to
     implement:
 
-    \image simplebrowser-model.png
+    \image simplebrowser-model.png {A UML class diagram showing the structure of
+           a simple web browser. It includes classes like Browser, BrowserWindow,
+           TabWidget, WebView, and WebPage, each associated with Qt classes such
+           as QMainWindow, QTabWidget, QWebEngineView, and QWebEnginePage}
 
     \list
         \li \c{Browser} is a class managing the application windows.

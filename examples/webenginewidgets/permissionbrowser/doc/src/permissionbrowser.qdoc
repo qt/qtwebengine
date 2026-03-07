@@ -9,7 +9,9 @@
     \brief Demonstrates how to handle website permission requests, and manage
     existing permissions.
 
-    \image permissionbrowser-example.png
+    \image permissionbrowser-example.png {Permission browser with web page showing
+           clipboard, notifications, and fonts sections on left and permissions
+           panel on right with grant and delete options}
 
     Permission Browser demonstrates how to use the \l{QWebEnginePermission} class
     to manage website permissions. The example includes code for handling incoming
