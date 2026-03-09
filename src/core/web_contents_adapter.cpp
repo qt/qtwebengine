@@ -518,6 +518,12 @@ void WebContentsAdapter::initialize(content::SiteInstance *site)
     });
     ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(toWeb(QGuiApplication::styleHints()->colorScheme()));
 
+    {
+        // Initialize the UI native theme in a scope where we allow blocking. Fixes crashes on Windows
+        base::ScopedAllowBlocking allowBlock;
+        ui::NativeTheme::GetInstanceForNativeUi();
+    }
+
     m_adapterClient->initializationFinished();
 }
 
