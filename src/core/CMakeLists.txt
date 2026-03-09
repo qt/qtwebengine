@@ -469,7 +469,7 @@ foreach(arch ${archs})
                 ozone_extra_path="${CMAKE_CURRENT_LIST_DIR}/ozone/ozone_extra.gni"
             )
             set(systemLibs libjpeg libpng freetype harfbuzz libwebp libxml
-                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2 libvpx
+                opus snappy icu ffmpeg re2 lcms2 libopenjpeg2 libvpx openh264
             )
             foreach(slib ${systemLibs})
                 extend_gn_list(gnArgArg
