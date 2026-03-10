@@ -19,6 +19,21 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_fence.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "ui/base/ozone_buildflags.h"
+#if BUILDFLAG(IS_OZONE_X11)
+// We need to define USE_VULKAN_XCB for proper vulkan function pointers.
+// Avoiding it may lead to call wrong vulkan functions.
+// This is originally defined in chromium/gpu/vulkan/BUILD.gn.
+#if !defined(USE_VULKAN_XCB)
+#define USE_VULKAN_XCB
+#endif
+#endif
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
+#endif
+
 #if BUILDFLAG(IS_OZONE)
 #include "ozone/gl_ozone_qt.h"
 
@@ -239,6 +254,18 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
 
+#if BUILDFLAG(ENABLE_VULKAN)
+    if (m_vkFence != VK_NULL_HANDLE) {
+        auto *vkfp = gpu::GetVulkanFunctionPointers();
+        VkResult result = vkfp->vkWaitForFences(m_vkDevice, 1, &m_vkFence, VK_TRUE,
+                                                5'000'000'000ull /* 5s */);
+        if (result == VK_TIMEOUT)
+            qWarning("VkFence wait timed out in ~Buffer(), destroying anyway (device lost?)");
+        vkfp->vkDestroyFence(m_vkDevice, m_vkFence, nullptr);
+        m_vkFence = VK_NULL_HANDLE;
+    }
+#endif
+
     if (!m_mailbox.IsZero() && m_parent->m_factory)
         m_parent->m_factory->DestroySharedImage(m_mailbox);
 }
@@ -426,9 +453,64 @@ void NativeSkiaOutputDevice::Buffer::freeTexture()
 
 void NativeSkiaOutputDevice::Buffer::createFence()
 {
-    // For some reason we still need to create this, but we do not need to wait on it.
-    if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kGL)
+    if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kGL) {
+        // For some reason we still need to create this, but we do not need to wait on it.
         m_fence = gl::GLFence::Create();
+    }
+#if BUILDFLAG(ENABLE_VULKAN)
+    else if (m_parent->m_contextState->gr_context_type() == gpu::GrContextType::kVulkan) {
+        auto *vkfp = gpu::GetVulkanFunctionPointers();
+
+        // Clean up previous fence if buffer was reused without consumption.
+        if (m_vkFence != VK_NULL_HANDLE) {
+            VkResult fenceResult = vkfp->vkWaitForFences(m_vkDevice, 1, &m_vkFence, VK_TRUE,
+                                                         5'000'000'000ull /* 5s */);
+            if (fenceResult == VK_TIMEOUT)
+                qWarning("VkFence wait timed out in createFence(), destroying anyway (device "
+                         "lost?)");
+            vkfp->vkDestroyFence(m_vkDevice, m_vkFence, nullptr);
+            m_vkFence = VK_NULL_HANDLE;
+        }
+
+        auto *vkContextProvider = m_parent->m_contextState->vk_context_provider();
+        if (!vkContextProvider)
+            return;
+
+        gpu::VulkanDeviceQueue *vulkanDeviceQueue = vkContextProvider->GetDeviceQueue();
+        if (!vulkanDeviceQueue)
+            return;
+
+        m_vkDevice = vulkanDeviceQueue->GetVulkanDevice();
+
+        VkFenceCreateInfo fenceCreateInfo = {
+            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+        };
+        VkResult result = vkfp->vkCreateFence(m_vkDevice, &fenceCreateInfo, nullptr, &m_vkFence);
+        if (result != VK_SUCCESS) {
+            qWarning("Failed to create VkFence");
+            m_vkFence = VK_NULL_HANDLE;
+            return;
+        }
+
+        // Submit empty batch with fence to ensure that the fence is signaled after all previous
+        // work is done. Same pattern as gpu::VulkanFenceHelper::GenerateCleanupFence(). Acquire the
+        // per-queue lock (matches the inline vkQueueSubmit wrapper).
+        VkQueue vkQueue = vulkanDeviceQueue->GetVulkanQueue();
+        gpu::VulkanQueueLock *queueLock = nullptr;
+        auto it = vkfp->per_queue_lock_map.find(vkQueue);
+        if (it != vkfp->per_queue_lock_map.end())
+            queueLock = it->second.get();
+        gpu::VulkanQueueAutoLockMaybe autoLock(queueLock);
+        result = vkfp->vkQueueSubmit(vkQueue, 0, nullptr, m_vkFence);
+        if (result != VK_SUCCESS) {
+            qWarning("vkQueueSubmit for fence failed");
+            vkfp->vkDestroyFence(m_vkDevice, m_vkFence, nullptr);
+            m_vkFence = VK_NULL_HANDLE;
+        }
+    }
+#endif
 }
 
 void NativeSkiaOutputDevice::Buffer::consumeFence()
@@ -437,6 +519,14 @@ void NativeSkiaOutputDevice::Buffer::consumeFence()
         m_acquireFence->Wait();
         m_acquireFence.reset();
     }
+#if BUILDFLAG(ENABLE_VULKAN)
+    if (m_vkFence != VK_NULL_HANDLE) {
+        auto *vkfp = gpu::GetVulkanFunctionPointers();
+        vkfp->vkWaitForFences(m_vkDevice, 1, &m_vkFence, VK_TRUE, 5'000'000'000ull /* 5s */);
+        vkfp->vkDestroyFence(m_vkDevice, m_vkFence, nullptr);
+        m_vkFence = VK_NULL_HANDLE;
+    }
+#endif
 }
 
 sk_sp<SkImage> NativeSkiaOutputDevice::Buffer::skImage()
