@@ -1066,8 +1066,13 @@ QVariant BrowserAccessibilityInterface::currentValue() const
 
 void BrowserAccessibilityInterface::setCurrentValue(const QVariant &value)
 {
-    // not yet implemented anywhere in blink
-    QT_NOT_YET_IMPLEMENTED
+    if (value.isValid()) {
+        ui::AXActionData actionData;
+        actionData.action = ax::mojom::Action::kSetValue;
+        actionData.target_node_id = q->node()->id();
+        actionData.value = base::NumberToString(value.toFloat());
+        q->AccessibilityPerformAction(actionData);
+    }
 }
 
 QVariant BrowserAccessibilityInterface::maximumValue() const
