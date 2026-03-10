@@ -136,6 +136,10 @@ protected:
         uint64_t m_estimatedSize = 0; // FIXME: estimate size
         std::unique_ptr<gfx::GpuFence> m_acquireFence;
         std::unique_ptr<gl::GLFence> m_fence;
+#if BUILDFLAG(ENABLE_VULKAN)
+        VkFence m_vkFence = VK_NULL_HANDLE;
+        VkDevice m_vkDevice = VK_NULL_HANDLE;
+#endif
         gpu::Mailbox m_mailbox;
         std::unique_ptr<gpu::SkiaImageRepresentation> m_skiaRepresentation;
         std::unique_ptr<gpu::SkiaImageRepresentation::ScopedWriteAccess> m_scopedSkiaWriteAccess;
