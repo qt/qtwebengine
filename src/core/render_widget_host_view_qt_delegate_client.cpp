@@ -215,7 +215,7 @@ void RenderWidgetHostViewQtDelegateClient::visualPropertiesChanged()
         return;
 
     QRect oldViewRect = m_viewRectInDips;
-    m_viewRectInDips = delegate->viewGeometry().toAlignedRect();
+    m_viewRectInDips = delegate->viewGeometry().toRect();
 
     QRect oldWindowRect = m_windowRectInDips;
     m_windowRectInDips = delegate->windowGeometry();
