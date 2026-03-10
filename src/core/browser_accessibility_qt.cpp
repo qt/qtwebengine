@@ -943,13 +943,32 @@ QStringList BrowserAccessibilityInterface::actionNames() const
     QStringList actions;
     if (q->HasState(ax::mojom::State::kFocusable))
         actions << QAccessibleActionInterface::setFocusAction();
+
+    // Role-based action matching. These are all activated by ax:mojom::Action::kDoDefault
+    switch (role()) {
+    case QAccessible::Button: // fall through
+    case QAccessible::Link:
+        actions << QAccessibleActionInterface::pressAction();
+        break;
+    case QAccessible::CheckBox: // fall through
+    case QAccessible::RadioButton:
+        actions << QAccessibleActionInterface::toggleAction();
+        break;
+    default:
+        break;
+    }
+
     return actions;
 }
 
 void BrowserAccessibilityInterface::doAction(const QString &actionName)
 {
-    if (actionName == QAccessibleActionInterface::setFocusAction())
+    if (actionName == QAccessibleActionInterface::setFocusAction()) {
         q->manager()->SetFocus(*q);
+    } else if (actionName == QAccessibleActionInterface::pressAction()
+            || actionName == QAccessibleActionInterface::toggleAction()) {
+        q->manager()->DoDefaultAction(*q);
+    }
 }
 
 QStringList
