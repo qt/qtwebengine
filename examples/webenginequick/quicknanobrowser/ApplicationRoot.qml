@@ -22,13 +22,12 @@ QtObject {
     }
 
     property Component browserWindowComponent: BrowserWindow {
-        applicationRoot: root
     }
     property Component browserDialogComponent: BrowserDialog {
         onClosing: destroy()
     }
     function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root) as BrowserWindow;
+        var newWindow = browserWindowComponent.createObject(root, {applicationRoot: root} ) as BrowserWindow;
         newWindow.currentWebView.profile = profile;
         profile.downloadRequested.connect(newWindow.onDownloadRequested);
         return newWindow;
