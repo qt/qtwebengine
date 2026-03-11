@@ -618,10 +618,10 @@ ApplicationWindow {
                         backgroundTab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
                         let dialog = win.applicationRoot.createDialog(win.currentWebView.profile);
-                        dialog.win.currentWebView.acceptAsNewWindow(request);
+                        dialog.currentWebView.acceptAsNewWindow(request);
                     } else {
                         let window = win.applicationRoot.createWindow(win.currentWebView.profile);
-                        window.win.currentWebView.acceptAsNewWindow(request);
+                        window.currentWebView.acceptAsNewWindow(request);
                     }
                 }
 
