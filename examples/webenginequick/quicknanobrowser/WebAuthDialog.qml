@@ -11,13 +11,11 @@ import QtWebEngine
 Dialog {
     id: webAuthDialog
     anchors.centerIn: parent
-    width: Math.min(browserWindow.width, browserWindow.height) / 3 * 2
     contentWidth: verticalLayout.width +10;
     contentHeight: verticalLayout.height +10;
     standardButtons: Dialog.Cancel | Dialog.Apply
     title: "WebAuth Request"
 
-    required property BrowserWindow browserWindow
     property var selectAccount;
     property var authrequest: null;
 
@@ -80,7 +78,7 @@ Dialog {
     }
 
     ButtonGroup {
-        id : selectAccount;
+        id : selectAccountButtonGroup;
         exclusive: true;
     }
 
@@ -145,7 +143,7 @@ Dialog {
                     spacing : 5
                     RadioButton {
                         text: selectAccountRepeaterColumn.modelData
-                        ButtonGroup.group : webAuthDialog.selectAccount;
+                        ButtonGroup.group : selectAccountButtonGroup;
                         onClicked: function(){
                             webAuthDialog.selectAccount = text;
                         }
@@ -162,7 +160,7 @@ Dialog {
 
         selectAccountModel.clear();
         var userNames = webAuthDialog.authrequest.userNames;
-        for (var i = 0; i < userNames.length; i++) {
+        for (let i = 0; i < userNames.length; i++) {
             selectAccountModel.append( {"name" : userNames[i]});
         }
         pinLabel.visible = false;
