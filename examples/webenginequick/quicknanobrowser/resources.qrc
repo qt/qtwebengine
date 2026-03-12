@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/qt/qml/BrowserUtils">
         <file>ApplicationRoot.qml</file>
+        <file>BrowserManager.qml</file>
         <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
         <file>DownloadView.qml</file>

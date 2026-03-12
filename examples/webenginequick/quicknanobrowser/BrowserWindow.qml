@@ -15,7 +15,6 @@ import BrowserUtils
 
 ApplicationWindow {
     id: win
-    required property ApplicationRoot applicationRoot
     property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
     property int previousVisibility: Window.Windowed
     property bool lastTabClosing: false
@@ -78,7 +77,7 @@ ApplicationWindow {
         onTriggered: {
             tabBar.createTab(tabBar.count !== 0
                              ? win.currentWebView.profile
-                             : win.applicationRoot.defaultProfilePrototype.instance());
+                             : BrowserManager.defaultProfilePrototype.instance());
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -328,12 +327,12 @@ ApplicationWindow {
                         id: offTheRecordEnabled
                         text: "Off The Record"
                         checkable: true
-                        checked: win.currentWebView?.profile === win.applicationRoot.otrPrototype.instance()
+                        checked: win.currentWebView?.profile === BrowserManager.otrPrototype.instance()
                         onToggled: function() {
                             if (win.currentWebView) {
                                 win.currentWebView.profile = offTheRecordEnabled.checked
-                                        ? win.applicationRoot.otrPrototype.instance()
-                                        : win.applicationRoot.defaultProfilePrototype.instance();
+                                        ? BrowserManager.otrPrototype.instance()
+                                        : BrowserManager.defaultProfilePrototype.instance();
                             }
                         }
                     }
@@ -520,7 +519,7 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        Component.onCompleted: createTab(win.applicationRoot.defaultProfilePrototype.instance())
+        Component.onCompleted: createTab(BrowserManager.defaultProfilePrototype.instance())
 
         function createTab(profile, focusOnNewTab = true, url = undefined) {
             var webview = tabComponent.createObject(tabLayout, {profile: profile});
@@ -617,10 +616,10 @@ ApplicationWindow {
                         let backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
                         backgroundTab.acceptAsNewWindow(request);
                     } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                        let dialog = win.applicationRoot.createDialog(win.currentWebView.profile);
+                        let dialog = BrowserManager.createDialog(win.currentWebView.profile);
                         dialog.currentWebView.acceptAsNewWindow(request);
                     } else {
-                        let window = win.applicationRoot.createWindow(win.currentWebView.profile);
+                        let window = BrowserManager.createWindow(win.currentWebView.profile);
                         window.currentWebView.acceptAsNewWindow(request);
                     }
                 }
