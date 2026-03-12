@@ -766,7 +766,6 @@ qt_feature("webengine-system-openh264" PRIVATE
 
 qt_feature("webengine-rust-build" PRIVATE
     LABEL "Build with rust"
-    AUTODETECT OFF
     CONDITION Rust_FOUND AND Bindgen_FOUND AND QWELibClang_FOUND
 )
 
