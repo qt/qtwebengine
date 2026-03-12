@@ -37,10 +37,15 @@ target_link_libraries(quicknanobrowser PUBLIC
     Qt::WebEngineQuick
 )
 
+set_source_files_properties(BrowserManager.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
+
 qt_add_qml_module(quicknanobrowser
     URI BrowserUtils
     QML_FILES
         ApplicationRoot.qml
+        BrowserManager.qml
         BrowserDialog.qml
         BrowserWindow.qml
         DownloadView.qml

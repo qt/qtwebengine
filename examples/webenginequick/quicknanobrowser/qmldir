@@ -1,5 +1,6 @@
 module BrowserUtils
 prefer :/qt/qml/BrowserUtils/
+singleton BrowserManager 254.0 BrowserManager.qml
 ApplicationRoot 254.0 ApplicationRoot.qml
 BrowserDialog 254.0 BrowserDialog.qml
 BrowserWindow 254.0 BrowserWindow.qml
