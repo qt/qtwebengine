@@ -667,7 +667,7 @@ ApplicationWindow {
                     }
 
                     print("Render process exited with code " + exitCode + " " + status);
-                    reloadTimer.running = true;
+                    Qt.callLater(function() { win.currentWebView.reload() })
                 }
 
                 onSelectClientCertificate: function(selection) {
@@ -694,14 +694,6 @@ ApplicationWindow {
                 onWebAuthUxRequested: function(request) {
                     webAuthDialog.init(request);
                 }
-
-                Timer {
-                    id: reloadTimer
-                    interval: 0
-                    running: false
-                    repeat: false
-                    onTriggered: win.currentWebView.reload()
-                }
             }
         }
     }
@@ -718,16 +710,9 @@ ApplicationWindow {
             request.openIn(tab);
         }
 
-        Timer {
-            id: hideTimer
-            interval: 0
-            running: false
-            repeat: false
-            onTriggered: devToolsEnabledMenuItem.checked = false
-        }
         onWindowCloseRequested: function() {
             // Delay hiding for keep the inspectedView set to receive the ACK message of close.
-            hideTimer.running = true;
+            Qt.callLater(function() { devToolsEnabledMenuItem.checked = false })
         }
     }
     Dialog {
