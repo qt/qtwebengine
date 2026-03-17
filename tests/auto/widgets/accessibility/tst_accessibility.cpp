@@ -49,6 +49,7 @@ private Q_SLOTS:
     void focusChild_data();
     void text();
     void value();
+    void setCurrentValue();
     void roles_data();
     void roles();
     void objectName();
@@ -335,6 +336,41 @@ void tst_Accessibility::value()
     QCOMPARE(progressBarValueInterface->currentValue().toInt(), 77);
     QCOMPARE(progressBarValueInterface->minimumValue().toInt(), 22);
     QCOMPARE(progressBarValueInterface->maximumValue().toInt(), 99);
+}
+
+void tst_Accessibility::setCurrentValue()
+{
+    // Test setting a slider's value through the value interface
+    QWebEngineView webView;
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    setHtmlSync(webView.page(), "<html><body>"
+        "<input type='range' id='volume' name='volume' min='0' max='10' value='5'/>"
+        "</body></html>");
+    webView.show();
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE_WITH_TIMEOUT(view->child(0)->childCount(), 1, 20000);
+    QAccessibleInterface *document = view->child(0);
+
+    QCOMPARE(document->childCount(), 1); // Empty element with no ID. Should be fixed
+    QCOMPARE(document->child(0)->childCount(), 1);
+
+    QAccessibleInterface *slider = document->child(0)->child(0);
+    QVERIFY(slider);
+    QAccessibleValueInterface *sliderValue = slider->valueInterface();
+    QVERIFY(sliderValue);
+
+    QCOMPARE(sliderValue->currentValue().toInt(), 5);
+    sliderValue->setCurrentValue(QVariant(8));
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 8);
+    sliderValue->setCurrentValue(QVariant(10)); // Maximum
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 10);
+    sliderValue->setCurrentValue(QVariant(0)); // Minimum
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 0);
+    sliderValue->setCurrentValue(QVariant(11)); // Too high, should clamp
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 10);
+    sliderValue->setCurrentValue(QVariant(-1)); // Too low, should clamp
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 0);
 }
 
 void tst_Accessibility::roles_data()
