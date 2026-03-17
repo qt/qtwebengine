@@ -1119,11 +1119,13 @@ QVariant BrowserAccessibilityInterface::currentValue() const
 
 void BrowserAccessibilityInterface::setCurrentValue(const QVariant &value)
 {
-    if (value.isValid()) {
+    bool isValid = false;
+    float val = value.toFloat(&isValid);
+    if (isValid) {
         ui::AXActionData actionData;
         actionData.action = ax::mojom::Action::kSetValue;
         actionData.target_node_id = q->node()->id();
-        actionData.value = base::NumberToString(value.toFloat());
+        actionData.value = base::NumberToString(val);
         q->AccessibilityPerformAction(actionData);
     }
 }

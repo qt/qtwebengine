@@ -20,6 +20,7 @@
 #include <QtWebEngineCore/private/qtwebenginecore-config_p.h>
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <qtest.h>
+#include <qtestaccessible.h>
 #include <widgetutil.h>
 
 #include <QHBoxLayout>
@@ -372,6 +373,16 @@ void tst_Accessibility::setCurrentValue()
     QTRY_COMPARE(sliderValue->currentValue().toInt(), 10);
     sliderValue->setCurrentValue(QVariant(-1)); // Too low, should clamp
     QTRY_COMPARE(sliderValue->currentValue().toInt(), 0);
+
+    // Test that calling with an invalid QVariant won't modify the value
+    QTestAccessibility::initialize();
+    QTestAccessibility::clearEvents();
+    sliderValue->setCurrentValue(QVariant("invalid"));
+    sliderValue->setCurrentValue(QVariant("7"));
+    QTRY_COMPARE(sliderValue->currentValue().toInt(), 7);
+
+    // The invalid variant should not have triggered an accessibility event
+    QCOMPARE(QTestAccessibility::events().size(), 1);
 }
 
 void tst_Accessibility::roles_data()
