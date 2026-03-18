@@ -225,6 +225,7 @@ foreach(arch ${archs})
 
         extend_gn_target(${buildGn} CONDITION LINUX AND QT_FEATURE_opengl
             SOURCES
+                ozone/gbm_buffer_factory.cpp ozone/gbm_buffer_factory.h
                 ozone/gl_helper.cpp ozone/gl_helper.h
         )
 

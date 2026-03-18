@@ -8,10 +8,11 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qscopedpointer.h>
 
-#include "base/files/scoped_file.h"
+#include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
-#include <memory>
+#include <string>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -32,13 +33,9 @@
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
 
-namespace ui {
-class GbmBuffer;
-class GbmDevice;
-}
-
 QT_BEGIN_NAMESPACE
 
+class GbmBufferFactory;
 class QOffscreenSurface;
 
 class EGLHelper
@@ -68,42 +65,33 @@ public:
     };
 
     static EGLHelper *instance();
+    ~EGLHelper();
 
     EGLDisplay getEGLDisplay() const { return m_eglDisplay; }
     EGLFunctions *functions() const { return m_functions.get(); }
     bool isDmaBufSupported() const { return m_isDmaBufSupported; }
-
-    std::unique_ptr<ui::GbmBuffer> createBuffer(gfx::BufferFormat format, gfx::Size size,
-                                                gfx::BufferUsage usage);
-    std::unique_ptr<ui::GbmBuffer> createBufferFromHandle(gfx::Size size, gfx::BufferFormat format,
-                                                          gfx::NativePixmapHandle handle);
+    GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
 
     gfx::NativePixmapHandle exportHandleFromEGLImage(const gfx::Size &size);
-    gfx::NativePixmapHandle exportHandleFromEGLImage(const gfx::Size &size,
-                                                     gfx::BufferFormat format,
+    gfx::NativePixmapHandle exportHandleFromEGLImage(gfx::BufferFormat format,
+                                                     const gfx::Size &size,
                                                      gfx::NativePixmapHandle handle);
 
 private:
-    struct ScopedGbmDevice
-    {
-        ScopedGbmDevice(const std::string &nodePath);
-
-        base::ScopedFD nodeFD;
-        std::unique_ptr<ui::GbmDevice> device;
-    };
-
     EGLHelper();
     std::string getDrmRenderNodeFilePath(const char *extensions) const;
     const char *getLastEGLErrorString() const;
 
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     QScopedPointer<EGLFunctions> m_functions;
-
     bool m_isDmaBufSupported = false;
+
     bool m_isImageDmaBufExportSupported = false;
-    QScopedPointer<ScopedGbmDevice> m_gbmDevice;
+    QScopedPointer<GbmBufferFactory> m_gbmBufferFactory;
     QScopedPointer<QOffscreenSurface> m_offscreenSurface;
 
+    // Synchronizes m_offscreenSurface access between UI thread (initialization) and
+    // the GPU thread (usage).
     mutable QMutex m_mutex;
 };
 

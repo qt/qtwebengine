@@ -5,15 +5,11 @@
 #include "egl_helper.h"
 
 #include "compositor/compositor.h"
-#include "ozone_util_qt.h"
+#include "ozone/gbm_buffer_factory.h"
+#include "ozone/ozone_util_qt.h"
 #include "rhi_gpu_info.h"
 
 #include "ui/gfx/linux/drm_util_linux.h"
-#include "ui/gfx/linux/gbm_buffer.h"
-#include "ui/gfx/linux/gbm_device.h"
-#include "ui/gfx/linux/gbm_util.h"
-#include "ui/gfx/linux/gbm_wrapper.h"
-#include "ui/ozone/platform/wayland/common/drm_render_node_handle.h"
 
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
@@ -191,32 +187,36 @@ EGLHelper *EGLHelper::instance()
 EGLHelper::EGLHelper()
     : m_eglDisplay(qApp->platformNativeInterface()->nativeResourceForIntegration("egldisplay"))
     , m_functions(new EGLHelper::EGLFunctions())
+    , m_isDmaBufSupported(QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported())
 {
-    // Expected to be created on the UI thread.
+    // Must be initialized on the UI thread to ensure m_offscreenSurface is owned by the
+    // correct thread.
     Q_ASSERT(QThread::currentThread() == qApp->thread());
     QMutexLocker locker(&m_mutex);
+
+    // The rest of the initialization required for DMA-BUF support.
+    if (!m_isDmaBufSupported)
+        return;
 
     const char *extensions = m_functions->eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
     if (!extensions) {
         qWarning("EGL: Failed to query EGL extensions.");
+        m_isDmaBufSupported = false;
         return;
     }
 
     if (m_eglDisplay == EGL_NO_DISPLAY) {
         qWarning("EGL: No EGL display.");
+        m_isDmaBufSupported = false;
         return;
     }
 
     const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
     if (!strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")) {
         qWarning("EGL: EGL_EXT_image_dma_buf_import extension is not supported.");
+        m_isDmaBufSupported = false;
         return;
     }
-
-    // Enable DMA-BUF if GBM and all the required extensions are supported.
-    m_isDmaBufSupported = QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported();
-    if (!m_isDmaBufSupported)
-        return;
 
     // TODO: Remove this in a future release.
     // GBM is now used directly for buffer creation. The EGL-based allocation path is kept
@@ -245,13 +245,10 @@ EGLHelper::EGLHelper()
         const std::string nodePath = getDrmRenderNodeFilePath(extensions);
         qCDebug(QtWebEngineCore::lcWebEngineCompositor, "EGL: DRM Render Node file path: %s",
                 nodePath.data());
-        // It is safe to initialize the GBM device on the UI thread and allocate buffers on the GPU
-        // thread because m_mutex serializes access and guarantess the device is fully initialized
-        // before allocation begins.
-        m_gbmDevice.reset(new ScopedGbmDevice(nodePath));
+        m_gbmBufferFactory.reset(new GbmBufferFactory(nodePath));
     }
 
-    // Create an offscreen surface on the GUI thread for EGL-based allocation fallback.
+    // Create an offscreen surface on the UI thread for EGL-based allocation fallback.
     m_isImageDmaBufExportSupported = strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
     if (m_isImageDmaBufExportSupported) {
         m_offscreenSurface.reset(new QOffscreenSurface());
@@ -261,32 +258,12 @@ EGLHelper::EGLHelper()
         qCDebug(QtWebEngineCore::lcWebEngineCompositor,
                 "EGL: EGL_MESA_image_dma_buf_export extension is not supported. EGL-based "
                 "allocation fallback is disabled.");
+
+    m_isDmaBufSupported = (m_gbmBufferFactory && m_gbmBufferFactory->hasDevice())
+            || m_offscreenSurface->isValid();
 }
 
-std::unique_ptr<ui::GbmBuffer> EGLHelper::createBuffer(gfx::BufferFormat format, gfx::Size size,
-                                                       gfx::BufferUsage usage)
-{
-    QMutexLocker locker(&m_mutex);
-    if (!m_isDmaBufSupported || !m_gbmDevice || !m_gbmDevice->device)
-        return nullptr;
-
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
-    const uint32_t gbmFlags = ui::BufferUsageToGbmFlags(usage);
-    // FIXME: CreateBufferWithModifiers for wayland?
-    return m_gbmDevice->device->CreateBuffer(fourccFormat, size, gbmFlags);
-}
-
-std::unique_ptr<ui::GbmBuffer> EGLHelper::createBufferFromHandle(gfx::Size size,
-                                                                 gfx::BufferFormat format,
-                                                                 gfx::NativePixmapHandle handle)
-{
-    QMutexLocker locker(&m_mutex);
-    if (!m_isDmaBufSupported || !m_gbmDevice || !m_gbmDevice->device)
-        return nullptr;
-
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
-    return m_gbmDevice->device->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
-}
+EGLHelper::~EGLHelper() = default;
 
 gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &size)
 {
@@ -350,8 +327,8 @@ gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &siz
     return bufferHandle;
 }
 
-gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &size,
-                                                            gfx::BufferFormat format,
+gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(gfx::BufferFormat format,
+                                                            const gfx::Size &size,
                                                             gfx::NativePixmapHandle handle)
 {
     QMutexLocker locker(&m_mutex);
@@ -480,20 +457,6 @@ std::string EGLHelper::getDrmRenderNodeFilePath(const char *extensions) const
 const char *EGLHelper::getLastEGLErrorString() const
 {
     return getEGLErrorString(m_functions->eglGetError());
-}
-
-EGLHelper::ScopedGbmDevice::ScopedGbmDevice(const std::string &nodePath)
-{
-    ui::DrmRenderNodeHandle nodeHandle;
-    if (!nodeHandle.Initialize(base::FilePath(nodePath))) {
-        qWarning("EGL: Failed to initialize DRM render node handle: %s\n", nodePath.data());
-        return;
-    }
-
-    nodeFD = nodeHandle.PassFD();
-    device = ui::CreateGbmDevice(nodeFD.get());
-    if (!device)
-        qWarning("EGL: Failed to initialize GBM device.");
 }
 
 QT_END_NAMESPACE

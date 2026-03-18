@@ -4,7 +4,8 @@
 
 #include "surface_factory_qt.h"
 
-#include "qtwebenginecoreglobal_p.h"
+#include "compositor/compositor.h"
+#include "ozone/gbm_buffer_factory.h"
 #include "ozone/gl_ozone_qt.h"
 #include "ozone/ozone_util_qt.h"
 #include "qtwebenginecoreglobal_p.h"
@@ -133,13 +134,16 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
-        auto gbmBuffer = EGLHelper::instance()->createBuffer(format, size, usage);
-        if (gbmBuffer)
-            bufferHandle = gbmBuffer->ExportHandle();
+        if (auto *gbm = EGLHelper::instance()->gbmFactory()) {
+            if (auto gbmBuffer = gbm->createBuffer(format, size, usage))
+                bufferHandle = gbmBuffer->ExportHandle();
+            else
+                qWarning("Failed to create GBM buffer for EGL.");
+        }
 
         if (bufferHandle.planes.empty()) {
-            qWarning("Failed to create GBM buffer for EGL. Fallback to EGL-based buffer "
-                     "allocation.");
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "Fallback to EGL-based buffer allocation.");
             bufferHandle = EGLHelper::instance()->exportHandleFromEGLImage(size);
         }
     }
@@ -183,17 +187,21 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
-        // Keep the original handle valid for potential fallback.
-        gfx::NativePixmapHandle clonedHandle = gfx::CloneHandleForIPC(handle);
-        auto gbmBuffer = EGLHelper::instance()->createBufferFromHandle(size, format,
-                                                                       std::move(clonedHandle));
-        if (gbmBuffer)
-            bufferHandle = gbmBuffer->ExportHandle();
+        if (auto *gbm = EGLHelper::instance()->gbmFactory()) {
+            // Keep the original handle valid for potential fallback.
+            gfx::NativePixmapHandle clonedHandle = gfx::CloneHandleForIPC(handle);
+            if (auto gbmBuffer =
+                        gbm->createBufferFromHandle(format, size, std::move(clonedHandle))) {
+                bufferHandle = gbmBuffer->ExportHandle();
+            } else {
+                qWarning("Failed to create GBM buffer for EGL.");
+            }
+        }
 
         if (bufferHandle.planes.empty()) {
-            qWarning("Failed to create GBM buffer for EGL. Fallback to EGL-based buffer "
-                     "allocation.");
-            bufferHandle = EGLHelper::instance()->exportHandleFromEGLImage(size, format,
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "Fallback to EGL-based buffer allocation.");
+            bufferHandle = EGLHelper::instance()->exportHandleFromEGLImage(format, size,
                                                                            std::move(handle));
         }
     }
