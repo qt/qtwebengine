@@ -105,6 +105,12 @@ function(add_linker_options target buildDir completeStatic)
     set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
     if(LINUX OR ANDROID)
          get_gn_arch(cpu ${TEST_architecture_arch})
+
+         #QTBUG-145054#
+         if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm" AND cmakeTarget STREQUAL "WebEngineCore")
+             target_link_options(${cmakeTarget} PRIVATE "LINKER:--strip-debug")
+         endif()
+
          if(CMAKE_CROSSCOMPILING AND cpu STREQUAL "arm" AND ${config} STREQUAL "Debug")
              target_link_options(${cmakeTarget} PRIVATE "LINKER:--long-plt")
          endif()
