@@ -914,10 +914,9 @@ if(NOT QT_SUPERBUILD)
 endif()
 # Only show the warning if JSON generation is not required. For the case when it is required,
 # there's an extra configure check.
-if(QT_GENERATE_SBOM AND NOT QT_SBOM_REQUIRE_GENERATE_JSON)
+if(QT_GENERATE_SBOM AND NOT QT_SBOM_REQUIRE_GENERATE_JSON AND NOT sbom_deps_found)
     qt_configure_add_report_entry(
         TYPE WARNING
         MESSAGE "Qt WebEngine And Qt Pdf SBOM generation will be skipped due to missing dependencies. ${sbom_missing_deps_message}"
-        CONDITION NOT sbom_deps_found
     )
 endif()
