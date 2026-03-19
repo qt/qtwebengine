@@ -307,14 +307,17 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             }
             base::ScopedFD scopedFd(dmaBufFd);
 
-            int drmFormat = ui::GetFourCCFormatFromBufferFormat(nativePixmap->GetBufferFormat());
-            uint64_t modifier = nativePixmap->GetBufferFormatModifier();
+            const uint32_t fourccFormat =
+                    ui::GetFourCCFormatFromBufferFormat(nativePixmap->GetBufferFormat());
+            const uint64_t modifier = nativePixmap->GetBufferFormatModifier();
+            qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: %s",
+                    OzoneUtilQt::drmFormatModifierToString(modifier).c_str());
 
             // clang-format off
             EGLAttrib const attributeList[] = {
                 EGL_WIDTH, size().width(),
                 EGL_HEIGHT, size().height(),
-                EGL_LINUX_DRM_FOURCC_EXT, drmFormat,
+                EGL_LINUX_DRM_FOURCC_EXT, fourccFormat,
                 EGL_DMA_BUF_PLANE0_FD_EXT, scopedFd.get(),
                 EGL_DMA_BUF_PLANE0_OFFSET_EXT, static_cast<EGLAttrib>(nativePixmap->GetDmaBufOffset(0)),
                 EGL_DMA_BUF_PLANE0_PITCH_EXT, static_cast<EGLAttrib>(nativePixmap->GetDmaBufPitch(0)),

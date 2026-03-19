@@ -16,8 +16,11 @@
 #include <QtGui/qopenglcontext.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <algorithm>
+#include <drm_fourcc.h>
 #include <fcntl.h>
 #include <GL/glx.h>
+#include <mutex>
 #include <unistd.h>
 #include <xcb/dri3.h>
 #include <xcb/xcb.h>
@@ -25,6 +28,10 @@
 #include <X11/Xlib.h>
 
 QT_BEGIN_NAMESPACE
+
+// Hard coded values for gfx::BufferFormat::BGRA_8888
+const uint8_t kDepth = 32; // Same as NativePixmapEGLX11Binding::Depth()
+const uint8_t kBpp = 32; // Same as NativePixmapEGLX11Binding::Bpp()
 
 GLXHelper::GLXFunctions::GLXFunctions()
 {
@@ -175,10 +182,6 @@ GLXFBConfig GLXHelper::getFBConfig()
 GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width,
                                           uint16_t height, uint16_t stride) const
 {
-    // Hard coded values for gfx::BufferFormat::BGRA_8888:
-    const uint8_t depth = 32;
-    const uint8_t bpp = 32;
-
     const uint32_t pixmapId = xcb_generate_id(m_connection);
     if (!pixmapId) {
         qWarning("GLX: Failed to allocate XID for XPixmap.");
@@ -189,7 +192,7 @@ GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t 
     // This call is supposed to close dmaBufFd.
     xcb_void_cookie_t cookie =
             xcb_dri3_pixmap_from_buffer_checked(m_connection, pixmapId, m_screen->root, size, width,
-                                                height, stride, depth, bpp, dmaBufFd);
+                                                height, stride, kDepth, kBpp, dmaBufFd);
     xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
     if (error) {
         qWarning("GLX: XCB_DRI3_PIXMAP_FROM_BUFFER failed with error code: 0x%x",
@@ -209,6 +212,56 @@ void GLXHelper::freePixmap(uint32_t pixmapId) const
         qWarning("GLX: XCB_FREE_PIXMAP failed with error code: 0x%x", error->error_code);
         free(error);
     }
+}
+
+const std::vector<uint64_t> &GLXHelper::getSupportedModifiers() const
+{
+    static std::vector<uint64_t> supportedModifiers;
+    static std::once_flag flag;
+
+    std::call_once(flag, [this]() {
+        const xcb_setup_t *setup = xcb_get_setup(m_connection);
+        xcb_screen_t *screen = xcb_setup_roots_iterator(setup).data;
+
+        // The DRI3 query is currently locked to a 32-bit depth/BPP to match
+        // gfx::BufferFormat::BGRA_8888. This is consistent with the hardcoded
+        // constraints in NativePixmapEGLX11Binding.
+        xcb_dri3_get_supported_modifiers_cookie_t cookie =
+                xcb_dri3_get_supported_modifiers(m_connection, screen->root, kDepth, kBpp);
+
+        xcb_generic_error_t *error = nullptr;
+        xcb_dri3_get_supported_modifiers_reply_t *reply =
+                xcb_dri3_get_supported_modifiers_reply(m_connection, cookie, &error);
+        if (error) {
+            qWarning("GLX: XCB_DRI3_GET_SUPPORTED_MODIFIERS failed with error code: 0x%x",
+                     error->error_code);
+            free(error);
+            return;
+        }
+
+        uint64_t *windowModifiers = xcb_dri3_get_supported_modifiers_window_modifiers(reply);
+        for (size_t i = 0; i < reply->num_window_modifiers; ++i)
+            supportedModifiers.push_back(windowModifiers[i]);
+        uint64_t *screenModifiers = xcb_dri3_get_supported_modifiers_screen_modifiers(reply);
+        for (size_t i = 0; i < reply->num_screen_modifiers; ++i)
+            supportedModifiers.push_back(screenModifiers[i]);
+        free(reply);
+
+        // Remove invalid modifier.
+        supportedModifiers.erase(std::remove(supportedModifiers.begin(), supportedModifiers.end(),
+                                             DRM_FORMAT_MOD_INVALID),
+                                 supportedModifiers.end());
+
+        if (supportedModifiers.empty())
+            return;
+
+        // Remove duplicates.
+        std::sort(supportedModifiers.begin(), supportedModifiers.end());
+        supportedModifiers.erase(std::unique(supportedModifiers.begin(), supportedModifiers.end()),
+                                 supportedModifiers.end());
+    });
+
+    return supportedModifiers;
 }
 
 bool GLXHelper::dri3Version(uint32_t *major, uint32_t *minor) const

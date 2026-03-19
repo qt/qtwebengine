@@ -12,7 +12,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -32,6 +34,8 @@
 
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
+
+#undef eglQueryDmaBufModifiers
 
 QT_BEGIN_NAMESPACE
 
@@ -62,6 +66,9 @@ public:
         // EGL_MESA_image_dma_buf_export:
         PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
         PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
+
+        // EGL_EXT_image_dma_buf_import_modifiers:
+        PFNEGLQUERYDMABUFMODIFIERSEXTPROC eglQueryDmaBufModifiers;
     };
 
     static EGLHelper *instance();
@@ -73,6 +80,7 @@ public:
     GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
 
+    const std::vector<uint64_t> &getSupportedModifiers(gfx::BufferFormat format) const;
     gfx::NativePixmapHandle exportHandleFromEGLImage(const gfx::Size &size);
     gfx::NativePixmapHandle exportHandleFromEGLImage(gfx::BufferFormat format,
                                                      const gfx::Size &size,
@@ -90,6 +98,7 @@ private:
     bool m_isImageDmaBufExportSupported = false;
     QScopedPointer<GbmBufferFactory> m_gbmBufferFactory;
     QScopedPointer<QOffscreenSurface> m_offscreenSurface;
+    mutable std::map<gfx::BufferFormat, std::vector<uint64_t>> m_supportedModifiers;
 
     // Synchronizes m_offscreenSurface access between UI thread (initialization) and
     // the GPU thread (usage).

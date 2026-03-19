@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace ui {
 class GbmBuffer;
@@ -31,8 +32,9 @@ public:
 
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
-    std::unique_ptr<ui::GbmBuffer> createBuffer(gfx::BufferFormat format, gfx::Size size,
-                                                gfx::BufferUsage usage);
+    std::unique_ptr<ui::GbmBuffer>
+    createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size, gfx::BufferUsage usage,
+                              const std::vector<uint64_t> &modifiers);
     std::unique_ptr<ui::GbmBuffer> createBufferFromHandle(gfx::BufferFormat format, gfx::Size size,
                                                           gfx::NativePixmapHandle handle);
 

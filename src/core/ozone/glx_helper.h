@@ -9,6 +9,8 @@
 
 #include "ui/gfx/buffer_types.h"
 
+#include <vector>
+
 struct xcb_connection_t;
 typedef struct xcb_connection_t xcb_connection_t;
 
@@ -61,6 +63,7 @@ public:
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,
                                    uint16_t stride) const;
     void freePixmap(uint32_t pixmapId) const;
+    const std::vector<uint64_t> &getSupportedModifiers() const;
 
 private:
     GLXHelper();

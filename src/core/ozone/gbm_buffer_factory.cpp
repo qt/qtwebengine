@@ -13,6 +13,7 @@
 #include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/common/drm_render_node_handle.h"
 
+#include <drm_fourcc.h>
 #include <xf86drm.h>
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +80,9 @@ bool GbmBufferFactory::canCreateNativePixmapForFormat(gfx::BufferFormat format) 
 }
 
 std::unique_ptr<ui::GbmBuffer>
-GbmBufferFactory::createBuffer(gfx::BufferFormat format, gfx::Size size, gfx::BufferUsage usage)
+GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size,
+                                            gfx::BufferUsage usage,
+                                            const std::vector<uint64_t> &modifiers)
 {
     QMutexLocker locker(&m_mutex);
     if (!m_gbmDevice)
@@ -87,8 +90,15 @@ GbmBufferFactory::createBuffer(gfx::BufferFormat format, gfx::Size size, gfx::Bu
 
     const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
     const uint32_t gbmFlags = ui::BufferUsageToGbmFlags(usage);
-    // FIXME: CreateBufferWithModifiers for wayland?
-    return m_gbmDevice->CreateBuffer(fourccFormat, size, gbmFlags);
+
+    // If no modifiers were passed, simply fall back to the LINEAR format modifier.
+    // It is expected to work with any GPU driver, though it may not be optimal.
+    if (modifiers.empty()) {
+        return m_gbmDevice->CreateBufferWithModifiers(fourccFormat, size, gbmFlags,
+                                                      { DRM_FORMAT_MOD_LINEAR });
+    }
+
+    return m_gbmDevice->CreateBufferWithModifiers(fourccFormat, size, gbmFlags, modifiers);
 }
 
 std::unique_ptr<ui::GbmBuffer>

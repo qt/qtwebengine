@@ -97,7 +97,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
         if (auto *gbm = GLXHelper::instance()->gbmFactory()) {
-            if (auto gbmBuffer = gbm->createBuffer(format, size, usage))
+            const auto &modifiers = GLXHelper::instance()->getSupportedModifiers();
+            if (auto gbmBuffer = gbm->createBufferWithModifiers(format, size, usage, modifiers))
                 bufferHandle = gbmBuffer->ExportHandle();
             else
                 qWarning("Failed to create GBM buffer for GLX.");
@@ -108,7 +109,8 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
         if (auto *gbm = EGLHelper::instance()->gbmFactory()) {
-            if (auto gbmBuffer = gbm->createBuffer(format, size, usage))
+            const auto &modifiers = EGLHelper::instance()->getSupportedModifiers(format);
+            if (auto gbmBuffer = gbm->createBufferWithModifiers(format, size, usage, modifiers))
                 bufferHandle = gbmBuffer->ExportHandle();
             else
                 qWarning("Failed to create GBM buffer for EGL.");

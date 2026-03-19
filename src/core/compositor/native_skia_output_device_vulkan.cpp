@@ -14,6 +14,8 @@
 #include <QtQuick/qsgtexture.h>
 
 #if BUILDFLAG(IS_OZONE)
+#include "ozone/ozone_util_qt.h"
+
 #if BUILDFLAG(IS_OZONE_X11)
 // We need to define USE_VULKAN_XCB for proper vulkan function pointers.
 // Avoiding it may lead to call wrong vulkan functions.
@@ -168,16 +170,18 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
     if (nativePixmap) {
         qCDebug(lcWebEngineCompositor, "VULKAN: Importing NativePixmap into VkImage.");
         gfx::NativePixmapHandle nativePixmapHandle = nativePixmap->ExportHandle();
-        qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: 0x%lx", nativePixmapHandle.modifier);
+        const uint64_t modifier = nativePixmapHandle.modifier;
+        qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: %s",
+                OzoneUtilQt::drmFormatModifierToString(modifier).c_str());
 
-        if (nativePixmapHandle.modifier != gfx::NativePixmapHandle::kNoModifier) {
+        if (modifier != gfx::NativePixmapHandle::kNoModifier) {
             usingDrmModifier = true;
             if (nativePixmapHandle.planes.size() != 1)
                 qFatal("VULKAN: Multiple planes are not supported.");
 
             planeLayout.offset = nativePixmapHandle.planes[0].offset;
             planeLayout.rowPitch = nativePixmapHandle.planes[0].stride;
-            modifierInfo.drmFormatModifier = nativePixmapHandle.modifier;
+            modifierInfo.drmFormatModifier = modifier;
 
             externalMemoryImageCreateInfo.pNext = &modifierInfo;
         }

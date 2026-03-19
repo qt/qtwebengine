@@ -176,6 +176,9 @@ EGLHelper::EGLFunctions::EGLFunctions()
             context->getProcAddress("eglExportDMABUFImageMESA"));
     eglExportDMABUFImageQueryMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC>(
             context->getProcAddress("eglExportDMABUFImageQueryMESA"));
+
+    eglQueryDmaBufModifiers = reinterpret_cast<PFNEGLQUERYDMABUFMODIFIERSEXTPROC>(
+            context->getProcAddress("eglQueryDmaBufModifiersEXT"));
     // clang-format on
 }
 
@@ -213,6 +216,12 @@ EGLHelper::EGLHelper()
     }
 
     const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
+    if (!displayExtensions) {
+        qWarning("EGL: Failed to query EGL Display extensions.");
+        m_isDmaBufSupported = false;
+        return;
+    }
+
     if (!strstr(displayExtensions, "EGL_EXT_image_dma_buf_import")) {
         qWarning("EGL: EGL_EXT_image_dma_buf_import extension is not supported.");
         m_isDmaBufSupported = false;
@@ -282,6 +291,55 @@ bool EGLHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
         return false;
 
     return m_gbmBufferFactory->canCreateNativePixmapForFormat(format);
+}
+
+const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(gfx::BufferFormat format) const
+{
+    auto it = m_supportedModifiers.find(format);
+    if (it != m_supportedModifiers.end())
+        return it->second;
+
+    // Create an empty entry for the format.
+    std::vector<uint64_t> &cachedModifiers = m_supportedModifiers[format];
+
+    const char *displayExtensions = m_functions->eglQueryString(m_eglDisplay, EGL_EXTENSIONS);
+    if (!displayExtensions) {
+        qWarning("EGL: Failed to query EGL Display extensions.");
+        return cachedModifiers;
+    }
+
+    if (!strstr(displayExtensions, "EGL_EXT_image_dma_buf_import_modifiers")) {
+        qWarning("EGL: EGL_EXT_image_dma_buf_import_modifiers extension is not supported.");
+        return cachedModifiers;
+    }
+
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    EGLint numModifiers = 0;
+    EGLBoolean success;
+    success = m_functions->eglQueryDmaBufModifiers(m_eglDisplay, fourccFormat, 0, nullptr, nullptr,
+                                                   &numModifiers);
+    if (!success || numModifiers == 0) {
+        qWarning("EGL: Failed to query DRM format modifiers.");
+        return cachedModifiers;
+    }
+
+    std::vector<EGLuint64KHR> modifiers(numModifiers);
+    std::vector<EGLBoolean> externalOnly(numModifiers);
+    success = m_functions->eglQueryDmaBufModifiers(m_eglDisplay, fourccFormat, numModifiers,
+                                                   modifiers.data(), externalOnly.data(),
+                                                   &numModifiers);
+    if (!success || numModifiers == 0) {
+        qWarning("EGL: Failed to query DRM format modifiers.");
+        return cachedModifiers;
+    }
+
+    cachedModifiers.reserve(numModifiers);
+    for (EGLint i = 0; i < numModifiers; ++i) {
+        if (!externalOnly[i])
+            cachedModifiers.push_back(modifiers[i]);
+    }
+
+    return cachedModifiers;
 }
 
 gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &size)

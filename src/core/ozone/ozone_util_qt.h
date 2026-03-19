@@ -7,6 +7,8 @@
 
 #include <QtCore/qglobal.h>
 
+#include <string>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContext;
@@ -16,6 +18,7 @@ void *getXDisplay();
 QOpenGLContext *getQOpenGLContext();
 bool usingGLX();
 bool usingEGL();
+std::string drmFormatModifierToString(const uint64_t modifier);
 } // namespace OzoneUtilQt
 
 QT_END_NAMESPACE
