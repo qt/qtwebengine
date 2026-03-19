@@ -4,15 +4,19 @@
 
 #include "glx_helper.h"
 
-#include "ozone_util_qt.h"
+#include "compositor/compositor.h"
+#include "ozone/gbm_buffer_factory.h"
+#include "ozone/ozone_util_qt.h"
 #include "rhi_gpu_info.h"
 
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
+#include "base/files/scoped_file.h"
+#include "base/posix/eintr_wrapper.h"
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qopenglcontext.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <fcntl.h>
 #include <GL/glx.h>
 #include <unistd.h>
 #include <xcb/dri3.h>
@@ -38,17 +42,70 @@ GLXHelper *GLXHelper::instance()
     return &glxHelper;
 }
 
-GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
+GLXHelper::GLXHelper()
+    : m_functions(new GLXHelper::GLXFunctions())
+    , m_isDmaBufSupported(QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported())
 {
+    // The rest of the initialization required for DMA-BUF support.
+    if (!m_isDmaBufSupported)
+        return;
+
     auto *x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
-    if (!x11Application)
-        qFatal("GLX: No X11 Application.");
+    if (!x11Application) {
+        qWarning("GLX: No X11 Application.");
+        m_isDmaBufSupported = false;
+        return;
+    }
 
     m_display = x11Application->display();
-    m_connection = x11Application->connection();
+    if (!m_display) {
+        qWarning("GLX: No X11 Display.");
+        m_isDmaBufSupported = false;
+        return;
+    }
 
-    m_isDmaBufSupported = QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported()
-            && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+    m_connection = x11Application->connection();
+    if (!m_connection) {
+        qWarning("GLX: No XCB Connection.");
+        m_isDmaBufSupported = false;
+        return;
+    }
+
+    if (int error = xcb_connection_has_error(m_connection)) {
+        qWarning("GLX: XCB Connection error: 0x%x", error);
+        m_isDmaBufSupported = false;
+        return;
+    }
+
+    const xcb_query_extension_reply_t *dri3Ext = xcb_get_extension_data(m_connection, &xcb_dri3_id);
+    if (!dri3Ext || !dri3Ext->present) {
+        qWarning("GLX: No DRI3 Extension.");
+        m_isDmaBufSupported = false;
+        return;
+    }
+
+    uint32_t driMajorVersion;
+    uint32_t driMinorVersion;
+    if (dri3Version(&driMajorVersion, &driMinorVersion)) {
+        qCDebug(QtWebEngineCore::lcWebEngineCompositor, "GLX: DRI3 Version: %u.%u", driMajorVersion,
+                driMinorVersion);
+    }
+
+    const xcb_setup_t *setup = xcb_get_setup(m_connection);
+    Q_ASSERT(setup);
+    m_screen = xcb_setup_roots_iterator(setup).data;
+    Q_ASSERT(m_screen);
+
+    // Obtain an authenticated DRM FD.
+    base::ScopedFD drmNodeFD(dri3Open());
+    if (!drmNodeFD.is_valid()) {
+        qWarning("GLX: Failed to obtain a valid DRM file descriptor.");
+        m_isDmaBufSupported = false;
+        return;
+    }
+
+    m_gbmBufferFactory.reset(new GbmBufferFactory(std::move(drmNodeFD)));
+    m_isDmaBufSupported = m_gbmBufferFactory->hasDevice();
 }
 
 GLXHelper::~GLXHelper()
@@ -63,7 +120,7 @@ bool GLXHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
     if (format != gfx::BufferFormat::BGRA_8888 && format != gfx::BufferFormat::RGBA_8888)
         return false;
 
-    return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
+    return m_gbmBufferFactory->canCreateNativePixmapForFormat(format);
 }
 
 GLXFBConfig GLXHelper::getFBConfig()
@@ -114,12 +171,9 @@ GLXPixmap GLXHelper::importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t 
         return 0;
     }
 
-    const xcb_setup_t *setup = xcb_get_setup(m_connection);
-    xcb_screen_t *screen = xcb_setup_roots_iterator(setup).data;
-
     // This call is supposed to close dmaBufFd.
     xcb_void_cookie_t cookie =
-            xcb_dri3_pixmap_from_buffer_checked(m_connection, pixmapId, screen->root, size, width,
+            xcb_dri3_pixmap_from_buffer_checked(m_connection, pixmapId, m_screen->root, size, width,
                                                 height, stride, depth, bpp, dmaBufFd);
     xcb_generic_error_t *error = xcb_request_check(m_connection, cookie);
     if (error) {
@@ -140,6 +194,66 @@ void GLXHelper::freePixmap(uint32_t pixmapId) const
         qWarning("GLX: XCB_FREE_PIXMAP failed with error code: 0x%x", error->error_code);
         free(error);
     }
+}
+
+bool GLXHelper::dri3Version(uint32_t *major, uint32_t *minor) const
+{
+    xcb_dri3_query_version_cookie_t cookie = xcb_dri3_query_version(m_connection, 1, 2);
+
+    xcb_generic_error_t *error = nullptr;
+    xcb_dri3_query_version_reply_t *reply =
+            xcb_dri3_query_version_reply(m_connection, cookie, &error);
+    if (error) {
+        qWarning("GLX: XCB_DRI3_QUERY_VERSION failed with error code: 0x%x", error->error_code);
+        free(error);
+        return false;
+    }
+
+    if (!reply) {
+        qWarning("GLX: XCB_DRI3_QUERY_VERSION failed.");
+        return false;
+    }
+
+    *major = reply->major_version;
+    *minor = reply->minor_version;
+
+    free(reply);
+    return true;
+}
+
+// Based on CreateX11GbmDevice() in //ui/gfx/linux/gpu_memory_buffer_support_x11.cc
+int GLXHelper::dri3Open() const
+{
+    xcb_dri3_open_cookie_t cookie = xcb_dri3_open(m_connection, m_screen->root, 0);
+
+    xcb_generic_error_t *error = nullptr;
+    xcb_dri3_open_reply_t *reply = xcb_dri3_open_reply(m_connection, cookie, &error);
+    if (error) {
+        qWarning("GLX: XCB_DRI3_OPEN failed with error code: 0x%x", error->error_code);
+        free(error);
+        return -1;
+    }
+
+    if (!reply) {
+        qWarning("GLX: XCB_DRI3_OPEN failed.");
+        return -1;
+    }
+
+    if (reply->nfd != 1) {
+        qWarning("GLX: XCB_DRI3_OPEN reply expected to contain 1 file descriptor, received %u.",
+                 reply->nfd);
+        free(reply);
+        return -1;
+    }
+
+    int fd = xcb_dri3_open_reply_fds(m_connection, reply)[0];
+    free(reply);
+
+    // Prevent the file descriptor from being inherited by child processes, such as render process.
+    if (HANDLE_EINTR(fcntl(fd, F_SETFD, FD_CLOEXEC)) == -1)
+        qWarning("GLX: Failed to set CLOEXEC on DRM FD.");
+
+    return fd;
 }
 
 QT_END_NAMESPACE

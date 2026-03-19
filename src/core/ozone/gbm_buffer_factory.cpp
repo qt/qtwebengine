@@ -13,20 +13,31 @@
 
 QT_BEGIN_NAMESPACE
 
+static base::ScopedFD openDrmNodePath(const std::string &path)
+{
+    ui::DrmRenderNodeHandle nodeHandle;
+    if (!nodeHandle.Initialize(base::FilePath(path))) {
+        qWarning("GBM: Failed to initialize DRM render node handle: %s\n", path.data());
+        return base::ScopedFD();
+    }
+
+    return nodeHandle.PassFD();
+}
+
+// Path-based (EGL)
 GbmBufferFactory::GbmBufferFactory(const std::string &drmNodePath)
+    : GbmBufferFactory(openDrmNodePath(drmNodePath))
+{
+}
+
+// FD-based (GLX)
+GbmBufferFactory::GbmBufferFactory(base::ScopedFD drmNodeFD) : m_drmNodeFD(std::move(drmNodeFD))
 {
     // It is safe to initialize the GBM device on the UI thread and allocate buffers on the GPU
     // thread because m_mutex serializes access and guarantees the device is fully initialized
     // before allocation begins.
     QMutexLocker locker(&m_mutex);
 
-    ui::DrmRenderNodeHandle nodeHandle;
-    if (!nodeHandle.Initialize(base::FilePath(drmNodePath))) {
-        qWarning("GBM: Failed to initialize DRM render node handle: %s\n", drmNodePath.data());
-        return;
-    }
-
-    m_drmNodeFD = nodeHandle.PassFD();
     if (!m_drmNodeFD.is_valid()) {
         qWarning("GBM: Obtained an invalid file descriptor.");
         return;

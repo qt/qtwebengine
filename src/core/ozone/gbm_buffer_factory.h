@@ -13,6 +13,7 @@
 #include "ui/gfx/native_pixmap_handle.h"
 
 #include <memory>
+#include <string>
 
 namespace ui {
 class GbmBuffer;
@@ -25,6 +26,7 @@ class GbmBufferFactory
 {
 public:
     GbmBufferFactory(const std::string &drmNodePath);
+    GbmBufferFactory(base::ScopedFD drmNodeFD);
     ~GbmBufferFactory();
 
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }

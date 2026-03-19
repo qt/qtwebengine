@@ -20,7 +20,6 @@
 
 #if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #endif
 
 #if QT_CONFIG(egl)
@@ -97,12 +96,12 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
-        auto gbmBuffer =
-                ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBuffer(format, size, usage);
-        if (gbmBuffer)
-            bufferHandle = gbmBuffer->ExportHandle();
-        else
-            qWarning("Failed to create GBM buffer for GLX.");
+        if (auto *gbm = GLXHelper::instance()->gbmFactory()) {
+            if (auto gbmBuffer = gbm->createBuffer(format, size, usage))
+                bufferHandle = gbmBuffer->ExportHandle();
+            else
+                qWarning("Failed to create GBM buffer for GLX.");
+        }
     }
 #endif
 
@@ -150,12 +149,12 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
-        auto gbmBuffer = ui::GpuMemoryBufferSupportX11::GetInstance()->CreateBufferFromHandle(
-                size, format, std::move(handle));
-        if (gbmBuffer)
-            bufferHandle = gbmBuffer->ExportHandle();
-        else
-            qWarning("Failed to create GBM buffer for GLX.");
+        if (auto *gbm = GLXHelper::instance()->gbmFactory()) {
+            if (auto gbmBuffer = gbm->createBufferFromHandle(format, size, std::move(handle)))
+                bufferHandle = gbmBuffer->ExportHandle();
+            else
+                qWarning("Failed to create GBM buffer for GLX.");
+        }
     }
 #endif
 

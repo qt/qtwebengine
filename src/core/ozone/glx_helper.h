@@ -12,6 +12,9 @@
 struct xcb_connection_t;
 typedef struct xcb_connection_t xcb_connection_t;
 
+struct xcb_screen_t;
+typedef struct xcb_screen_t xcb_screen_t;
+
 struct _XDisplay;
 typedef struct _XDisplay Display;
 
@@ -27,6 +30,8 @@ typedef void (*PFNGLXBINDTEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, in
 typedef void (*PFNGLXRELEASETEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, int buffer);
 
 QT_BEGIN_NAMESPACE
+
+class GbmBufferFactory;
 
 class GLXHelper
 {
@@ -45,22 +50,29 @@ public:
 
     Display *getXDisplay() const { return m_display; }
     GLXFunctions *functions() const { return m_functions.get(); }
+    bool isDmaBufSupported() const { return m_isDmaBufSupported; }
+    GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
 
     GLXFBConfig getFBConfig();
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,
                                    uint16_t stride) const;
     void freePixmap(uint32_t pixmapId) const;
-    bool isDmaBufSupported() const { return m_isDmaBufSupported; }
 
 private:
     GLXHelper();
+    bool dri3Version(uint32_t *major, uint32_t *minor) const;
+    int dri3Open() const;
 
     QScopedPointer<GLXFunctions> m_functions;
+    bool m_isDmaBufSupported = false;
+
     Display *m_display = nullptr;
     xcb_connection_t *m_connection = nullptr;
+    xcb_screen_t *m_screen = nullptr;
+
+    QScopedPointer<GbmBufferFactory> m_gbmBufferFactory;
     GLXFBConfig *m_configs = nullptr;
-    bool m_isDmaBufSupported = false;
 };
 
 QT_END_NAMESPACE
