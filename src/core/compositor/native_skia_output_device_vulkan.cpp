@@ -17,7 +17,9 @@
 // We need to define USE_VULKAN_XCB for proper vulkan function pointers.
 // Avoiding it may lead to call wrong vulkan functions.
 // This is originally defined in chromium/gpu/vulkan/BUILD.gn.
+#if !defined(USE_VULKAN_XCB)
 #define USE_VULKAN_XCB
+#endif
 #endif // BUILDFLAG(IS_OZONE_X11)
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
