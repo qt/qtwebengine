@@ -50,6 +50,16 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
             && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
 }
 
+bool GLXHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+{
+    // Currently limited to BGRA_8888 and RGBA_8888 for compatibility.
+    // This is consistent with the hardcoded constraints in NativePixmapEGLX11Binding.
+    if (format != gfx::BufferFormat::BGRA_8888 && format != gfx::BufferFormat::RGBA_8888)
+        return false;
+
+    return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
+}
+
 GLXFBConfig GLXHelper::getFBConfig()
 {
     if (m_configs)

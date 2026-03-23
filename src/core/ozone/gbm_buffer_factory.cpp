@@ -41,6 +41,16 @@ GbmBufferFactory::GbmBufferFactory(const std::string &drmNodePath)
 
 GbmBufferFactory::~GbmBufferFactory() = default;
 
+bool GbmBufferFactory::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+{
+    QMutexLocker locker(&m_mutex);
+    if (!m_gbmDevice)
+        return false;
+
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    return m_gbmDevice->CanCreateBufferForFormat(fourccFormat);
+}
+
 std::unique_ptr<ui::GbmBuffer>
 GbmBufferFactory::createBuffer(gfx::BufferFormat format, gfx::Size size, gfx::BufferUsage usage)
 {

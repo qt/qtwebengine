@@ -12,7 +12,6 @@
 
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
@@ -79,27 +78,6 @@ SurfaceFactoryQt::CreateVulkanImplementation(bool /*allow_protected_memory*/,
 }
 #endif
 
-bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
-{
-#if QT_CONFIG(opengl)
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
-    if (OzoneUtilQt::usingGLX())
-        return ui::GpuMemoryBufferSupportX11::GetInstance()->CanCreateNativePixmapForFormat(format);
-#endif
-
-#if QT_CONFIG(egl)
-    if (OzoneUtilQt::usingEGL()) {
-        // Multiplanar format support is not yet implemented. See EGLHelper::queryDmaBuf().
-        if (gfx::BufferFormatIsMultiplanar(format))
-            return false;
-        return ui::SurfaceFactoryOzone::CanCreateNativePixmapForFormat(format);
-    }
-#endif
-#endif // QT_CONFIG(opengl)
-
-    return false;
-}
-
 scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         gfx::AcceleratedWidget widget,
         gpu::VulkanDeviceQueue *device_queue,
@@ -114,10 +92,6 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 #if QT_CONFIG(opengl)
     if (framebuffer_size && !gfx::Rect(size).Contains(gfx::Rect(*framebuffer_size)))
         return nullptr;
-
-    // Multiplanar format support is not yet implemented. It was not necessary with ANGLE at the
-    // time when the assert was added.
-    Q_ASSERT(!gfx::BufferFormatIsMultiplanar(format));
 
     gfx::NativePixmapHandle bufferHandle;
 
@@ -219,18 +193,36 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 #endif // QT_CONFIG(opengl)
 }
 
+bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
+{
+#if QT_CONFIG(opengl)
+#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+    if (OzoneUtilQt::usingGLX())
+        return GLXHelper::instance()->canCreateNativePixmapForFormat(format);
+#endif
+
+#if QT_CONFIG(egl)
+    if (OzoneUtilQt::usingEGL())
+        return EGLHelper::instance()->canCreateNativePixmapForFormat(format);
+#endif
+#endif // QT_CONFIG(opengl)
+
+    return false;
+}
+
+// static
 bool SurfaceFactoryQt::SupportsNativePixmaps()
 {
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX())
         return GLXHelper::instance()->isDmaBufSupported();
-#endif // BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#endif
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL())
         return EGLHelper::instance()->isDmaBufSupported();
-#endif // QT_CONFIG(egl)
+#endif
 #endif // QT_CONFIG(opengl)
 
     return false;

@@ -7,6 +7,8 @@
 
 #include <QtCore/qscopedpointer.h>
 
+#include "ui/gfx/buffer_types.h"
+
 struct xcb_connection_t;
 typedef struct xcb_connection_t xcb_connection_t;
 
@@ -41,6 +43,7 @@ public:
 
     Display *getXDisplay() const { return m_display; }
     GLXFunctions *functions() const { return m_functions.get(); }
+    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
 
     GLXFBConfig getFBConfig();
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,

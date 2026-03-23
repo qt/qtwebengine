@@ -71,6 +71,7 @@ public:
     EGLFunctions *functions() const { return m_functions.get(); }
     bool isDmaBufSupported() const { return m_isDmaBufSupported; }
     GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
+    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
 
     gfx::NativePixmapHandle exportHandleFromEGLImage(const gfx::Size &size);
     gfx::NativePixmapHandle exportHandleFromEGLImage(gfx::BufferFormat format,

@@ -19,7 +19,6 @@ public:
     std::unique_ptr<gpu::VulkanImplementation>
     CreateVulkanImplementation(bool allow_protected_memory, bool enforce_protected_memory) override;
 #endif
-    bool CanCreateNativePixmapForFormat(gfx::BufferFormat format) override;
     scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
         gfx::AcceleratedWidget widget,
         gpu::VulkanDeviceQueue* device_queue,
@@ -33,6 +32,7 @@ public:
         gfx::BufferFormat format,
         gfx::NativePixmapHandle handle) override;
 
+    bool CanCreateNativePixmapForFormat(gfx::BufferFormat format) override;
     static bool SupportsNativePixmaps();
 
 private:

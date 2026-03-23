@@ -9,6 +9,7 @@
 #include "ozone/ozone_util_qt.h"
 #include "rhi_gpu_info.h"
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 
 #include <QtCore/qthread.h>
@@ -264,6 +265,24 @@ EGLHelper::EGLHelper()
 }
 
 EGLHelper::~EGLHelper() = default;
+
+bool EGLHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+{
+    // TODO: Add support for multiplanar buffer formats after proper validation and testing.
+    // Direct Vulkan rendering may request it for video playback. It was not necessary when
+    // using ANGLE in Chromium 126.
+    if (gfx::BufferFormatIsMultiplanar(format))
+        return false;
+
+    // TODO: Temporary EGL-based fallback. Be permissive here to simplify the fallback path.
+    if (m_isImageDmaBufExportSupported)
+        return true;
+
+    if (!m_gbmBufferFactory)
+        return false;
+
+    return m_gbmBufferFactory->canCreateNativePixmapForFormat(format);
+}
 
 gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &size)
 {

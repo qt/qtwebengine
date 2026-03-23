@@ -28,6 +28,7 @@ public:
     ~GbmBufferFactory();
 
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }
+    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
     std::unique_ptr<ui::GbmBuffer> createBuffer(gfx::BufferFormat format, gfx::Size size,
                                                 gfx::BufferUsage usage);
     std::unique_ptr<ui::GbmBuffer> createBufferFromHandle(gfx::BufferFormat format, gfx::Size size,
@@ -37,7 +38,7 @@ private:
     base::ScopedFD m_drmNodeFD;
     std::unique_ptr<ui::GbmDevice> m_gbmDevice;
 
-    QMutex m_mutex;
+    mutable QMutex m_mutex;
 };
 
 QT_END_NAMESPACE
