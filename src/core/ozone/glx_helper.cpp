@@ -18,6 +18,7 @@
 #include <xcb/dri3.h>
 #include <xcb/xcb.h>
 #include <xcb/xcbext.h>
+#include <X11/Xlib.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -48,6 +49,11 @@ GLXHelper::GLXHelper() : m_functions(new GLXHelper::GLXFunctions())
 
     m_isDmaBufSupported = QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported()
             && ui::GpuMemoryBufferSupportX11::GetInstance()->has_gbm_device();
+}
+
+GLXHelper::~GLXHelper()
+{
+    XFree(m_configs);
 }
 
 bool GLXHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const

@@ -41,6 +41,8 @@ public:
 
     static GLXHelper *instance();
 
+    ~GLXHelper();
+
     Display *getXDisplay() const { return m_display; }
     GLXFunctions *functions() const { return m_functions.get(); }
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
