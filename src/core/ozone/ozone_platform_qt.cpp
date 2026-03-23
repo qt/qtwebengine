@@ -4,6 +4,8 @@
 
 #include "ozone_platform_qt.h"
 
+#include "gl_egl_utility_qt.h"
+
 #include "build/build_config.h"
 #include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
@@ -23,7 +25,6 @@
 #include "ui/ozone/public/platform_screen.h"
 #include "ui/ozone/public/stub_input_controller.h"
 #include "ui/ozone/public/system_input_injector.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_gl_egl_utility.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -42,7 +43,6 @@
 
 #if BUILDFLAG(IS_OZONE_X11)
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
-#include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 
 extern void *GetQtXDisplay();
 #endif
@@ -267,14 +267,8 @@ bool OzonePlatformQt::IsNativePixmapConfigSupported(gfx::BufferFormat format, gf
 
 PlatformGLEGLUtility *OzonePlatformQt::GetPlatformGLEGLUtility()
 {
-    if (!gl_egl_utility_) {
-#if BUILDFLAG(IS_OZONE_X11)
-        if (GetQtXDisplay())
-            gl_egl_utility_ = std::make_unique<GLEGLUtilityX11>();
-        else
-#endif
-            gl_egl_utility_ = std::make_unique<WaylandGLEGLUtility>();
-    }
+    if (!gl_egl_utility_)
+        gl_egl_utility_ = std::make_unique<GLEGLUtilityQt>();
     return gl_egl_utility_.get();
 }
 

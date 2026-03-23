@@ -12,8 +12,10 @@ if (use_xkbcommon) {
 
 source_set("qt") {
   sources = [
-    "ozone_platform_qt.h",
+    "gl_egl_utility_qt.cpp",
+    "gl_egl_utility_qt.h",
     "ozone_platform_qt.cpp",
+    "ozone_platform_qt.h",
   ]
 
   import("//ui/base/ui_features.gni")
@@ -33,6 +35,11 @@ source_set("qt") {
   }
 
   if (ozone_platform_x11) {
+    deps += [
+      "//ui/base/x:gl",
+      "//ui/gfx/linux:gpu_memory_buffer_support_x11",
+    ]
+
     libs += [ "X11" ]
   }
 }
