@@ -7,11 +7,22 @@
 
 #include <QtCore/qscopedpointer.h>
 
-#include <GL/glx.h>
-#include <xcb/xcb.h>
+struct xcb_connection_t;
+typedef struct xcb_connection_t xcb_connection_t;
 
-#undef glXBindTexImageEXT
-#undef glXReleaseTexImageEXT
+struct _XDisplay;
+typedef struct _XDisplay Display;
+
+typedef unsigned long XID;
+typedef XID GLXPixmap;
+typedef XID GLXDrawable;
+
+struct __GLXFBConfigRec;
+typedef struct __GLXFBConfigRec *GLXFBConfig;
+
+typedef void (*PFNGLXBINDTEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, int buffer,
+                                          const int *attrib_list);
+typedef void (*PFNGLXRELEASETEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, int buffer);
 
 QT_BEGIN_NAMESPACE
 

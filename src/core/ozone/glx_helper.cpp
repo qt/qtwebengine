@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
-#include <QtGui/qguiapplication.h>
-#include <QtGui/qopenglcontext.h>
-#include <qpa/qplatformnativeinterface.h>
-
 #include "glx_helper.h"
+
 #include "ozone_util_qt.h"
 #include "rhi_gpu_info.h"
 
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qopenglcontext.h>
+#include <qpa/qplatformnativeinterface.h>
+
+#include <GL/glx.h>
 #include <unistd.h>
 #include <xcb/dri3.h>
 #include <xcb/xcb.h>

@@ -23,6 +23,7 @@
 
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
+#include <GL/glx.h>
 #endif
 
 #if QT_CONFIG(egl)
