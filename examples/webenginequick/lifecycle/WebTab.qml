@@ -7,6 +7,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtWebEngine
+import LifecycleUtils
 
 ColumnLayout {
     id: root
@@ -24,7 +25,7 @@ ColumnLayout {
     property alias recommendedState : view.recommendedState
 
     readonly property string title : {
-        if (view.url == "about:blank")
+        if (view.url === "about:blank")
             return qsTr("New tab")
         if (view.title)
             return view.title
@@ -129,10 +130,10 @@ ColumnLayout {
                 Layout.topMargin: 6
 
                 placeholderText: qsTr("Type a URL")
-                text: view.url == "about:blank" ? "" : view.url
+                text: view.url === "about:blank" ? "" : view.url
                 selectByMouse: true
 
-                onAccepted: { view.url = utils.fromUserInput(text) }
+                onAccepted: { view.url = Utils.fromUserInput(text) }
             }
             WebToolButton {
                 text: "⋮"

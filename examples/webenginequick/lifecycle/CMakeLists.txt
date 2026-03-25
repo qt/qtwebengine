@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.16)
-project(lifecycle LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui QuickControls2 WebEngineQuick)
+
+qt_standard_project_setup(REQUIRES 6.8)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
@@ -12,11 +13,8 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginequick/lifecycle")
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui QuickControls2 WebEngineQuick)
-
 qt_add_executable(lifecycle
     main.cpp
-    utils.h
 )
 
 set_target_properties(lifecycle PROPERTIES
@@ -40,7 +38,8 @@ qt_add_qml_module(lifecycle
         "WebTabButton.qml"
         "WebTabStack.qml"
         "WebToolButton.qml"
-    RESOURCE_PREFIX /
+    SOURCES
+        utils.h
 )
 
 set(resources_resource_files
