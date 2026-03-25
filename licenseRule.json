@@ -60,8 +60,9 @@
     },
     {
         "comment": "Files with the following endings are Documentation licensed.",
-        "file_pattern_ending": [".qdoc", ".qdoc.in", ".qdocinc" , ".qdocconf", "README", "qt_attribution.json",
-                                 "config_help.txt"],
+        "file_pattern_ending": [".qdoc", ".qdoc.in", ".qdocinc", ".qdocconf",
+                                "qt_attribution.json", "config_help.txt",
+                                "CONTRIBUTING.md"],
         "location":{
             "": {
                 "comment": "",

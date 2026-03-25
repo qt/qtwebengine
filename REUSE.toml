@@ -96,7 +96,7 @@ SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."
 SPDX-License-Identifier = "LicenseRef-Qt-Commercial OR BSD-3-Clause"
 
 [[annotations]]
-path = ["**/doc/images/**", "**.qdocconf", "**.qdocinc", "config_help.txt"]
+path = ["**/doc/images/**", "**.qdocconf", "**.qdocinc", "config_help.txt", "CONTRIBUTING.md"]
 comment = "documentation"
 precedence = "closest"
 SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."
