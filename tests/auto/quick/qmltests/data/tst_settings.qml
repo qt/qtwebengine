@@ -10,6 +10,8 @@ TestWebEngineView {
     width: 400
     height: 300
 
+    JsConsoleMessageSpy { id: jsConsoleMessageSpy }
+
     TestCase {
         id: testCase
         name: "WebEngineViewSettings"
@@ -31,12 +33,17 @@ TestWebEngineView {
         }
 
         function test_localStorageDisabled() {
+            jsConsoleMessageSpy.target = webEngineView;
             webEngineView.settings.javascriptEnabled = true;
             webEngineView.settings.localStorageEnabled = false;
 
             webEngineView.url = Qt.resolvedUrl("localStorage.html");
             verify(webEngineView.waitForLoadSucceeded());
+            verify(jsConsoleMessageSpy.waitForMessage(
+                "Uncaught TypeError: Cannot read properties of null (reading 'getItem')"));
             tryCompare(webEngineView, "title", "Original Title");
+
+            jsConsoleMessageSpy.clear();
         }
 
         function test_localStorageEnabled() {
