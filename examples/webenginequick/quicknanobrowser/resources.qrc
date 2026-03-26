@@ -4,6 +4,7 @@
         <file>BrowserManager.qml</file>
         <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
+        <file>WebToolBar.qml</file>
         <file>DownloadView.qml</file>
         <file>FindBar.qml</file>
         <file>FullScreenNotification.qml</file>

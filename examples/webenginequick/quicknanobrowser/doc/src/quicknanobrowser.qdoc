@@ -63,15 +63,15 @@
     We use the \l TextField Qt Quick Control within a \l ToolBar to create an address bar that
     shows the current URL and where users can enter another URL:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
-    \skipto menuBar: ToolBar
-    \printuntil anchors.fill
+    \quotefromfile webenginequick/quicknanobrowser/WebToolBar.qml
+    \skipto ToolBar
+    \printuntil id: root
     \dots
     \skipto TextField
     \printuntil addressBar
     \dots
     \skipto focus
-    \printuntil /^\ {12}\}/
+    \printuntil /^\ {8}\}/
 
     \section1 Handling Certificate Errors
 
