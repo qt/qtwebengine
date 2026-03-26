@@ -48,6 +48,7 @@ qt_add_qml_module(quicknanobrowser
         BrowserManager.qml
         BrowserDialog.qml
         BrowserWindow.qml
+        WebToolBar.qml
         DownloadView.qml
         FindBar.qml
         FullScreenNotification.qml
