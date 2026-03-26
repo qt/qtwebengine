@@ -451,11 +451,14 @@ std::string EGLHelper::getDrmRenderNodeFilePath(const char *extensions) const
     const char *deviceExtensions = m_functions->eglQueryDeviceString(eglDevice, EGL_EXTENSIONS);
 
     if (Q_UNLIKELY(QtWebEngineCore::lcWebEngineCompositor().isDebugEnabled())) {
-        if (strstr(deviceExtensions, "EGL_EXT_device_query_name")) {
-            const char *renderer = m_functions->eglQueryDeviceString(eglDevice, EGL_RENDERER_EXT);
-            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "EGL: Device found: %s.",
-                    renderer ? renderer : "FAILED!");
-        }
+        const char *renderer = nullptr;
+        if (strstr(deviceExtensions, "EGL_EXT_device_query_name"))
+            renderer = m_functions->eglQueryDeviceString(eglDevice, EGL_RENDERER_EXT);
+
+        if (renderer)
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "EGL: Device found: %s.", renderer);
+        else
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "EGL: Failed to query device.");
     }
 
     if (!strstr(deviceExtensions, "EGL_EXT_device_drm_render_node")) {

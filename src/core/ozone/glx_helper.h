@@ -28,6 +28,8 @@ typedef struct __GLXFBConfigRec *GLXFBConfig;
 typedef void (*PFNGLXBINDTEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, int buffer,
                                           const int *attrib_list);
 typedef void (*PFNGLXRELEASETEXIMAGEEXTPROC)(Display *dpy, GLXDrawable drawable, int buffer);
+typedef const char *(*PFNGLXQUERYRENDERERSTRINGMESAPROC)(Display *dpy, int screen, int renderer,
+                                                         int attribute);
 
 QT_BEGIN_NAMESPACE
 
@@ -42,6 +44,7 @@ public:
 
         PFNGLXBINDTEXIMAGEEXTPROC glXBindTexImageEXT;
         PFNGLXRELEASETEXIMAGEEXTPROC glXReleaseTexImageEXT;
+        PFNGLXQUERYRENDERERSTRINGMESAPROC glXQueryRendererStringMESA;
     };
 
     static GLXHelper *instance();

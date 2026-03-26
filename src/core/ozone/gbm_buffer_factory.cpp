@@ -4,12 +4,16 @@
 
 #include "gbm_buffer_factory.h"
 
+#include "compositor/compositor.h"
+
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/common/drm_render_node_handle.h"
+
+#include <xf86drm.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -41,6 +45,18 @@ GbmBufferFactory::GbmBufferFactory(base::ScopedFD drmNodeFD) : m_drmNodeFD(std::
     if (!m_drmNodeFD.is_valid()) {
         qWarning("GBM: Obtained an invalid file descriptor.");
         return;
+    }
+
+    if (Q_UNLIKELY(QtWebEngineCore::lcWebEngineCompositor().isDebugEnabled())) {
+        if (drmVersionPtr drmVersion = drmGetVersion(m_drmNodeFD.get())) {
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
+                    "GBM: DRM device found: %s v%d.%d.%d (%s)", drmVersion->name,
+                    drmVersion->version_major, drmVersion->version_minor,
+                    drmVersion->version_patchlevel, drmVersion->desc);
+            drmFreeVersion(drmVersion);
+        } else {
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "GBM: Failed to identify DRM device.");
+        }
     }
 
     m_gbmDevice = ui::CreateGbmDevice(m_drmNodeFD.get());

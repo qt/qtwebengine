@@ -172,7 +172,10 @@ shared_library("QtWebEngineCore") {
 
   if (use_ozone) {
     _ozone_extra_directory = get_path_info(ozone_extra_path, "dir")
-    deps += [ "$_ozone_extra_directory:qt" ]
+    deps += [
+      "$_ozone_extra_directory:qt",
+      "//build/config/linux/libdrm",
+    ]
 
     if (ozone_platform_x11) {
       configs += [ ":xcb-dri3" ]

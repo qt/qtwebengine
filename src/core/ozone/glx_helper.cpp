@@ -34,6 +34,8 @@ GLXHelper::GLXFunctions::GLXFunctions()
             context->getProcAddress("glXBindTexImageEXT"));
     glXReleaseTexImageEXT = reinterpret_cast<PFNGLXRELEASETEXIMAGEEXTPROC>(
             context->getProcAddress("glXReleaseTexImageEXT"));
+    glXQueryRendererStringMESA = reinterpret_cast<PFNGLXQUERYRENDERERSTRINGMESAPROC>(
+            context->getProcAddress("glXQueryRendererStringMESA"));
 }
 
 GLXHelper *GLXHelper::instance()
@@ -95,6 +97,19 @@ GLXHelper::GLXHelper()
     Q_ASSERT(setup);
     m_screen = xcb_setup_roots_iterator(setup).data;
     Q_ASSERT(m_screen);
+
+    if (Q_UNLIKELY(QtWebEngineCore::lcWebEngineCompositor().isDebugEnabled())) {
+        const char *renderer = nullptr;
+        if (m_functions->glXQueryRendererStringMESA) {
+            renderer = m_functions->glXQueryRendererStringMESA(m_display, 0, 0,
+                                                               GLX_RENDERER_DEVICE_ID_MESA);
+        }
+
+        if (renderer)
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "GLX: Device found: %s.", renderer);
+        else
+            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "GLX: Failed to query device.");
+    }
 
     // Obtain an authenticated DRM FD.
     base::ScopedFD drmNodeFD(dri3Open());
