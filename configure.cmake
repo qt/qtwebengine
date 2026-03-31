@@ -62,8 +62,8 @@ else()
         OUT_VAR_DEPS_FOUND sbom_deps_found
         OUT_VAR_REASON_FAILURE_MESSAGE sbom_missing_deps_message
     )
-    find_package(Rust)
-    find_package(Bindgen)
+    find_package(QWERust)
+    find_package(QWEBindgen)
     find_package(QWELibClang)
 endif()
 
