@@ -266,19 +266,19 @@ macro(append_build_type_setup)
           enable_tetanus=false # assuming stable rust
           enable_chromium_prelude=false)
 
-      get_filename_component(bindgenBasePath ${Bindgen_EXECUTABLE} DIRECTORY)
+      get_filename_component(bindgenBasePath ${QWEBindgen_EXECUTABLE} DIRECTORY)
       get_filename_component(bindgenBasePath ${bindgenBasePath} DIRECTORY)
       list(APPEND gnArgArg rust_bindgen_root="${bindgenBasePath}")
-      get_filename_component(rustBasePath ${Rustc_EXECUTABLE} DIRECTORY)
+      get_filename_component(rustBasePath ${QWERustc_EXECUTABLE} DIRECTORY)
       get_filename_component(rustBasePath ${rustBasePath} DIRECTORY)
       list(APPEND gnArgArg rust_sysroot_absolute="${rustBasePath}")
-      list(APPEND gnArgArg rustc_version="${Rust_VERSION}")
+      list(APPEND gnArgArg rustc_version="${QWERust_VERSION}")
 
       # adler2 known to be absent in 1.85 and present in 1.89
-      if("${Rust_VERSION}" VERSION_LESS "1.87.0")
+      if("${QWERust_VERSION}" VERSION_LESS "1.87.0")
           list(APPEND gnArgArg use_adler2=false)
           # v8_enable_temporal_support is known to build with 1.84 and not with 1.75
-          if("${Rust_VERSION}" VERSION_LESS "1.84.0")
+          if("${QWERust_VERSION}" VERSION_LESS "1.84.0")
               list(APPEND gnArgArg v8_enable_temporal_support=false)
           endif()
       endif()
