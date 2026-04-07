@@ -5,7 +5,6 @@
 #ifndef EGL_HELPER_H
 #define EGL_HELPER_H
 
-#include <QtCore/qmutex.h>
 #include <QtCore/qscopedpointer.h>
 
 #include "ui/gfx/buffer_types.h"
@@ -19,28 +18,35 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#undef eglCreateImage
-#undef eglDestroyImage
+#undef eglGetError
+#undef eglQueryString
+
 #undef eglQueryDevices
 #undef eglQueryDeviceString
 #undef eglQueryDisplayAttrib
-#undef eglQueryString
 
+#undef eglQueryDmaBufModifiers
+
+#undef eglChooseConfig
+#undef eglCreateContext
+#undef eglCreateImage
+#undef eglCreatePbufferSurface
+#undef eglDestroyContext
+#undef eglDestroyImage
+#undef eglDestroySurface
 #undef eglGetCurrentContext
 #undef eglGetCurrentDisplay
 #undef eglGetCurrentSurface
-#undef eglGetError
+#undef eglGetProcAddress
+#undef eglInitialize
 #undef eglMakeCurrent
 
 #undef eglExportDMABUFImageMESA
 #undef eglExportDMABUFImageQueryMESA
 
-#undef eglQueryDmaBufModifiers
-
 QT_BEGIN_NAMESPACE
 
 class GbmBufferFactory;
-class QOffscreenSurface;
 
 class EGLHelper
 {
@@ -49,26 +55,37 @@ public:
     {
         EGLFunctions();
 
-        PFNEGLCREATEIMAGEPROC eglCreateImage;
-        PFNEGLDESTROYIMAGEPROC eglDestroyImage;
-        PFNEGLQUERYDEVICESEXTPROC eglQueryDevices;
-        PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceString;
-        PFNEGLQUERYDISPLAYATTRIBEXTPROC eglQueryDisplayAttrib;
+        PFNEGLGETERRORPROC eglGetError;
         PFNEGLQUERYSTRINGPROC eglQueryString;
 
-        // Used for EGL-based allocation:
+        // EGL_EXT_device_enumeration:
+        PFNEGLQUERYDEVICESEXTPROC eglQueryDevices;
+
+        // EGL_EXT_device_query:
+        PFNEGLQUERYDEVICESTRINGEXTPROC eglQueryDeviceString;
+        PFNEGLQUERYDISPLAYATTRIBEXTPROC eglQueryDisplayAttrib;
+
+        // EGL_EXT_image_dma_buf_import_modifiers:
+        PFNEGLQUERYDMABUFMODIFIERSEXTPROC eglQueryDmaBufModifiers;
+
+        // EGL-based allocation:
+        PFNEGLCHOOSECONFIGPROC eglChooseConfig;
+        PFNEGLCREATECONTEXTPROC eglCreateContext;
+        PFNEGLCREATEIMAGEPROC eglCreateImage;
+        PFNEGLCREATEPBUFFERSURFACEPROC eglCreatePbufferSurface;
+        PFNEGLDESTROYCONTEXTPROC eglDestroyContext;
+        PFNEGLDESTROYIMAGEPROC eglDestroyImage;
+        PFNEGLDESTROYSURFACEPROC eglDestroySurface;
         PFNEGLGETCURRENTCONTEXTPROC eglGetCurrentContext;
         PFNEGLGETCURRENTDISPLAYPROC eglGetCurrentDisplay;
         PFNEGLGETCURRENTSURFACEPROC eglGetCurrentSurface;
-        PFNEGLGETERRORPROC eglGetError;
+        PFNEGLGETPROCADDRESSPROC eglGetProcAddress;
+        PFNEGLINITIALIZEPROC eglInitialize;
         PFNEGLMAKECURRENTPROC eglMakeCurrent;
 
         // EGL_MESA_image_dma_buf_export:
         PFNEGLEXPORTDMABUFIMAGEMESAPROC eglExportDMABUFImageMESA;
         PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC eglExportDMABUFImageQueryMESA;
-
-        // EGL_EXT_image_dma_buf_import_modifiers:
-        PFNEGLQUERYDMABUFMODIFIERSEXTPROC eglQueryDmaBufModifiers;
     };
 
     static EGLHelper *instance();
@@ -97,12 +114,7 @@ private:
 
     bool m_isImageDmaBufExportSupported = false;
     QScopedPointer<GbmBufferFactory> m_gbmBufferFactory;
-    QScopedPointer<QOffscreenSurface> m_offscreenSurface;
     mutable std::map<gfx::BufferFormat, std::vector<uint64_t>> m_supportedModifiers;
-
-    // Synchronizes m_offscreenSurface access between UI thread (initialization) and
-    // the GPU thread (usage).
-    mutable QMutex m_mutex;
 };
 
 QT_END_NAMESPACE

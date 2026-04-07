@@ -11,10 +11,11 @@
 
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gl/gl_display.h"
+#include "ui/gl/gl_implementation.h"
 
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
-#include <QtGui/qoffscreensurface.h>
 #include <QtGui/qopenglcontext.h>
 #include <QtGui/qopenglfunctions.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -65,81 +66,135 @@ static const char *getEGLErrorString(uint32_t error)
 
 QT_BEGIN_NAMESPACE
 
-class ScopedGLContext
+class ScopedNativeEGLContext
 {
 public:
-    ScopedGLContext(QOffscreenSurface *surface, EGLHelper::EGLFunctions *eglFun)
-        : m_context(new QOpenGLContext()), m_eglFun(eglFun)
+    ScopedNativeEGLContext(EGLDisplay eglDisplay, EGLHelper::EGLFunctions *eglFun)
+        : m_display(eglDisplay), m_eglFun(eglFun)
     {
-        if ((m_previousEGLContext = m_eglFun->eglGetCurrentContext())) {
-            m_previousEGLDrawSurface = m_eglFun->eglGetCurrentSurface(EGL_DRAW);
-            m_previousEGLReadSurface = m_eglFun->eglGetCurrentSurface(EGL_READ);
-            m_previousEGLDisplay = m_eglFun->eglGetCurrentDisplay();
+        if ((m_previousContext = m_eglFun->eglGetCurrentContext())) {
+            m_previousDrawSurface = m_eglFun->eglGetCurrentSurface(EGL_DRAW);
+            m_previousReadSurface = m_eglFun->eglGetCurrentSurface(EGL_READ);
+            m_previousDisplay = m_eglFun->eglGetCurrentDisplay();
         }
 
-        if (!m_context->create()) {
-            qWarning("Failed to create OpenGL context.");
+        EGLint configAttribs[] = { EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_SURFACE_TYPE,
+                                   EGL_PBUFFER_BIT, EGL_NONE };
+        EGLConfig config;
+        EGLint numConfigs;
+        m_eglFun->eglChooseConfig(m_display, configAttribs, &config, 1, &numConfigs);
+
+        // Create GLES2 Context.
+        EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+        m_scopedContext =
+                m_eglFun->eglCreateContext(m_display, config, EGL_NO_CONTEXT, contextAttribs);
+        if (m_scopedContext == EGL_NO_CONTEXT) {
+            qWarning("EGL: Failed to create native context: %s",
+                     getEGLErrorString(m_eglFun->eglGetError()));
             return;
         }
 
-        Q_ASSERT(surface->isValid());
-        if (!m_context->makeCurrent(surface)) {
-            qWarning("Failed to make OpenGL context current.");
+        // Try surfaceless context.
+        if (m_eglFun->eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, m_scopedContext))
+            return; // Succeeded.
+
+        // Swallow the the error from the failed surfaceless attempt.
+        m_eglFun->eglGetError();
+
+        // Create an offscreen surface if surfaceless failed.
+        EGLint pbufferAttribs[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
+        m_scopedSurface = m_eglFun->eglCreatePbufferSurface(m_display, config, pbufferAttribs);
+        if (m_scopedSurface == EGL_NO_SURFACE) {
+            qWarning("EGL: Failed to create native offscreen surface: %s",
+                     getEGLErrorString(m_eglFun->eglGetError()));
+            m_eglFun->eglDestroyContext(m_display, m_scopedContext);
+            m_scopedContext = EGL_NO_CONTEXT;
+            return;
+        }
+
+        if (!m_eglFun->eglMakeCurrent(m_display, m_scopedSurface, m_scopedSurface,
+                                      m_scopedContext)) {
+            qWarning("EGL: Failed to make native context current: %s",
+                     getEGLErrorString(m_eglFun->eglGetError()));
+            m_eglFun->eglDestroyContext(m_display, m_scopedContext);
+            m_eglFun->eglDestroySurface(m_display, m_scopedSurface);
+            m_scopedContext = EGL_NO_CONTEXT;
+            m_scopedSurface = EGL_NO_SURFACE;
             return;
         }
     }
 
-    ~ScopedGLContext()
+    ~ScopedNativeEGLContext()
     {
         if (!m_textures.empty()) {
-            auto *glFun = m_context->functions();
-            glFun->glDeleteTextures(m_textures.size(), m_textures.data());
+            Q_ASSERT(m_scopedContext != EGL_NO_CONTEXT);
+            typedef void (*PFNGLDELETETEXTURESPROC)(GLsizei n, const GLuint *textures);
+            auto glDeleteTexturesPtr = reinterpret_cast<PFNGLDELETETEXTURESPROC>(
+                    m_eglFun->eglGetProcAddress("glDeleteTextures"));
+            glDeleteTexturesPtr(m_textures.size(), m_textures.data());
         }
 
-        if (m_previousEGLContext) {
-            // Make sure the scoped context is not current when restoring the previous
-            // EGL context otherwise the QOpenGLContext destructor resets the restored
-            // current context.
-            m_context->doneCurrent();
-
-            m_eglFun->eglMakeCurrent(m_previousEGLDisplay, m_previousEGLDrawSurface,
-                                     m_previousEGLReadSurface, m_previousEGLContext);
-            if (m_eglFun->eglGetError() != EGL_SUCCESS)
-                qWarning("Failed to restore EGL context.");
+        if (m_previousContext) {
+            m_eglFun->eglMakeCurrent(m_previousDisplay, m_previousDrawSurface,
+                                     m_previousReadSurface, m_previousContext);
+            if (m_eglFun->eglGetError() != EGL_SUCCESS) {
+                qWarning("EGL: Failed to restore Chromium's context: %s",
+                         getEGLErrorString(m_eglFun->eglGetError()));
+            }
+        } else {
+            m_eglFun->eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         }
+
+        if (m_scopedContext != EGL_NO_CONTEXT)
+            m_eglFun->eglDestroyContext(m_display, m_scopedContext);
+
+        if (m_scopedSurface != EGL_NO_SURFACE)
+            m_eglFun->eglDestroySurface(m_display, m_scopedSurface);
     }
 
-    bool isValid() const { return m_context->isValid() && (m_context->surface() != nullptr); }
-
-    EGLContext eglContext() const
-    {
-        QNativeInterface::QEGLContext *nativeInterface =
-                m_context->nativeInterface<QNativeInterface::QEGLContext>();
-        return nativeInterface->nativeContext();
-    }
+    bool isValid() const { return m_scopedContext != EGL_NO_CONTEXT; }
+    EGLContext eglContext() const { return m_scopedContext; }
 
     uint createTexture(int width, int height)
     {
-        auto *glFun = m_context->functions();
+        typedef void (*PFNGLGENTEXTURESPROC)(GLsizei n, GLuint *textures);
+        auto glGenTexturesPtr = reinterpret_cast<PFNGLGENTEXTURESPROC>(
+                m_eglFun->eglGetProcAddress("glGenTextures"));
+        typedef void (*PFNGLBINDTEXTUREPROC)(GLenum target, GLuint texture);
+        auto glBindTexturePtr = reinterpret_cast<PFNGLBINDTEXTUREPROC>(
+                m_eglFun->eglGetProcAddress("glBindTexture"));
+        typedef void (*PFNGLTEXIMAGE2DPROC)(GLenum target, GLint level, GLint internalformat,
+                                            GLsizei width, GLsizei height, GLint border,
+                                            GLenum format, GLenum type, const void *pixels);
+        auto glTexImage2DPtr =
+                reinterpret_cast<PFNGLTEXIMAGE2DPROC>(m_eglFun->eglGetProcAddress("glTexImage2D"));
+        typedef void (*PFNGLFLUSHPROC)(void);
+        auto glFlushPtr = reinterpret_cast<PFNGLFLUSHPROC>(m_eglFun->eglGetProcAddress("glFlush"));
 
         uint glTexture;
-        glFun->glGenTextures(1, &glTexture);
-        glFun->glBindTexture(GL_TEXTURE_2D, glTexture);
-        glFun->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                            NULL);
-        glFun->glBindTexture(GL_TEXTURE_2D, 0);
+        glGenTexturesPtr(1, &glTexture);
+        glBindTexturePtr(GL_TEXTURE_2D, glTexture);
+        glTexImage2DPtr(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                        NULL);
+        glBindTexturePtr(GL_TEXTURE_2D, 0);
+        glFlushPtr();
 
         m_textures.push_back(glTexture);
         return glTexture;
     }
 
 private:
-    QScopedPointer<QOpenGLContext> m_context;
-    EGLHelper::EGLFunctions *m_eglFun;
-    EGLContext m_previousEGLContext = nullptr;
-    EGLSurface m_previousEGLDrawSurface = nullptr;
-    EGLSurface m_previousEGLReadSurface = nullptr;
-    EGLDisplay m_previousEGLDisplay = nullptr;
+    EGLDisplay m_display = EGL_NO_DISPLAY;
+    EGLHelper::EGLFunctions *m_eglFun = nullptr;
+
+    EGLContext m_previousContext = EGL_NO_CONTEXT;
+    EGLSurface m_previousDrawSurface = EGL_NO_SURFACE;
+    EGLSurface m_previousReadSurface = EGL_NO_SURFACE;
+    EGLDisplay m_previousDisplay = EGL_NO_DISPLAY;
+
+    EGLContext m_scopedContext = EGL_NO_CONTEXT;
+    EGLSurface m_scopedSurface = EGL_NO_SURFACE;
+
     std::vector<uint> m_textures;
 };
 
@@ -148,27 +203,45 @@ EGLHelper::EGLFunctions::EGLFunctions()
     QOpenGLContext *context = OzoneUtilQt::getQOpenGLContext();
 
     // clang-format off
-    eglCreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(
-            context->getProcAddress("eglCreateImage"));
-    eglDestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(
-            context->getProcAddress("eglDestroyImage"));
+    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(
+            context->getProcAddress("eglGetError"));
+    eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(
+            context->getProcAddress("eglQueryString"));
+
     eglQueryDevices = reinterpret_cast<PFNEGLQUERYDEVICESEXTPROC>(
             context->getProcAddress("eglQueryDevicesEXT"));
     eglQueryDeviceString = reinterpret_cast<PFNEGLQUERYDEVICESTRINGEXTPROC>(
             context->getProcAddress("eglQueryDeviceStringEXT"));
     eglQueryDisplayAttrib = reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(
             context->getProcAddress("eglQueryDisplayAttribEXT"));
-    eglQueryString = reinterpret_cast<PFNEGLQUERYSTRINGPROC>(
-            context->getProcAddress("eglQueryString"));
 
+    eglQueryDmaBufModifiers = reinterpret_cast<PFNEGLQUERYDMABUFMODIFIERSEXTPROC>(
+            context->getProcAddress("eglQueryDmaBufModifiersEXT"));
+
+    eglChooseConfig = reinterpret_cast<PFNEGLCHOOSECONFIGPROC>(
+            context->getProcAddress("eglChooseConfig"));
+    eglCreateContext = reinterpret_cast<PFNEGLCREATECONTEXTPROC>(
+            context->getProcAddress("eglCreateContext"));
+    eglCreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(
+            context->getProcAddress("eglCreateImage"));
+    eglCreatePbufferSurface = reinterpret_cast<PFNEGLCREATEPBUFFERSURFACEPROC>(
+            context->getProcAddress("eglCreatePbufferSurface"));
+    eglDestroyContext = reinterpret_cast<PFNEGLDESTROYCONTEXTPROC>(
+            context->getProcAddress("eglDestroyContext"));
+    eglDestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(
+            context->getProcAddress("eglDestroyImage"));
+    eglDestroySurface = reinterpret_cast<PFNEGLDESTROYSURFACEPROC>(
+            context->getProcAddress("eglDestroySurface"));
     eglGetCurrentContext = reinterpret_cast<PFNEGLGETCURRENTCONTEXTPROC>(
             context->getProcAddress("eglGetCurrentContext"));
     eglGetCurrentDisplay = reinterpret_cast<PFNEGLGETCURRENTDISPLAYPROC>(
             context->getProcAddress("eglGetCurrentDisplay"));
     eglGetCurrentSurface = reinterpret_cast<PFNEGLGETCURRENTSURFACEPROC>(
             context->getProcAddress("eglGetCurrentSurface"));
-    eglGetError = reinterpret_cast<PFNEGLGETERRORPROC>(
-            context->getProcAddress("eglGetError"));
+    eglGetProcAddress = reinterpret_cast<PFNEGLGETPROCADDRESSPROC>(
+            context->getProcAddress("eglGetProcAddress"));
+    eglInitialize = reinterpret_cast<PFNEGLINITIALIZEPROC>(
+            context->getProcAddress("eglInitialize"));
     eglMakeCurrent = reinterpret_cast<PFNEGLMAKECURRENTPROC>(
             context->getProcAddress("eglMakeCurrent"));
 
@@ -176,9 +249,6 @@ EGLHelper::EGLFunctions::EGLFunctions()
             context->getProcAddress("eglExportDMABUFImageMESA"));
     eglExportDMABUFImageQueryMESA = reinterpret_cast<PFNEGLEXPORTDMABUFIMAGEQUERYMESAPROC>(
             context->getProcAddress("eglExportDMABUFImageQueryMESA"));
-
-    eglQueryDmaBufModifiers = reinterpret_cast<PFNEGLQUERYDMABUFMODIFIERSEXTPROC>(
-            context->getProcAddress("eglQueryDmaBufModifiersEXT"));
     // clang-format on
 }
 
@@ -193,11 +263,6 @@ EGLHelper::EGLHelper()
     , m_functions(new EGLHelper::EGLFunctions())
     , m_isDmaBufSupported(QtWebEngineCore::RhiGpuInfo::instance()->isGbmSupported())
 {
-    // Must be initialized on the UI thread to ensure m_offscreenSurface is owned by the
-    // correct thread.
-    Q_ASSERT(QThread::currentThread() == qApp->thread());
-    QMutexLocker locker(&m_mutex);
-
     // The rest of the initialization required for DMA-BUF support.
     if (!m_isDmaBufSupported)
         return;
@@ -258,19 +323,16 @@ EGLHelper::EGLHelper()
         m_gbmBufferFactory.reset(new GbmBufferFactory(nodePath));
     }
 
-    // Create an offscreen surface on the UI thread for EGL-based allocation fallback.
+    // Check necessary extensions for EGL-based allocation fallback.
     m_isImageDmaBufExportSupported = strstr(displayExtensions, "EGL_MESA_image_dma_buf_export");
-    if (m_isImageDmaBufExportSupported) {
-        m_offscreenSurface.reset(new QOffscreenSurface());
-        // Surface must be created on the UI thread.
-        m_offscreenSurface->create();
-    } else
+    if (!m_isImageDmaBufExportSupported) {
         qCDebug(QtWebEngineCore::lcWebEngineCompositor,
                 "EGL: EGL_MESA_image_dma_buf_export extension is not supported. EGL-based "
                 "allocation fallback is disabled.");
+    }
 
     m_isDmaBufSupported = (m_gbmBufferFactory && m_gbmBufferFactory->hasDevice())
-            || m_offscreenSurface->isValid();
+            || m_isImageDmaBufExportSupported;
 }
 
 EGLHelper::~EGLHelper() = default;
@@ -344,23 +406,39 @@ const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(gfx::BufferFormat 
 
 gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &size)
 {
-    QMutexLocker locker(&m_mutex);
     if (!m_isDmaBufSupported || !m_isImageDmaBufExportSupported)
         return gfx::NativePixmapHandle();
 
-    ScopedGLContext glContext(m_offscreenSurface.get(), m_functions.get());
-    if (!glContext.isValid()) {
+    // ANGLE cannot export DMA-BUFs directly so a native EGL context is required.
+    // Ensure the current ANGLE backend allows switching to a native EGL context.
+    static std::once_flag flag;
+    std::call_once(flag, [this]() {
+        if (gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE)
+            return;
+
+        if (gl::GLDisplayEGL *display = gl::GLDisplayEGL::GetDisplayForCurrentContext())
+            m_isImageDmaBufExportSupported = display->IsANGLEExternalContextAndSurfaceSupported();
+    });
+
+    if (!m_isImageDmaBufExportSupported) {
+        qWarning("EGL: ANGLE backend lacks native interop for EGL-based allocation. "
+                 "Try forcing native EGL with: --use-gl=egl.");
+        return gfx::NativePixmapHandle();
+    }
+
+    ScopedNativeEGLContext nativeContext(m_eglDisplay, m_functions.get());
+    if (!nativeContext.isValid()) {
         qWarning("EGL: Failed to create valid GL context.");
         return gfx::NativePixmapHandle();
     }
 
-    EGLContext eglContext = glContext.eglContext();
+    EGLContext eglContext = nativeContext.eglContext();
     if (!eglContext) {
         qWarning("EGL: No EGLContext.");
         return gfx::NativePixmapHandle();
     }
 
-    uint64_t textureId = glContext.createTexture(size.width(), size.height());
+    uint64_t textureId = nativeContext.createTexture(size.width(), size.height());
     EGLImage eglImage = m_functions->eglCreateImage(m_eglDisplay, eglContext, EGL_GL_TEXTURE_2D,
                                                     (EGLClientBuffer)textureId, NULL);
 
@@ -408,7 +486,6 @@ gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(gfx::BufferFormat fo
                                                             const gfx::Size &size,
                                                             gfx::NativePixmapHandle handle)
 {
-    QMutexLocker locker(&m_mutex);
     if (!m_isDmaBufSupported || !m_isImageDmaBufExportSupported)
         return gfx::NativePixmapHandle();
 
