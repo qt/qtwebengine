@@ -110,7 +110,7 @@ QString QPdfPageSelector::currentPageLabel() const
 void QPdfPageSelectorSpinBox::documentStatusChanged()
 {
     if (m_document && m_document->status() == QPdfDocument::Status::Ready) {
-        setMaximum(m_document->pageCount());
+        setMaximum(m_document->pageCount() - 1);
         setValue(0);
     }
 }
