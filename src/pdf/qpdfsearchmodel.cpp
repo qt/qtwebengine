@@ -301,25 +301,25 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         }
         QString contextBefore, contextAfter;
         if (startIndex >= 0 || endIndex >= 0) {
-            startIndex = qMax(0, startIndex - ContextChars);
-            endIndex += ContextChars;
-            int count = endIndex - startIndex + 1;
+            int contextStart = qMax(0, startIndex - ContextChars);
+            int contextEnd = endIndex + ContextChars;
+            int count = contextEnd - contextStart + 1;
             if (count > 0) {
                 QList<ushort> buf(count + 1);
-                int len = FPDFText_GetText(textPage, startIndex, count, buf.data());
+                int len = FPDFText_GetText(textPage, contextStart, count, buf.data());
                 Q_ASSERT(len - 1 <= count); // len is number of characters written, including the terminator
                 QString context = QString::fromUtf16(
                         reinterpret_cast<const char16_t *>(buf.constData()), len - 1);
-                context = context.replace(QLatin1Char('\n'), QStringLiteral("\u23CE"));
-                context = context.remove(QLatin1Char('\r'));
-                // try to find the search string near the middle of the context if possible
-                int si = context.indexOf(searchString, ContextChars - 5, Qt::CaseInsensitive);
-                if (si < 0)
-                    si = context.indexOf(searchString, Qt::CaseInsensitive);
-                if (si < 0)
-                    qCDebug(qLcS) << "search string" << searchString << "not found in context" << context;
-                contextBefore = context.mid(0, si);
-                contextAfter = context.mid(si + searchString.size());
+
+                const auto replaceNewlines = [&](QString &s) {
+                    s.replace(QLatin1Char('\n'), QStringLiteral("\u23CE"));
+                    s.remove(QLatin1Char('\r'));
+                };
+
+                contextBefore = context.mid(0, startIndex - contextStart);
+                contextAfter = context.mid(startIndex - contextStart + searchString.size());
+                replaceNewlines(contextBefore);
+                replaceNewlines(contextAfter);
             }
         }
         if (!rects.isEmpty())
