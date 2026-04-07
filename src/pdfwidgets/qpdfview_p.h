@@ -47,6 +47,7 @@ public:
     void invalidatePageCache();
 
     qreal yPositionForPage(int page) const;
+    QPdfLink pagePosition(const QPointF &viewPosition);
 
     QTransform screenScaleTransform(int page) const; // points to pixels
 

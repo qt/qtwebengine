@@ -313,6 +313,22 @@ qreal QPdfViewPrivate::yPositionForPage(int pageNumber) const
     return (*it).first.y();
 }
 
+QPdfLink QPdfViewPrivate::pagePosition(const QPointF &viewPosition)
+{
+    for (auto it = m_documentLayout.pageGeometryAndScale.cbegin();
+         it != m_documentLayout.pageGeometryAndScale.cend(); ++it) {
+        const int page = it.key();
+        const QTransform screenInvTransform = screenScaleTransform(page).inverted();
+        const QRect pageGeometry = it.value().first;
+        if (pageGeometry.contains(viewPosition.toPoint())) {
+            QPointF posInPoints = screenInvTransform.map(viewPosition - pageGeometry.topLeft()
+                                                         + m_viewport.topLeft());
+            return QPdfLink(page, posInPoints, 1);
+        }
+    }
+    return {}; // invalid: not found
+}
+
 QTransform QPdfViewPrivate::screenScaleTransform(int page) const
 {
     qreal scale = m_screenResolution * m_zoomFactor;
@@ -739,43 +755,70 @@ void QPdfView::mousePressEvent(QMouseEvent *event)
 void QPdfView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QPdfView);
-    for (auto it = d->m_documentLayout.pageGeometryAndScale.cbegin();
-         it != d->m_documentLayout.pageGeometryAndScale.cend(); ++it) {
-        const int page = it.key();
-        const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
-        const QRect pageGeometry = it.value().first;
-        if (pageGeometry.contains(event->position().toPoint())) {
-            QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft()
-                                                         + d->m_viewport.topLeft());
-            d->m_linkModel.setPage(page);
-            auto dest = d->m_linkModel.linkAt(posInPoints);
-            setCursor(dest.isValid() ? Qt::PointingHandCursor : Qt::ArrowCursor);
-            if (dest.isValid())
-                qCDebug(qLcWLink) << event->position() << ":" << posInPoints << "pt ->" << dest;
-        }
+    auto pagePos = d->pagePosition(event->position());
+    if (pagePos.isValid()) {
+        d->m_linkModel.setPage(pagePos.page());
+        auto dest = d->m_linkModel.linkAt(pagePos.location());
+        setCursor(dest.isValid() ? Qt::PointingHandCursor : Qt::ArrowCursor);
+        if (dest.isValid())
+            qCDebug(qLcWLink) << event->position() << ":" << pagePos.location() << "pt ->" << dest;
     }
 }
 
 void QPdfView::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_D(QPdfView);
-    for (auto it = d->m_documentLayout.pageGeometryAndScale.cbegin();
-         it != d->m_documentLayout.pageGeometryAndScale.cend(); ++it) {
-        const int page = it.key();
-        const QTransform screenInvTransform = d->screenScaleTransform(page).inverted();
-        const QRect pageGeometry = it.value().first;
-        if (pageGeometry.contains(event->position().toPoint())) {
-            QPointF posInPoints = screenInvTransform.map(event->position() - pageGeometry.topLeft()
-                                                         + d->m_viewport.topLeft());
-            d->m_linkModel.setPage(page);
-            auto dest = d->m_linkModel.linkAt(posInPoints);
-            if (dest.isValid()) {
-                qCDebug(qLcWLink) << event << ": jumping to" << dest;
-                d->m_pageNavigator->jump(dest.page(), dest.location(), dest.zoom());
-                d->scrollTo(dest);
-            }
+    auto pagePos = d->pagePosition(event->position());
+    if (pagePos.isValid()) {
+        d->m_linkModel.setPage(pagePos.page());
+        auto dest = d->m_linkModel.linkAt(pagePos.location());
+        if (dest.isValid()) {
+            qCDebug(qLcWLink) << event << ": jumping to" << dest;
+            d->m_pageNavigator->jump(dest.page(), dest.location(), dest.zoom());
+            d->scrollTo(dest);
+        }
+    }
+}
+
+void QPdfView::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        int delta = event->angleDelta().y();
+
+        if (delta == 0) {
+            event->ignore();
             return;
         }
+
+        Q_D(QPdfView);
+        auto calculateZoomStep = [](qreal currentZoomFactor, int sign) {
+            constexpr qreal baseStep = 0.1;
+            constexpr qreal ceilStep = 0.9;
+
+            const auto factor = std::ceil(currentZoomFactor + sign * baseStep);
+            return qMin(baseStep * factor, ceilStep);
+        };
+        qreal currentZoom = zoomFactor();
+        qreal stepSize = calculateZoomStep(currentZoom, (delta > 0) ? +1 : -1);
+
+        qreal zoomChange = (delta > 0) ? stepSize : -stepSize;
+        qreal newZoomFactor = qBound(0.1, currentZoom + zoomChange, 10.0);
+        const auto cursorPageAndPos = d->pagePosition(event->position());
+
+        setZoomFactor(newZoomFactor);
+
+        // After zoom, scroll so as to keep the same document position under the cursor
+        if (cursorPageAndPos.isValid()) {
+            const QRect newPageGeometry = d->m_documentLayout.pageGeometryAndScale.value(cursorPageAndPos.page()).first;
+            const QPointF newPosInDoc = newPageGeometry.topLeft() +
+                    d->screenScaleTransform(cursorPageAndPos.page()).map(cursorPageAndPos.location());
+            horizontalScrollBar()->setValue(qRound(newPosInDoc.x() - event->position().x()));
+            verticalScrollBar()->setValue(qRound(newPosInDoc.y() - event->position().y()));
+        }
+
+        event->accept();
+    } else {
+        QAbstractScrollArea::wheelEvent(event);
     }
 }
 

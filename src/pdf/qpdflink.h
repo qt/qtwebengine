@@ -52,13 +52,14 @@ public:
     Q_PDF_EXPORT Q_INVOKABLE void copyToClipboard(QClipboard::Mode mode = QClipboard::Clipboard) const;
 
 private: // methods
-    QPdfLink(int page, QPointF location, qreal zoom);
+    Q_PDF_EXPORT QPdfLink(int page, QPointF location, qreal zoom);
     QPdfLink(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter);
     QPdfLink(QPdfLinkPrivate *d);
     friend class QPdfDocument;
     friend class QPdfLinkModelPrivate;
     friend class QPdfSearchModelPrivate;
     friend class QPdfPageNavigator;
+    friend class QPdfViewPrivate;
     friend class QQuickPdfPageNavigator;
 
 private: // storage
