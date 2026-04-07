@@ -19,6 +19,8 @@ public:
 private slots:
     void findText_data();
     void findText();
+    void searchStringContext_data();
+    void searchStringContext();
 };
 
 void tst_QPdfSearchModel::findText_data()
@@ -62,6 +64,45 @@ void tst_QPdfSearchModel::findText()
     QList<QRectF> rects = match.rectangles();
     QCOMPARE(rects.size(), expectedRectangleCount);
     QCOMPARE(rects.at(rectIndexToCheck).toRect(), expectedMatchBounds);
+}
+
+void tst_QPdfSearchModel::searchStringContext_data()
+{
+    QTest::addColumn<QString>("searchString");
+    QTest::addColumn<int>("expectedResultCount");
+    QTest::addColumn<int>("resultIndex");
+    QTest::addColumn<QString>("endOfContextBefore");
+    QTest::addColumn<QString>("startOfContextAfter");
+
+    QTest::addRow("normal") << "rst" << 4 << 0 << "opq" << "uvw";
+    QTest::addRow("empty before") << "abc" << 4 << 0 << "" << "def";
+    QTest::addRow("empty after") << "XYZ" << 4 << 1 << "UVW" << "";
+    QTest::addRow("search string in ctx after") << "aa" << 2 << 0 << "XYZ⏎" << "bb⏎ccxdd⏎aa";
+    QTest::addRow("search string in ctx before") << "aa" << 2 << 1 << "aabb⏎ccxdd⏎" << "bb⏎abc";
+}
+
+void tst_QPdfSearchModel::searchStringContext()
+{
+    QFETCH(QString, searchString);
+    QFETCH(int, expectedResultCount);
+    QFETCH(int, resultIndex);
+    QFETCH(QString, endOfContextBefore);
+    QFETCH(QString, startOfContextAfter);
+
+    const QString pdfPath = QFINDTESTDATA("search_string_context.pdf");
+    QPdfDocument document;
+    QPdfSearchModel model;
+    model.setDocument(&document);
+    document.load(pdfPath);
+    QCOMPARE(document.load(pdfPath), QPdfDocument::Error::None);
+
+    model.setSearchString(searchString);
+    QTRY_COMPARE(model.count(), expectedResultCount);
+    QCOMPARE_GE(model.count(), resultIndex);
+
+    const auto res = model.resultAtIndex(resultIndex);
+    QVERIFY(res.contextBefore().endsWith(endOfContextBefore));
+    QVERIFY(res.contextAfter().startsWith(startOfContextAfter));
 }
 
 QTEST_MAIN(tst_QPdfSearchModel)
