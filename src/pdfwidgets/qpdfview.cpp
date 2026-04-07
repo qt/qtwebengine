@@ -625,17 +625,25 @@ void QPdfView::paintEvent(QPaintEvent *event)
             }
 #endif
             if (d->m_searchModel) {
+                // Don't cover the text below
+                const auto w = CurrentSearchResultWidth / 2;
+                QMargins highlightRectOffset(w, w, w, w);
+
                 for (const QPdfLink &result : d->m_searchModel->resultsOnPage(page)) {
-                    for (const QRectF &rect : result.rectangles())
-                        painter.fillRect(scaleTransform.mapRect(rect).translated(pageGeometry.topLeft()), SearchResultHighlight);
+                    for (const QRectF &rect : result.rectangles()) {
+                        const auto r = rect.marginsAdded(highlightRectOffset);
+                        painter.fillRect(scaleTransform.mapRect(r).translated(pageGeometry.topLeft()), SearchResultHighlight);
+                    }
                 }
 
                 if (d->m_currentSearchResultIndex >= 0 && d->m_currentSearchResultIndex < d->m_searchModel->rowCount({})) {
                     const QPdfLink &cur = d->m_searchModel->resultAtIndex(d->m_currentSearchResultIndex);
                     if (cur.page() == page) {
                         painter.setPen({CurrentSearchResultHighlight, CurrentSearchResultWidth});
-                        for (const auto &rect : cur.rectangles())
-                            painter.drawRect(scaleTransform.mapRect(rect).translated(pageGeometry.topLeft()));
+                        for (const auto &rect : cur.rectangles()) {
+                            const auto r = rect.marginsAdded(highlightRectOffset);
+                            painter.drawRect(scaleTransform.mapRect(r).translated(pageGeometry.topLeft()));
+                        }
                     }
                 }
             }
