@@ -5,7 +5,6 @@ import QtQuick
 
 QtObject {
     id: root
-    function load(url) {
-        BrowserManager.load(url);
-    }
+    required property string startupUrl
+    Component.onCompleted: BrowserManager.load(startupUrl)
 }
