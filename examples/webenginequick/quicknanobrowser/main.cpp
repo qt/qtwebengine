@@ -41,11 +41,7 @@ int main(int argc, char **argv)
     parser.process(app);
 
     QQmlApplicationEngine appEngine;
+    appEngine.setInitialProperties({ { "startupUrl", startupUrl(parser) } });
     appEngine.loadFromModule("BrowserUtils", "ApplicationRoot");
-
-    const QUrl url = startupUrl(parser);
-    QMetaObject::invokeMethod(appEngine.rootObjects().constFirst(),
-                              "load", Q_ARG(QVariant, url));
-
     return app.exec();
 }
