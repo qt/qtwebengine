@@ -32,6 +32,7 @@ qt_webengine_set_version(libavcodec 60.31.102)
 qt_webengine_set_version(libavformat 60.16.100)
 qt_webengine_set_version(openh264 2.4.1)
 qt_webengine_set_version(windows_sdk 26100) # we only care about minor number "10.0.26100.0"
+qt_webengine_set_version(libopenjp2 2.5.0)
 
 
 #### find_package checks
@@ -103,7 +104,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(OPUS opus>=${QT_CONFIGURE_CHECK_opus_version})
     pkg_check_modules(VPX vpx>=${QT_CONFIGURE_CHECK_vpx_version} IMPORTED_TARGET)
     pkg_check_modules(LIBPCI libpci)
-    pkg_check_modules(LIBOPENJP2 libopenjp2)
+    pkg_check_modules(LIBOPENJP2 libopenjp2>=${QT_CONFIGURE_CHECK_libopenjp2_version})
     pkg_check_modules(XKBCOMMON xkbcommon)
     pkg_check_modules(XKBFILE xkbfile)
     pkg_check_modules(XCBDRI3 xcb-dri3)
