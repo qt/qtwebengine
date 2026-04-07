@@ -9,6 +9,7 @@
 #include <net/ssl/ssl_info.h>
 #include <ui/base/l10n/l10n_util.h>
 #include "chrome/grit/generated_resources.h"
+#include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/strings/grit/components_strings.h"
 #include "type_conversion.h"
 
@@ -46,31 +47,16 @@ ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateKnownInterceptionBlock
 //                   net::ERR_SSL_OBSOLETE_VERSION)
 //ASSERT_ENUMS_MATCH(QWebEngineCertificateError::CertificateErrorEnd, net::ERR_CERT_END)
 
-// Copied from chrome/browser/ssl/ssl_error_handler.cc:
-static int IsCertErrorFatal(int cert_error)
-{
-    switch (cert_error) {
-    case net::ERR_CERT_COMMON_NAME_INVALID:
-    case net::ERR_CERT_DATE_INVALID:
-    case net::ERR_CERT_AUTHORITY_INVALID:
-    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
-    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
-    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
-    case net::ERR_CERT_WEAK_KEY:
-    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
-    case net::ERR_CERT_VALIDITY_TOO_LONG:
-    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
-    case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
-        return false;
-    case net::ERR_CERT_CONTAINS_ERRORS:
-    case net::ERR_CERT_REVOKED:
-    case net::ERR_CERT_INVALID:
-    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
-        return true;
-    default:
-        NOTREACHED();
-    }
-    return true;
+// Copied from components/security_interstitials/content/ssl_blocked_page.cc:
+bool IsOverridable(int options_mask) {
+    const bool is_overridable =
+            (options_mask &
+             security_interstitials::SSLErrorOptionsMask::SOFT_OVERRIDE_ENABLED) &&
+            !(options_mask &
+              security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT) &&
+            !(options_mask &
+              security_interstitials::SSLErrorOptionsMask::HARD_OVERRIDE_DISABLED);
+    return is_overridable;
 }
 
 CertificateErrorController::CertificateErrorController(
@@ -79,9 +65,11 @@ CertificateErrorController::CertificateErrorController(
         base::OnceCallback<void(content::CertificateRequestResultType)> cb)
     : m_certError(QWebEngineCertificateError::Type(cert_error))
     , m_requestUrl(toQt(request_url))
-    , m_overridable(!IsCertErrorFatal(cert_error) && !strict_enforcement)
     , m_mainFrame(main_frame)
 {
+    const int ssl_error_options = security_interstitials::CalculateSSLErrorOptionsMask(cert_error, false, strict_enforcement);
+    m_overridable = IsOverridable(ssl_error_options);
+
     // MEMO set callback anyway even for non overridable error since chromium halts load until it's called
     //      callback will be executed either explicitly by use code or implicitly when error goes out of scope
     m_callback = std::move(cb);
