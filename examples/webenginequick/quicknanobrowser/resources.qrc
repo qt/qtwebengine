@@ -8,6 +8,8 @@
         <file>DownloadView.qml</file>
         <file>FindBar.qml</file>
         <file>FullScreenNotification.qml</file>
+        <file>PermissionDialog.qml</file>
+        <file>SslDialog.qml</file>
         <file>WebAuthDialog.qml</file>
         <file>qmldir</file>
         <file>icons/3rdparty/go-next.png</file>
