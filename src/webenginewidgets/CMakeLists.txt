@@ -1,11 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(TARGET Qt::Designer)
-    add_subdirectory(plugins/qwebengineview)
-else()
-    message(WARNING "Qt tools Designer is required to compile designer plugin")
-endif()
 qt_internal_add_module(WebEngineWidgets
     SOURCES
         api/qtwebenginewidgetsglobal.h
@@ -44,3 +39,9 @@ qt_internal_extend_target(WebEngineWidgets CONDITION QT_FEATURE_webengine_printi
     PUBLIC_LIBRARIES
         Qt::PrintSupport
 )
+
+if(TARGET Qt::Designer)
+    add_subdirectory(plugins/qwebengineview)
+else()
+    message(WARNING "Qt tools Designer is required to compile designer plugin")
+endif()
