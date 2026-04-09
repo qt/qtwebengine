@@ -68,7 +68,7 @@ class WebEngineSettings;
 
 class Q_WEBENGINECORE_EXPORT WebContentsAdapterClient {
 public:
-    // This must match window_open_disposition_list.h.
+    // This must match window_open_disposition.h.
     enum WindowOpenDisposition {
         UnknownDisposition = 0,
         CurrentTabDisposition = 1,
@@ -80,6 +80,8 @@ public:
         SaveToDiskDisposition = 7,
         OffTheRecordDisposition = 8,
         IgnoreActionDisposition = 9,
+        SwitchToTabDisposition = 10,
+        NewPictureInPictureDisposition = 11,
     };
 
     // Must match the values in javascript_dialog_type.h.
