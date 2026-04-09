@@ -162,7 +162,6 @@ public:
             qWarning("GPUInfo not initialized on GpuInfoUpdate");
             return;
         }
-        Q_ASSERT(gpuInfo.IsInitialized());
 
         // Avoid logging the info again if the device hasn't changed.
         // A change in the device is unexpected, as we currently don't support or implement
