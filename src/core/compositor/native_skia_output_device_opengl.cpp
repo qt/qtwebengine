@@ -157,6 +157,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
         if (m_contextState->gr_context_type() != gpu::GrContextType::kVulkan) {
             // Unable to fall back to Vulkan; aborting.
             qWarning("Failed to get native pixmap due to dma_buf acquisition failure.");
+            return nullptr;
         }
 
         sk_sp<SkImage> skImage = m_frontBuffer->skImage();
