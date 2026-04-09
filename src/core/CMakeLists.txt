@@ -189,7 +189,7 @@ foreach(arch ${archs})
                 user_script.cpp user_script.h
                 visited_links_manager_qt.cpp visited_links_manager_qt.h
                 web_contents_adapter.cpp web_contents_adapter.h
-                web_contents_adapter_client.h
+                web_contents_adapter_client.cpp web_contents_adapter_client.h
                 web_contents_delegate_qt.cpp web_contents_delegate_qt.h
                 web_contents_view_qt.cpp web_contents_view_qt.h
                 web_engine_context.cpp web_engine_context.h
