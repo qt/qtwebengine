@@ -1774,6 +1774,7 @@ void QQuickWebEngineView::setInspectedView(QQuickWebEngineView *view)
     if (oldView)
         oldView->setDevToolsView(nullptr);
     d->inspectedView = view;
+    d->ensureContentsAdapter();
     if (view)
         view->setDevToolsView(this);
     Q_EMIT inspectedViewChanged();
