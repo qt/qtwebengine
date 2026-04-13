@@ -57,6 +57,7 @@ NativeSkiaOutputDevice::NativeSkiaOutputDevice(
 
     capabilities_.uses_default_gl_framebuffer = false;
     capabilities_.supports_surfaceless = true;
+    capabilities_.supports_viewporter = true;
     capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
 
 #if BUILDFLAG(IS_OZONE)
@@ -243,7 +244,7 @@ NativeSkiaOutputDevice::Buffer::~Buffer()
 }
 
 // The following Buffer methods are based on
-// components/viz/service/display_embedder/output_presenter.cc: Copyright 2020 The Chromium Authors
+// components/viz/service/display_embedder/output_presenter_gl.cc: Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 bool NativeSkiaOutputDevice::Buffer::initialize()
