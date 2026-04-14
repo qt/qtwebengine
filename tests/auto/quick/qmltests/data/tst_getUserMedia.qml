@@ -14,6 +14,8 @@ TestWebEngineView {
     settings.screenCaptureEnabled: true
     profile.persistentPermissionsPolicy: WebEngineProfile.PersistentPermissionsPolicy.AskEveryTime
 
+    JsConsoleMessageSpy { id: promiseMessageSpy }
+
     TestCase {
         id: testCase
         name: "GetUserMedia"
@@ -67,13 +69,15 @@ TestWebEngineView {
         }
 
         function test_getUserMedia(row) {
+            promiseMessageSpy.target = webEngineView;
             loadSync(Qt.resolvedUrl("test1.html"))
 
             // 1. Rejecting request on QML side should reject promise on JS side.
             jsGetUserMedia(row.constraints)
             verifyPermissionType(row.feature)
             rejectPendingRequest()
-            tryVerify(jsPromiseRejected)
+            promiseMessageSpy.wait()
+            compare(promiseMessageSpy.popMessage(), "rejected")
 
             resetRequestState()
             wait(1000)
@@ -86,7 +90,9 @@ TestWebEngineView {
             jsGetUserMedia(row.constraints)
             verifyPermissionType(row.feature)
             acceptPendingRequest()
-            tryVerify(jsPromiseSettled)
+            promiseMessageSpy.wait()
+            var message = promiseMessageSpy.popMessage()
+            verify((message === "fulfilled") || (message === "rejected"))
 
             resetRequestState()
             wait(1000)
@@ -95,9 +101,12 @@ TestWebEngineView {
             jsGetUserMedia(row.constraints);
             verifyPermissionType(row.feature)
             acceptPendingRequest()
-            tryVerify(jsPromiseSettled)
+            promiseMessageSpy.wait()
+            var message = promiseMessageSpy.popMessage()
+            verify((message === "fulfilled") || (message === "rejected"))
 
             resetRequestState()
+            promiseMessageSpy.target = null;
         }
     }
 
@@ -180,36 +189,6 @@ TestWebEngineView {
     function rejectPendingRequest() {
         if (permissionObject)
             permissionObject.deny()
-    }
-
-    ////
-    // Intercept promise callback results
-
-    SignalSpy {
-        id: promiseMessageSpy
-        target: webEngineView
-        signalName: "javaScriptConsoleMessage"
-    }
-
-    function jsPromiseSettled()
-    {
-        return promiseMessageSpy.count > 0;
-    }
-
-    function jsPromiseFulfilled()
-    {
-        if (!jsPromiseSettled())
-            return false;
-
-        return promiseMessageSpy.signalArguments[0][1] === "fulfilled"
-    }
-
-    function jsPromiseRejected()
-    {
-        if (!jsPromiseSettled())
-            return false;
-
-        return promiseMessageSpy.signalArguments[0][1] === "rejected"
     }
 
     ////

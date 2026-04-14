@@ -13,15 +13,10 @@ TestWebEngineView {
     id: webEngineView
     width: 400
     height: 300
-    property var logs: []
     property bool accessRequested: false
     property url file: tempDir.pathUrl('file.txt')
 
-    onJavaScriptConsoleMessage: function(level, message, lineNumber, source) {
-        var pair = message.split(':');
-        if (pair.length == 2 && pair[0] == "TEST")
-            logs.push(pair[1]);
-    }
+    JsConsoleMessageSpy { id: jsConsoleMessageSpy; target: webEngineView }
 
     TempDir { id: tempDir }
 
@@ -31,7 +26,6 @@ TestWebEngineView {
         when: windowShown
 
         function init() {
-            clearLog()
             FilePickerParams.filePickerOpened = false
             FilePickerParams.selectFiles = false
             FilePickerParams.selectedFilesUrl = []
@@ -40,22 +34,12 @@ TestWebEngineView {
         }
 
         function cleanup() {
-            clearLog()
+            jsConsoleMessageSpy.clear()
         }
 
-        function clearLog() {
-            logs = []
-        }
-
-        function logContainsDoneMarker() {
-            if (logs.indexOf("DONE") > -1)
-                return true
-            else
-                return false
-        }
-
-        function result() {
-            return logs[0]
+        function messageReceived(expectedMessage) {
+            jsConsoleMessageSpy.wait()
+            return (jsConsoleMessageSpy.popMessage() == expectedMessage)
         }
 
         function fileAccessRequest(request) {
@@ -82,7 +66,7 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(file);
             keyClick(Qt.Key_Enter); // Open SaveDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
-            tryVerify(logContainsDoneMarker,2000)
+            verify(jsConsoleMessageSpy.waitForMessage("TEST:DONE"));
             // write access for save dialogs is automatically granted
             verify(!accessRequested)
             webEngineView.fileSystemAccessRequested.disconnect(fileAccessRequest);
@@ -91,6 +75,7 @@ TestWebEngineView {
         function test_openFile() {
             // first save the file before open
             test_saveFile()
+            jsConsoleMessageSpy.clear();
             init()
             webEngineView.fileSystemAccessRequested.connect(fileAccessRequest);
             webEngineView.url = Qt.resolvedUrl("filesystemapi.html?dialog=filePicker");
@@ -99,8 +84,8 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(file);
             keyClick(Qt.Key_Enter); // Open FileDialog.
             tryCompare(FilePickerParams, "filePickerOpened", true);
-            tryVerify(logContainsDoneMarker,2000)
-            verify(logs.indexOf("TEST_CONTENT") > -1)
+            verify(jsConsoleMessageSpy.waitForMessage("TEST:DONE"));
+            verify(jsConsoleMessageSpy.waitForMessage("TEST:TEST_CONTENT"));
             verify(accessRequested)
             webEngineView.fileSystemAccessRequested.disconnect(fileAccessRequest);
         }
@@ -114,8 +99,9 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(tempDir.pathUrl());
             keyClick(Qt.Key_Enter); // Open showDirectoryDialog.
             tryCompare(FilePickerParams, "directoryPickerOpened", true);
-            tryVerify(logContainsDoneMarker,2000)
-            verify(logs.indexOf("TEST_DIR") > -1)
+            verify(jsConsoleMessageSpy.waitForMessage("start"));
+            verify(jsConsoleMessageSpy.waitForMessage("TEST:DONE"));
+            verify(jsConsoleMessageSpy.waitForMessage("TEST:TEST_DIR"));
             verify(accessRequested)
             webEngineView.fileSystemAccessRequested.disconnect(directoryAccessRequest);
         }
