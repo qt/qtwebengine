@@ -722,8 +722,8 @@ WebEngineContext::WebEngineContext()
     }
 
 #if BUILDFLAG(IS_OZONE)
-    if (QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL
-        || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan
+    if ((QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL
+         || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan)
         && usingSupportedSGBackend()) {
         const bool disableGpu = parsedCommandLine.HasSwitch(switches::kDisableGpu);
         const bool usingVulkan = isFeatureEnabled(features::kVulkan.name, parsedCommandLine);
