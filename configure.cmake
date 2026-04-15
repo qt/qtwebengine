@@ -46,6 +46,8 @@ if(QT_CONFIGURE_RUNNING)
     endfunction()
     function(qt_webengine_get_windows_sdk_version)
     endfunction()
+    function(qt_webengine_check_for_metal_toolchain)
+    endfunction()
 else()
     find_package(Ninja ${QT_CONFIGURE_CHECK_ninja_version})
     find_package(Gn ${QT_REPO_MODULE_VERSION} EXACT)
@@ -526,6 +528,18 @@ qt_webengine_configure_check("windows-sdk"
     TAGS WINDOWS_PLATFORM
 )
 unset(sdk_minor)
+
+if(APPLE)
+    qt_webengine_check_for_metal_toolchain()
+endif()
+
+qt_webengine_configure_check("metal-toolchain"
+    MODULES QtWebEngine
+    CONDITION NOT APPLE OR ${TEST_metal_toolchain}
+    MESSAGE "Build requires Metal Toolchain to be installed via 'xcodebuild -downloadComponent MetalToolchain'"
+    DOCUMENTATION "Metal Toolchain needs to be installed"
+    TAGS APPLE_PLATFORM
+)
 
 ### Support Checks (optional)
 

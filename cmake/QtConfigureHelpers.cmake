@@ -228,6 +228,23 @@ function(qt_webengine_configure_check_for_ulimit)
     endif()
 endfunction()
 
+function(qt_webengine_check_for_metal_toolchain)
+    message(STATUS "Checking for Metal Toolchain")
+    _qt_internal_execute_xcrun(metal_output
+        XCRUN_ARGS metal --version
+        OUT_ERROR_VAR xcrun_error
+    )
+    string(REGEX MATCHALL "Apple metal version [0-9]+\.[0-9]+" metal_version "${metal_output}")
+    if(NOT "x${metal_version}" STREQUAL "x")
+        message(STATUS "Found Metal version: ${metal_version}")
+        set(TEST_metal_toolchain TRUE PARENT_SCOPE)
+    elseif(NOT "x${xcrun_error}" STREQUAL "x")
+        set(TEST_metal_toolchain FALSE PARENT_SCOPE)
+    else()
+        set(TEST_metal_toolchain FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Configures multi/matrix build
 
 function(qt_webengine_add_build feature value)
