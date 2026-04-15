@@ -540,6 +540,10 @@ foreach(arch ${archs})
                 CONDITION QT_FEATURE_webengine_ozone_x11
             )
             extend_gn_list(gnArgArg
+                ARGS angle_use_x11_glx
+                CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_xcb_glx_plugin
+            )
+             extend_gn_list(gnArgArg
                 ARGS rtc_use_x11
                 CONDITION QT_FEATURE_webengine_ozone_x11 AND QT_FEATURE_webengine_webrtc
             )
