@@ -9,6 +9,12 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 
+#include <memory>
+
+namespace content {
+class BrowserContext;
+}
+
 namespace net {
 class SSLCertRequestInfo;
 } // namespace net
@@ -19,16 +25,17 @@ struct ClientCertificateStoreData;
 class ClientCertStoreQt : public net::ClientCertStore
 {
 public:
-    ClientCertStoreQt(ClientCertificateStoreData *storeData);
+    ClientCertStoreQt(ClientCertificateStoreData *storeData, content::BrowserContext *profile);
     virtual ~ClientCertStoreQt() override;
     void GetClientCerts(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info,
                         ClientCertListCallback callback) override;
 private:
-    static std::unique_ptr<net::ClientCertStore> createNativeStore();
+    std::unique_ptr<net::ClientCertStore> createNativeStore();
     net::ClientCertIdentityList GetClientCertsOnUIThread(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info);
     void GetClientCertsReturn(scoped_refptr<const net::SSLCertRequestInfo> cert_request_info,
                               ClientCertListCallback callback,
                               net::ClientCertIdentityList &&result);
+    content::BrowserContext *m_profile;
     ClientCertificateStoreData *m_storeData;
     std::unique_ptr<net::ClientCertStore> m_nativeStore;
 };

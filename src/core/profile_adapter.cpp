@@ -1052,6 +1052,17 @@ void ProfileAdapter::requestIconForIconURL(const QUrl &iconUrl,
                            touchIconsEnabled),
             m_cancelableTaskTracker.get());
 }
+
+void ProfileAdapter::setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)> passwordFunction)
+{
+    m_cryptoModulePasswordFunction = std::move(passwordFunction);
+}
+
+const std::function<std::string(std::string, std::string, bool)> &ProfileAdapter::cryptoModulePasswordFunction() const
+{
+    return m_cryptoModulePasswordFunction;
+}
+
 #if QT_CONFIG(webengine_extensions)
 QWebEngineExtensionManager *ProfileAdapter::extensionManager()
 {

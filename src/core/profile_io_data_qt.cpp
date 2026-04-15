@@ -186,9 +186,9 @@ ClientCertificateStoreData *ProfileIODataQt::clientCertificateStoreData()
 std::unique_ptr<net::ClientCertStore> ProfileIODataQt::CreateClientCertStore()
 {
 #if QT_CONFIG(ssl)
-    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(m_clientCertificateStoreData));
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(m_clientCertificateStoreData, m_profile));
 #else
-    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(nullptr));
+    return std::unique_ptr<net::ClientCertStore>(new ClientCertStoreQt(nullptr, m_profile));
 #endif
 }
 

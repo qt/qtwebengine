@@ -79,6 +79,11 @@ public:
     ExtensionManager *extensionManager();
 #endif
 
+    void requestCryptoModulePassword(const std::string &module_name,
+                                     bool retry,
+                                     const std::string &hostname,
+                                     base::OnceCallback<void(const std::string &)> callback);
+
 private:
     std::unique_ptr<BrowsingDataRemoverDelegateQt> m_removerDelegate;
     std::unique_ptr<PermissionManagerQt> m_permissionManager;

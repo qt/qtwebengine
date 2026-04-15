@@ -133,6 +133,8 @@ public:
 
     QWebEngineExtensionManager *extensionManager() const;
 
+    void setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)> passwordFunction);
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

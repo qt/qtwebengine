@@ -209,6 +209,9 @@ public:
     void setClientHintsEnabled(bool enabled);
     void resetClientHints();
 
+    void setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)> passwordFunction);
+    const std::function<std::string(std::string, std::string, bool)> &cryptoModulePasswordFunction() const;
+
     void clearHttpCache();
 #if QT_CONFIG(webengine_extensions)
     QWebEngineExtensionManager *extensionManager();
@@ -275,6 +278,7 @@ private:
 #if QT_CONFIG(webengine_extensions)
     std::unique_ptr<QWebEngineExtensionManager> m_extensionManager;
 #endif
+    std::function<std::string(std::string, std::string, bool)> m_cryptoModulePasswordFunction;
 
     Q_DISABLE_COPY(ProfileAdapter)
 };

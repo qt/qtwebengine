@@ -330,6 +330,17 @@ content::PlatformNotificationService *ProfileQt::GetPlatformNotificationService(
     return m_platformNotificationService.get();
 }
 
+void ProfileQt::requestCryptoModulePassword(const std::string &module_name,
+                                            bool retry,
+                                            const std::string &hostname,
+                                            base::OnceCallback<void(const std::string &)> callback)
+{
+    if (m_profileAdapter->cryptoModulePasswordFunction())
+        std::move(callback).Run(m_profileAdapter->cryptoModulePasswordFunction()(module_name, hostname, retry));
+    else
+        std::move(callback).Run(std::string());
+}
+
 #if QT_CONFIG(webengine_extensions)
 ExtensionManager *ProfileQt::extensionManager()
 {

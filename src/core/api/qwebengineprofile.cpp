@@ -1119,6 +1119,23 @@ QWebEngineExtensionManager *QWebEngineProfile::extensionManager() const
 #endif
 }
 
+/*!
+    Sets the function NSS will use to request passwords for PKCS#11 tokens
+
+    The supplied \a passwordFunction must take three arguments; the first module/slot name, second host name, and finally if the request is a retry.
+    Returning an empty string as a result is interpreted as cancelling the authentication.
+    The function is allowed to block and wait on user input.
+
+    Has no effect on macOS and Windows platforms.
+
+    \since 6.12
+*/
+void QWebEngineProfile::setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)> passwordFunction)
+{
+    Q_D(QWebEngineProfile);
+    d->profileAdapter()->setCryptoModulePasswordFunction(std::move(passwordFunction));
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebengineprofile.cpp"
