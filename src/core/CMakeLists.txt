@@ -454,7 +454,6 @@ foreach(arch ${archs})
 
         if(LINUX)
             list(APPEND gnArgArg
-                angle_enable_gl=true
                 use_gtk=false # GTK toolkit bindings
                 use_qt5=false # Qt5 toolkit bindings
                 use_gio=false
@@ -484,6 +483,10 @@ foreach(arch ${archs})
                    CONDITION Perl_FOUND
             )
             endif()
+            extend_gn_list(gnArgArg
+                ARGS angle_enable_gl
+                CONDITION QT_FEATURE_opengl
+            )
             extend_gn_list(gnArgArg
                 ARGS use_system_libxslt
                 CONDITION QT_FEATURE_webengine_system_libxml
