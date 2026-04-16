@@ -15,7 +15,6 @@
 #include <QUrl>
 
 namespace QtWebEngineCore {
-Q_WEBENGINECORE_EXPORT void initialize() { }
 
 bool closingDown()
 {

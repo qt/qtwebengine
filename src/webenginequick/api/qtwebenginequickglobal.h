@@ -22,7 +22,9 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWebEngineQuick
 {
+#if QT_DEPRECATED_SINCE(6, 12)
     Q_WEBENGINEQUICK_EXPORT void initialize();
+#endif
 }
 
 QT_END_NAMESPACE

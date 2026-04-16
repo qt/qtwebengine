@@ -20,10 +20,6 @@
 
     \section2 Initializing Web Engine
 
-    For the web engine view to be rendered, the web engine must be initialized by using
-    \l QtWebEngineQuick::initialize in the application main source file, as illustrated by the
-    following code snippet:
-
     \quotefromfile minimal/main.cpp
     \skipto main
     \printuntil }
@@ -113,18 +109,6 @@
     capture devices. The \l permissionRequested() signal is emitted when a web page requests
     to make use of a resource. The supported platform features are described by the WebEnginePermission::Feature
     property.
-
-    \section2 Rendering to OpenGL Surface
-
-    When using a QQuickRenderControl to render a Qt Quick user interface to an OpenGL surface, the
-    WebEngineView type is not rendered correctly. The web engine view attempts to use a global
-    OpenGL context created by \l QtWebEngineQuick::initialize, but there is no public API for accessing
-    that context in order to share it with the \c QQuickRenderControl context.
-
-    To have the web engine view rendered correctly, it is possible to manually create a new
-    offscreen context that is shared with the \c QQuickRenderControl and to call the non-public
-    function \c qt_gl_set_global_share_context(), rather than calling \c initialize().
-    If \c initialize() is called after setting a global context, it will do nothing.
 */
 
 /*!
