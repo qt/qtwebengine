@@ -117,15 +117,9 @@
     a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
     directly point to a script collection.
 
-    For a widget based application, the web engine is automatically initialized, unless it is
-    placed in a plugin. In that case, it must be initialized in the application main source file
-    by using \l QtWebEngineQuick::initialize, as illustrated by the following code snippet:
-
     \code
     int main(int argc, char **argv)
     {
-        QtWebEngineQuick::initialize();
-
         QApplication app(argc, argv);
 
         QMainWindow window;
@@ -139,18 +133,13 @@
 
     The WebEngineView QML type allows Qt Quick applications to render regions of dynamic web
     content. A \e{WebEngineView} type may share the screen with other QML types or encompass the
-    full screen as specified within the Qt Quick application.
-
-    To make sure that OpenGL context can be shared between the GUI and render processes, the web
-    engine must be initialized by using \l QtWebEngineQuick::initialize in the application main source
-    file, as illustrated by the following code snippet:
+    full screen as specified within the Qt Quick application. This is illustrated by the
+    following code snippet:
 
     \code
     int main(int argc, char *argv[])
     {
         QGuiApplication app(argc, argv);
-
-        QtWebEngineQuick::initialize();
 
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/main.qml"));

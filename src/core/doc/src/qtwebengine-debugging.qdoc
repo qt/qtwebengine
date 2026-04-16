@@ -107,7 +107,7 @@
     \endcode
 
     QTWEBENGINE_CHROMIUM_FLAGS can also be set using \c qputenv from within the
-    application if called before QtWebEngineQuick::initialize().
+    application.
 
     \section1 Dump WebEngineContext Information
 

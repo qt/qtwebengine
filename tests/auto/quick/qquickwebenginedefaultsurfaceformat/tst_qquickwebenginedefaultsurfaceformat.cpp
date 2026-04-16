@@ -90,7 +90,6 @@ void tst_QQuickWebEngineDefaultSurfaceFormat::customDefaultSurfaceFormat()
     format.setProfile( QSurfaceFormat::CoreProfile );
     QSurfaceFormat::setDefaultFormat( format );
 
-    QtWebEngineQuick::initialize();
     QGuiApplication app(argc, argv);
 
     initEngineAndViewComponent();

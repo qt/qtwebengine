@@ -18,8 +18,6 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationName("Geopermission test");
     QCoreApplication::setOrganizationName("QtProject");
 
-    QtWebEngineQuick::initialize();
-
     QGuiApplication app(argc, argv);
 
     QQuickView view;

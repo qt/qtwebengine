@@ -29,8 +29,6 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationName("Quick Nano Browser");
     QCoreApplication::setOrganizationName("QtProject");
 
-    QtWebEngineQuick::initialize();
-
     QGuiApplication app(argc, argv);
     QLoggingCategory::setFilterRules(QStringLiteral("qt.webenginecontext.debug=true"));
 
