@@ -72,6 +72,7 @@ def isInChromiumBlacklist(file_path):
           and not file_path.startswith('chrome/browser/spellchecker')
           and not file_path.startswith('chrome/browser/tab_contents/')
           and not file_path.startswith('chrome/browser/ui/webui/')
+          and not file_path.startswith('chrome/browser/usb/')
           and not (file_path.startswith('chrome/browser/resources/')
             and not '/chromeos/' in file_path
             and not '/settings/' in file_path
