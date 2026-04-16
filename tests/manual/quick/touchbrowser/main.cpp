@@ -27,8 +27,6 @@ static QUrl startupUrl()
 
 int main(int argc, char **argv)
 {
-    QtWebEngineQuick::initialize();
-
     TouchMockingApplication app(argc, argv);
     app.setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, true);
 

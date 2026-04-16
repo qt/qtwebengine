@@ -6,11 +6,6 @@
 #include <QtQuick/qquickwindow.h>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
-namespace QtWebEngineCore
-{
-    extern void initialize();
-}
-
 QT_BEGIN_NAMESPACE
 
 namespace QtWebEngineQuick {
@@ -28,6 +23,7 @@ namespace QtWebEngineQuick {
 
 /*!
     \fn QtWebEngineQuick::initialize()
+    \deprecated [6.12] This function is not any longer in use.
 
     Sets up an OpenGL Context that can be shared between threads. This has to be done before
     QGuiApplication is created and before window's QPlatformOpenGLContext is created.
@@ -36,25 +32,9 @@ namespace QtWebEngineQuick {
     attribute with QCoreApplication::setAttribute before constructing
     QGuiApplication.
 */
-void initialize()
-{
-    auto api = QQuickWindow::graphicsApi();
-    if (!QCoreApplication::startingUp()) {
-        if (api == QSGRendererInterface::OpenGL || (api != QSGRendererInterface::Vulkan
-                && api != QSGRendererInterface::Metal && api != QSGRendererInterface::Direct3D11)) {
-            qWarning("QtWebEngineQuick::initialize() called with QCoreApplication object already created and should be call before. "\
-                     "This is deprecated and may fail in the future.");
-        }
-        QtWebEngineCore::initialize();
-        return;
-    }
-
-    // call initialize the same way as widgets do
-    qAddPreRoutine(QtWebEngineCore::initialize);
-    if (api != QSGRendererInterface::OpenGL && api != QSGRendererInterface::Vulkan
-            && api != QSGRendererInterface::Metal && api != QSGRendererInterface::Direct3D11)
-        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-}
+#if QT_DEPRECATED_SINCE(6, 12)
+void initialize() { }
+#endif
 } // namespace QtWebEngineQuick
 
 QT_END_NAMESPACE

@@ -17,8 +17,6 @@ class tst_UIDelegates : public QObject
 {
     Q_OBJECT
 public:
-    static void initMain();
-
     tst_UIDelegates();
 
 private Q_SLOTS:
@@ -41,11 +39,6 @@ private:
     QScopedPointer<TestWindow> m_window;
     QScopedPointer<QQmlComponent> m_component;
 };
-
-void tst_UIDelegates::initMain()
-{
-    QtWebEngineQuick::initialize();
-}
 
 tst_UIDelegates::tst_UIDelegates()
 {

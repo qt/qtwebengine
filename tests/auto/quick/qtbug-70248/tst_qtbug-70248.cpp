@@ -10,16 +10,9 @@
 
 class tst_qtbug_70248: public QObject {
     Q_OBJECT
-public:
-    static void initMain();
 private slots:
     void test();
 };
-
-void tst_qtbug_70248::initMain()
-{
-    QtWebEngineQuick::initialize();
-}
 
 void tst_qtbug_70248::test()
 {
