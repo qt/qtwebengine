@@ -36,6 +36,7 @@ public:
         RequestFailed,
         Cancelled,
         Completed,
+        Discovery,
     };
     Q_ENUM(WebAuthUxState)
 

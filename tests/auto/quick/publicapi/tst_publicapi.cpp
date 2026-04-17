@@ -955,6 +955,7 @@ static const QStringList expectedAPI = QStringList()
     << "QWebEngineWebAuthUxRequest.WebAuthUxState.RequestFailed --> WebAuthUxState"
     << "QWebEngineWebAuthUxRequest.WebAuthUxState.Cancelled --> WebAuthUxState"
     << "QWebEngineWebAuthUxRequest.WebAuthUxState.Completed --> WebAuthUxState"
+    << "QWebEngineWebAuthUxRequest.WebAuthUxState.Discovery --> WebAuthUxState"
     << "QWebEngineWebAuthUxRequest.PinEntryReason.Set --> PinEntryReason"
     << "QWebEngineWebAuthUxRequest.PinEntryReason.Change --> PinEntryReason"
     << "QWebEngineWebAuthUxRequest.PinEntryReason.Challenge --> PinEntryReason"

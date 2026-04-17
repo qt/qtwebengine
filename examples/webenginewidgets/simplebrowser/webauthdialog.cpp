@@ -82,10 +82,26 @@ void WebAuthDialog::updateDisplay()
     case QWebEngineWebAuthUxRequest::WebAuthUxState::RequestFailed:
         setupErrorUI();
         break;
+    case QWebEngineWebAuthUxRequest::WebAuthUxState::Discovery:
+        setupDiscoveryUI();
+        break;
     default:
         break;
     }
     adjustSize();
+}
+
+void WebAuthDialog::setupDiscoveryUI()
+{
+    clearSelectAccountButtons();
+    uiWebAuthDialog->m_headingLabel->setText("Waiting for authentication method");
+    uiWebAuthDialog->m_description->setText(
+            tr("Authentication was requested, but no suitable passkey has yet been detected."));
+    uiWebAuthDialog->m_pinGroupBox->setVisible(false);
+    uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Ok)->setVisible(false);
+    uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Cancel)->setVisible(true);
+    uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(false);
+    scrollArea->setVisible(false);
 }
 
 void WebAuthDialog::setupSelectAccountUI()

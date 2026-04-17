@@ -189,6 +189,8 @@ void AuthenticatorRequestDialogControllerPrivate::startRequest()
     if (m_pendingState) {
         setCurrentState(*m_pendingState);
         m_pendingState.reset();
+    } else {
+        setCurrentState(WebAuthUxState::Discovery);
     }
 }
 

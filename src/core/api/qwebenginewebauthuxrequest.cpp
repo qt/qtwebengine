@@ -164,6 +164,9 @@
     \value RequestFailed WebAuth request failed. Display error details.
     \value Cancelled  WebAuth request is cancelled. Close the WebAuth dialog.
     \value Completed WebAuth request is completed. Close the WebAuth dialog.
+    \value [since 6.12] Discovery Authentication is requested. No devices are available, but once one is
+           visible, for example by inserting a physical passkey device, authentication will
+           continue.
 */
 
 /*!
@@ -340,6 +343,9 @@ QWebEngineWebAuthPinRequest QWebEngineWebAuthUxRequest::pinRequest() const
            Close the WebAuth dialog.
     \value WebEngineWebAuthUxRequest.WebAuthUxState.Completed WebAuth request is completed.
            Close the WebAuth dialog.
+    \value [since 6.12] WebEngineWebAuthUxRequest.WebAuthUxState.Completed Authentication is requested.
+           No devices are available, but once one is visible, for example by inserting a physical passkey
+           device, authentication will continue.
 */
 /*!
     \property QWebEngineWebAuthUxRequest::state

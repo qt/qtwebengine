@@ -26,6 +26,7 @@ private:
     QWidget *selectAccountWidget = nullptr;
     QVBoxLayout *selectAccountLayout = nullptr;
 
+    void setupDiscoveryUI();
     void setupSelectAccountUI();
     void setupCollectPinUI();
     void setupFinishCollectTokenUI();
