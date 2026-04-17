@@ -544,7 +544,7 @@ function(add_gn_build_artifacts_to_target)
         if(APPLECLANG)
             if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0" AND
                     CMAKE_CXX_COMPILER_VERSION VERSION_LESS "17.0.0")
-                target_link_options(${arg_CMAKE_TARGET} PRIVATE -ld_classic)
+                target_link_options(${arg_CMAKE_TARGET} PUBLIC -ld_classic)
                 set_target_properties(${arg_CMAKE_TARGET} PROPERTIES
                     QT_NO_DISABLE_WARN_DUPLICATE_LIBRARIES TRUE)
             endif()
