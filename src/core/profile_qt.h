@@ -31,7 +31,7 @@ public:
     base::FilePath GetCachePath() const;
 
     // BrowserContext implementation:
-    base::FilePath GetPath() override;
+    base::FilePath GetPath() const override;
     bool IsOffTheRecord() override;
 
     content::DownloadManagerDelegate *GetDownloadManagerDelegate() override;

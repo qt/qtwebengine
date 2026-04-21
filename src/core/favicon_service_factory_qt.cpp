@@ -94,7 +94,7 @@ std::unique_ptr<KeyedService> HistoryServiceFactoryQt::BuildServiceInstanceForBr
     Q_ASSERT(!context->IsOffTheRecord());
 
     std::unique_ptr<history::HistoryService> historyService(
-            new history::HistoryService(std::make_unique<HistoryClientQt>(), nullptr));
+            new history::HistoryService(std::make_unique<HistoryClientQt>(), nullptr, nullptr, nullptr));
     if (!historyService->Init(history::HistoryDatabaseParamsForPath(context->GetPath(), version_info::Channel::DEFAULT))) {
         return nullptr;
     }

@@ -67,6 +67,10 @@ public:
 
     void PermissionGrantDestroyed(FileSystemAccessPermissionGrantQt *);
 
+    void NotifyEntryModified(const url::Origin&, const content::PathInfo&) override;
+
+    void NotifyEntryRemoved(const url::Origin&, const content::PathInfo&) override;
+
 private:
     class PermissionGrantImpl;
 

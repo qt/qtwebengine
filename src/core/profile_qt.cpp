@@ -107,7 +107,7 @@ bool ProfileQt::IsNewProfile() const
     return GetPrefs()->GetInitializationStatus() == PrefService::INITIALIZATION_STATUS_CREATED_NEW_PREF_STORE;
 }
 
-base::FilePath ProfileQt::GetPath()
+base::FilePath ProfileQt::GetPath() const
 {
     return toFilePath(m_profileAdapter->dataPath());
 }

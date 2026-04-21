@@ -18,7 +18,7 @@ public:
 
 private:
     // pdf::PDFDocumentHelperClient:
-    void OnSaveURL(content::WebContents *contents) override {}
+    void OnSaveURL() override {}
     void SetPluginCanSave(content::RenderFrameHost *render_frame_host, bool can_save) override;
     void UpdateContentRestrictions(content::RenderFrameHost *, int) override;
 };

@@ -46,34 +46,38 @@ void RuntimeAPIDelegateQt::OpenURL(const GURL &uninstall_url) { }
 
 bool RuntimeAPIDelegateQt::GetPlatformInfo(PlatformInfo *info)
 {
-    const char *os = update_client::UpdateQueryParams::GetOS();
-    if (strcmp(os, "mac") == 0) {
+    std::string_view os = update_client::UpdateQueryParams::GetOS();
+    if (os == "mac") {
         info->os = extensions::api::runtime::PlatformOs::kMac;
-    } else if (strcmp(os, "win") == 0) {
+    } else if (os == "win") {
         info->os = extensions::api::runtime::PlatformOs::kWin;
-    } else if (strcmp(os, "cros") == 0) {
+    } else if (os == "cros") {
         info->os = extensions::api::runtime::PlatformOs::kCros;
-    } else if (strcmp(os, "linux") == 0) {
+    } else if (os == "linux") {
         info->os = extensions::api::runtime::PlatformOs::kLinux;
-    } else if (strcmp(os, "openbsd") == 0) {
+    } else if (os == "openbsd") {
         info->os = extensions::api::runtime::PlatformOs::kOpenbsd;
+    } else if (os == "android") {
+        info->os = extensions::api::runtime::PlatformOs::kAndroid;
     } else {
         NOTREACHED() << "Platform not supported: " << os;
     }
 
-    const char *arch = update_client::UpdateQueryParams::GetArch();
-    if (strcmp(arch, "arm") == 0) {
+    std::string_view arch = update_client::UpdateQueryParams::GetArch();
+    if (arch == "arm") {
         info->arch = extensions::api::runtime::PlatformArch::kArm;
-    } else if (strcmp(arch, "arm64") == 0) {
+    } else if (arch == "arm64") {
         info->arch = extensions::api::runtime::PlatformArch::kArm64;
-    } else if (strcmp(arch, "x86") == 0) {
+    } else if (arch == "x86") {
         info->arch = extensions::api::runtime::PlatformArch::kX86_32;
-    } else if (strcmp(arch, "x64") == 0) {
+    } else if (arch == "x64") {
         info->arch = extensions::api::runtime::PlatformArch::kX86_64;
-    } else if (strcmp(arch, "mipsel") == 0) {
+    } else if (arch == "mipsel") {
         info->arch = extensions::api::runtime::PlatformArch::kMips;
-    } else if (strcmp(arch, "mips64el") == 0) {
+    } else if (arch == "mips64el") {
         info->arch = extensions::api::runtime::PlatformArch::kMips64;
+    } else if (arch == "riscv64") {
+        info->arch = extensions::api::runtime::PlatformArch::kRiscv64;
     } else {
         NOTREACHED();
     }

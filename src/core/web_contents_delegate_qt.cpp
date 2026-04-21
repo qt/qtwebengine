@@ -755,11 +755,11 @@ void WebContentsDelegateQt::RequestPointerLock(content::WebContents *web_content
                         user_gesture, rfh->GetLastCommittedOrigin().GetURL());
         permissionManager->RequestPermissions(
             rfh, permission_request_descriptor,
-            base::BindOnce([](content::WebContents *web_contents, PermissionManagerQt *manager, const std::vector<blink::mojom::PermissionStatus> &status)
+            base::BindOnce([](content::WebContents *web_contents, PermissionManagerQt *manager, const std::vector<content::PermissionResult> &result)
             {
-                Q_ASSERT(status.size() == 1);
+                Q_ASSERT(result.size() == 1);
 
-                web_contents->GotResponseToPointerLockRequest(status[0] == blink::mojom::PermissionStatus::GRANTED
+                web_contents->GotResponseToPointerLockRequest(result[0].status == blink::mojom::PermissionStatus::GRANTED
                     ? blink::mojom::PointerLockResult::kSuccess
                     : blink::mojom::PointerLockResult::kPermissionDenied);
             }, web_contents, permissionManager)
@@ -950,7 +950,7 @@ void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* rende
     Q_UNUSED(request_id);
 
     if (resource_load_info.request_destination == network::mojom::RequestDestination::kDocument) {
-        m_isDocumentEmpty = (resource_load_info.raw_body_bytes == 0);
+        m_isDocumentEmpty = (resource_load_info.raw_body_bytes == base::ByteCount(0));
     }
 }
 

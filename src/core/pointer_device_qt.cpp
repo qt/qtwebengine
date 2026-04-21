@@ -61,6 +61,11 @@ int GetAvailableHoverTypes()
     return HOVER_TYPE_NONE;
 }
 
+std::pair<int, int> GetAvailablePointerAndHoverTypesImpl()
+{
+    return {GetAvailablePointerTypes(), GetAvailableHoverTypes()};
+}
+
 TouchScreensAvailability GetTouchScreensAvailability()
 {
     if (!IsTouchDevicePresent())

@@ -147,6 +147,7 @@ void PrefServiceAdapter::setup(const ProfileAdapter &profileAdapter)
     registry->RegisterDictionaryPref(prefs::kDevToolsEditedFiles);
     registry->RegisterDictionaryPref(prefs::kDevToolsPreferences);
     registry->RegisterBooleanPref(prefs::kDevToolsSyncPreferences, false);
+    registry->RegisterIntegerPref(prefs::kDevToolsGoogleDeveloperProgramProfileAvailability, 0);
     // even if kDevToolsSyncPreferences is disabled, the js frontend tries to access
     // these two. E.g.: 'clearPreferences', that is overridden by devtools_compatibility.js
     registry->RegisterDictionaryPref(prefs::kDevToolsSyncedPreferencesSyncDisabled);

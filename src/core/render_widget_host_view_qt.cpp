@@ -481,50 +481,41 @@ void RenderWidgetHostViewQt::UnlockPointer()
 
 bool RenderWidgetHostViewQt::updateCursorFromResource(const ui::Cursor &cursorInfo)
 {
-    int resourceId;
-    // GetCursorDataFor only knows hotspots for 1x and 2x cursor images, in physical pixels.
-    qreal hotspotDpr = GetScreenInfo().device_scale_factor <= 1.0f ? 1.0f : 2.0f;
     qreal hotX;
     qreal hotY;
+    QImage imageQt;
 
 #if defined(USE_AURA)
-    gfx::Point hotspot;
-    bool isAnimated;
-    if (!wm::GetCursorDataFor(ui::CursorSize::kNormal, cursorInfo.type(), hotspotDpr, &resourceId,
-                              &hotspot, &isAnimated))
+    const float dpr = GetScreenInfo().device_scale_factor;
+    auto cursorData = wm::GetCursorData(cursorInfo.type(), dpr, std::nullopt,
+                                        display::Display::ROTATE_0, ui::kDefaultCursorColor);
+
+    if (!cursorData || cursorData->bitmaps.empty())
         return false;
-    hotX = hotspot.x();
-    hotY = hotspot.y();
+
+    imageQt = toQImage(cursorData->bitmaps.front(), QImage::Format_ARGB32);
+    imageQt.setDevicePixelRatio(cursorData->scale_factor);
+    hotX = cursorData->hotspot.x();
+    hotY = cursorData->hotspot.y();
+
+#if !defined(Q_OS_LINUX)
+    // Qt expects device-independent hotspot coordinates here.
+    hotX /= cursorData->scale_factor;
+    hotY /= cursorData->scale_factor;
+#endif
+
 #elif defined(Q_OS_MACOS)
     // FIXME: find a way to reimplement
     // get QImage from native cursor
     ImageInfo imageInfo = QImageFromNSCursor(cursorInfo);
-    hotX = imageInfo.hotSpotData.x();
-    hotY = imageInfo.hotSpotData.y();
+    imageQt = imageInfo.image;
+
+    qreal hotspotDpr = GetScreenInfo().device_scale_factor <= 1.0f ? 1.0f : 2.0f;
+    hotX = imageInfo.hotSpotData.x() / hotspotDpr;
+    hotY = imageInfo.hotSpotData.y() / hotspotDpr;
+
 #else
     Q_UNREACHABLE_RETURN(false);
-#endif
-
-    QImage imageQt;
-#if defined(Q_OS_MACOS)
-    imageQt = imageInfo.image;
-#else
-    const gfx::ImageSkia *imageSkia = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resourceId);
-    if (!imageSkia)
-        return false;
-
-    imageQt = toQImage(imageSkia->GetRepresentation(GetScreenInfo().device_scale_factor));
-#endif
-
-    // Convert hotspot coordinates into device-independent pixels.
-    hotX /= hotspotDpr;
-    hotY /= hotspotDpr;
-
-#if defined(Q_OS_LINUX)
-    // QTBUG-68571: On Linux (xcb, wayland, eglfs), hotspot coordinates must be in physical pixels.
-    qreal imageDpr = imageQt.devicePixelRatio();
-    hotX *= imageDpr;
-    hotY *= imageDpr;
 #endif
 
     m_delegate->updateCursor(QCursor(QPixmap::fromImage(std::move(imageQt)), qRound(hotX), qRound(hotY)));

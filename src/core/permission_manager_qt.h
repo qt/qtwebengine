@@ -61,11 +61,11 @@ public:
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
-    content::PermissionStatus GetPermissionStatusForCurrentDocument(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, bool) override;
+    content::PermissionResult GetPermissionResultForCurrentDocument(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, bool) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForWorker(const blink::mojom::PermissionDescriptorPtr&, content::RenderProcessHost *, const GURL &) override;
+    content::PermissionResult GetPermissionResultForWorker(const blink::mojom::PermissionDescriptorPtr&, content::RenderProcessHost *, const GURL &) override;
 
-    blink::mojom::PermissionStatus GetPermissionStatusForEmbeddedRequester(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, const url::Origin&) override;
+    content::PermissionResult GetPermissionResultForEmbeddedRequester(const blink::mojom::PermissionDescriptorPtr&, content::RenderFrameHost*, const url::Origin&) override;
 
     content::PermissionResult GetPermissionResultForOriginWithoutContext(const blink::mojom::PermissionDescriptorPtr&, const url::Origin&, const url::Origin&) override;
 
@@ -77,12 +77,12 @@ public:
     void RequestPermissions(
             content::RenderFrameHost *render_frame_host,
             const content::PermissionRequestDescription &request_description,
-            base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback) override;
+            base::OnceCallback<void(const std::vector<content::PermissionResult>&)> callback) override;
 
     void RequestPermissionsFromCurrentDocument(
             content::RenderFrameHost *render_frame_host,
             const content::PermissionRequestDescription &request_description,
-            base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus> &)> callback) override;
+            base::OnceCallback<void(const std::vector<content::PermissionResult> &)> callback) override;
 
 private:
     struct Request {
@@ -95,12 +95,12 @@ private:
         int id;
         std::vector<blink::PermissionType> types;
         QUrl origin;
-        base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)> callback;
+        base::OnceCallback<void(const std::vector<content::PermissionResult>&)> callback;
     };
     struct Subscription {
         QWebEnginePermission::PermissionType type;
         QUrl origin;
-        base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback;
+        base::RepeatingCallback<void(content::PermissionResult)> callback;
     };
 
     void setPermissionImpl(

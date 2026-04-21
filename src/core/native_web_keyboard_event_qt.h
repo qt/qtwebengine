@@ -7,7 +7,6 @@
 
 #include <QtCore/qglobal.h>
 
-#include "ui/gfx/native_widget_types.h"
 #include "components/input/native_web_keyboard_event.h"
 
 QT_FORWARD_DECLARE_CLASS(QKeyEvent)

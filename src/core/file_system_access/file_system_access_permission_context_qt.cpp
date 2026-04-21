@@ -756,6 +756,12 @@ bool FileSystemAccessPermissionContextQt::IsFileTypeDangerous(const base::FilePa
     return false;
 }
 
+void FileSystemAccessPermissionContextQt::NotifyEntryModified(const url::Origin&, const content::PathInfo&)
+{}
+
+void FileSystemAccessPermissionContextQt::NotifyEntryRemoved(const url::Origin&, const content::PathInfo&)
+{}
+
 void FileSystemAccessPermissionContextQt::CheckPathsAgainstEnterprisePolicy(
         std::vector<content::PathInfo> entries, content::GlobalRenderFrameHostId,
         EntriesAllowedByEnterprisePolicyCallback callback)

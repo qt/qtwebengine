@@ -20,6 +20,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/events/event_switches.h"
+#include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme.h"
 
 #include <QFont>
@@ -442,12 +443,14 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     // Set the theme colors. Based on chrome_content_browser_client.cc:
     const ui::NativeTheme *webTheme = ui::NativeTheme::GetInstanceForWeb();
     if (webTheme) {
-        switch (webTheme->GetPreferredColorScheme()) {
+        switch (webTheme->preferred_color_scheme()) {
           case ui::NativeTheme::PreferredColorScheme::kDark:
             prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kDark;
             break;
           case ui::NativeTheme::PreferredColorScheme::kLight:
             prefs->preferred_color_scheme = blink::mojom::PreferredColorScheme::kLight;
+            break;
+          case ui::NativeTheme::PreferredColorScheme::kNoPreference:
             break;
         }
     }
@@ -460,8 +463,8 @@ void WebEngineSettings::applySettingsToWebPreferences(blink::web_pref::WebPrefer
     }
 
     // Apply system caption style.
-    if (!style && webTheme)
-        style = webTheme->GetSystemCaptionStyle();
+    if (!style)
+        style = ui::CaptionStyle::FromSystemSettings();
 
     if (style) {
         prefs->text_track_background_color = style->background_color;

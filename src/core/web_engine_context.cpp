@@ -879,7 +879,7 @@ WebEngineContext::WebEngineContext()
     content::BrowserTaskExecutor::Create();
     auto* provider = m_mainDelegate->CreateVariationsIdsProvider();
     if (!provider) {
-        variations::VariationsIdsProvider::Create(
+        variations::VariationsIdsProvider::CreateInstance(
                 variations::VariationsIdsProvider::Mode::kUseSignedInState);
     }
     m_mainDelegate->PostEarlyInitialization({});
