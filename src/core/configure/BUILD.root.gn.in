@@ -175,6 +175,8 @@ shared_library("QtWebEngineCore") {
     deps += [
       "$_ozone_extra_directory:qt",
       "//build/config/linux/libdrm",
+      "//ui/gfx/linux:drm",
+      "//ui/gfx/linux:gbm",
     ]
 
     if (ozone_platform_x11) {
@@ -411,7 +413,6 @@ source_set("qtwebengine_sources") {
     deps += [
       "//build/config/linux/libdrm",
       "//ui/gfx/linux:drm",
-      "//ui/gfx/linux:gbm",
     ]
 
     sources += [
