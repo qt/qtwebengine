@@ -734,6 +734,13 @@ void RenderWidgetHostViewQtDelegateClient::handleGestureEvent(QNativeGestureEven
 
 void RenderWidgetHostViewQtDelegateClient::handleHoverEvent(QHoverEvent *event)
 {
+    // Don't forward hover events during an active touch sequence.
+    // Qt Quick delivers hover events for touch points, and these get converted
+    // to WebMouseEvent with no button pressed, which causes Chromium's compositor
+    // to cancel active scrollbar drags (QTBUG-136619).
+    if (m_touchMotionStarted)
+        return;
+
     auto *hostDelegate = m_rwhv->host()->delegate();
     if (hostDelegate && hostDelegate->GetInputEventRouter()) {
         auto webEvent = WebEventFactory::toWebMouseEvent(event);
