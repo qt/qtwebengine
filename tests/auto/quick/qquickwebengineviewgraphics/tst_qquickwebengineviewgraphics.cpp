@@ -87,6 +87,7 @@ void tst_QQuickWebEngineViewGraphics::simpleGraphics()
 {
     setHtml(greenSquare);
     m_view->show();
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(m_view.data()));
     verifyGreenSquare(m_view.data());
     m_view->hide();
 }
@@ -110,6 +111,7 @@ void tst_QQuickWebEngineViewGraphics::showHideShow()
 void tst_QQuickWebEngineViewGraphics::simpleAcceleratedLayer()
 {
     m_view->show();
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(m_view.data()));
     setHtml(acLayerGreenSquare);
     verifyGreenSquare(m_view.data());
     m_view->hide();
