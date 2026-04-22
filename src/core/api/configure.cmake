@@ -134,7 +134,6 @@ qt_feature("webengine-extensions" PUBLIC
     SECTION "WebEngine"
     LABEL "Extensions"
     PURPOSE "Enables Chromium extensions API."
-    AUTODETECT NOT QT_FEATURE_webengine_embedded_build
 )
 qt_feature("webengine-webrtc" PRIVATE
     LABEL "WebRTC"
