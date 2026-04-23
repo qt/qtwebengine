@@ -257,6 +257,8 @@ public:
 
 private:
     BrowserMainPartsQt *m_browserMainParts = nullptr;
+
+    std::unique_ptr<content::WebAuthenticationDelegate> m_webAuthenticationDelegate;
 };
 
 } // namespace QtWebEngineCore

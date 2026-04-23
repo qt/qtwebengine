@@ -1466,8 +1466,9 @@ ContentBrowserClientQt::AllowWebBluetooth(content::BrowserContext *browser_conte
 
 content::WebAuthenticationDelegate *ContentBrowserClientQt::GetWebAuthenticationDelegate()
 {
-    static base::NoDestructor<WebAuthenticationDelegateQt> delegate;
-    return delegate.get();
+    if (!m_webAuthenticationDelegate)
+        m_webAuthenticationDelegate.reset(new WebAuthenticationDelegateQt());
+    return m_webAuthenticationDelegate.get();
 }
 
 #if !BUILDFLAG(IS_ANDROID)
