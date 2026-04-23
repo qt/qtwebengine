@@ -528,6 +528,10 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
                 content::kRegistryStreamTypeDesktop);
     }
 
+    // Not in the registry — try parsing the raw device ID string directly.
+    if (mediaId.type == content::DesktopMediaID::TYPE_NONE)
+        mediaId = content::DesktopMediaID::Parse(request.requested_video_device_ids.front());
+
     // Received invalid device id.
     if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
         std::move(callback).Run(deviceSet, MediaStreamRequestResult::INVALID_STATE, std::unique_ptr<content::MediaStreamUI>());
