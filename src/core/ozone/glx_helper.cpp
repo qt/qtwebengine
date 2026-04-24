@@ -252,6 +252,15 @@ const std::vector<uint64_t> &GLXHelper::getSupportedModifiers() const
                                              DRM_FORMAT_MOD_INVALID),
                                  supportedModifiers.end());
 
+        // Remove multi-planar modifiers.
+        supportedModifiers.erase(
+                std::remove_if(supportedModifiers.begin(), supportedModifiers.end(),
+                               [this](uint64_t modifier) {
+                                   return !m_gbmBufferFactory->isSinglePlanar(DRM_FORMAT_ARGB8888,
+                                                                              modifier);
+                               }),
+                supportedModifiers.end());
+
         if (supportedModifiers.empty())
             return;
 

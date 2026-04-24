@@ -79,6 +79,21 @@ bool GbmBufferFactory::canCreateNativePixmapForFormat(gfx::BufferFormat format) 
     return m_gbmDevice->CanCreateBufferForFormat(fourccFormat);
 }
 
+bool GbmBufferFactory::isSinglePlanar(uint32_t fourccFormat, uint64_t modifier) const
+{
+    QMutexLocker locker(&m_mutex);
+
+    if (modifier == DRM_FORMAT_MOD_LINEAR || modifier == DRM_FORMAT_MOD_INVALID)
+        return true;
+
+    if (!m_gbmDevice)
+        return false;
+
+    const int planeCount = gbm_device_get_format_modifier_plane_count(
+            m_gbmDevice->GetNativeDevice(), fourccFormat, modifier);
+    return (planeCount == 1);
+}
+
 std::unique_ptr<ui::GbmBuffer>
 GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size,
                                             gfx::BufferUsage usage,

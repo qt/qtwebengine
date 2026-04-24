@@ -32,6 +32,7 @@ public:
 
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
+    bool isSinglePlanar(uint32_t fourccFormat, uint64_t modifier) const;
     std::unique_ptr<ui::GbmBuffer>
     createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size, gfx::BufferUsage usage,
                               const std::vector<uint64_t> &modifiers);

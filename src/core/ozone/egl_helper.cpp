@@ -397,7 +397,7 @@ const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(gfx::BufferFormat 
 
     cachedModifiers.reserve(numModifiers);
     for (EGLint i = 0; i < numModifiers; ++i) {
-        if (!externalOnly[i])
+        if (!externalOnly[i] && m_gbmBufferFactory->isSinglePlanar(fourccFormat, modifiers[i]))
             cachedModifiers.push_back(modifiers[i]);
     }
 

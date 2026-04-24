@@ -117,6 +117,18 @@ std::string drmFormatModifierToString(const uint64_t modifier)
 
     return vendorTag + " " + hexValue;
 }
+
+std::string fourccToString(const uint32_t fourcc)
+{
+    char buf[5];
+    buf[0] = static_cast<char>(fourcc & 0xff);
+    buf[1] = static_cast<char>((fourcc >> 8) & 0xff);
+    buf[2] = static_cast<char>((fourcc >> 16) & 0xff);
+    buf[3] = static_cast<char>((fourcc >> 24) & 0xff);
+    buf[4] = 0;
+    return std::string(buf);
+}
+
 } // namespace OzoneUtilQt
 
 QT_END_NAMESPACE

@@ -103,10 +103,11 @@ public:
                                                      const gfx::Size &size,
                                                      gfx::NativePixmapHandle handle);
 
+    const char *getLastEGLErrorString() const;
+
 private:
     EGLHelper();
     std::string getDrmRenderNodeFilePath(const char *extensions) const;
-    const char *getLastEGLErrorString() const;
 
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     QScopedPointer<EGLFunctions> m_functions;
