@@ -43,8 +43,8 @@ class DEPSParser(ABC):
         return self.local_scope["recursedeps"]
 
 
-chromium_version = '142.0.7444.273'
-chromium_branch = '7444'
+chromium_version = '144.0.7559.248'
+chromium_branch = '7559'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -59,9 +59,9 @@ submodule_blacklist = [
   'buildtools/third_party/libunwind/trunk',
   'chrome/browser/resources/chromeos/quickoffice',
   'remoting/host/installer/linux/internal',
+  'third_party/openscreen/src/buildtools',
   'third_party/widevine/cdm/chromeos',
   'third_party/widevine/cdm/linux',
-  'third_party/openscreen/src/buildtools',
   'third_party/widevine/test/license_server',
   'ui/file_manager/internal'
 ]
@@ -110,12 +110,14 @@ def read(parserCls):
                     extradeps_parser.topmost_supermodule_path_prefix = extradeps_dir
                     extradeps_submodules = extradeps_parser.parse(extra_deps)
                     for extrasub in extradeps_submodules:
+                        print('submodule ' + extradeps_dir + '/' + extrasub.path)
                         submodule_dict[extradeps_dir + '/' + extrasub.path] = extrasub
 
 
     # Remove unwanted upstream submodules
     for path in submodule_blacklist:
         if path in submodule_dict:
+            print('skipping ' + path)
             del submodule_dict[path]
 
     return submodule_dict.values()

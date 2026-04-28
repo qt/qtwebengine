@@ -24,13 +24,13 @@ QImage toQImage(const SkBitmap &bitmap)
     QImage image;
     switch (bitmap.colorType()) {
     case kUnknown_SkColorType:
-    case kRGBA_F16Norm_SkColorType:
     case kR8G8_unorm_SkColorType:
     case kA16_float_SkColorType:
     case kA16_unorm_SkColorType:
     case kR16G16_float_SkColorType:
     case kR16G16_unorm_SkColorType:
     case kR8_unorm_SkColorType:
+    case kR16_unorm_SkColorType:
     case kRGBA_10x6_SkColorType:
         qWarning("Unknown or unsupported skia image format");
         break;
@@ -138,6 +138,7 @@ QImage toQImage(const SkBitmap &bitmap)
         }
         break;
     case kRGBA_F16_SkColorType:
+    case kRGBA_F16Norm_SkColorType:
     case kRGB_F16F16F16x_SkColorType:
         switch (bitmap.alphaType()) {
         case kUnknown_SkAlphaType:
@@ -220,17 +221,15 @@ SkBitmap toSkBitmap(const QImage &image)
 
 QIcon toQIcon(const gfx::Image &image)
 {
-    // Based on ExtractSkBitmapsToStore in chromium/components/favicon/core/favicon_service_impl.cc
+    // Based on ExtractSkBitmapsToStore in components/favicon/core/core_favicon_service.cc
     gfx::ImageSkia image_skia = image.AsImageSkia();
     image_skia.EnsureRepsForSupportedScales();
-    const std::vector<gfx::ImageSkiaRep> &image_reps = image_skia.image_reps();
     std::vector<SkBitmap> bitmaps;
     const std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-    for (size_t i = 0; i < image_reps.size(); ++i) {
-        // Don't save if the scale isn't one of supported favicon scales.
-        if (!base::Contains(favicon_scales, image_reps[i].scale()))
-            continue;
-        bitmaps.push_back(image_reps[i].GetBitmap());
+    for (const gfx::ImageSkiaRep& rep : image_skia.image_reps()) {
+        // Only save images with a supported scale.
+        if (base::Contains(favicon_scales, rep.scale()))
+            bitmaps.push_back(rep.GetBitmap());
     }
     return toQIcon(bitmaps);
 }

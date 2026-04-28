@@ -131,7 +131,7 @@ QtWebEngineCore::ExtensionManager *ExtensionSystemQt::extensionManager()
 void ExtensionSystemQt::LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory)
 {
     int flags = Extension::REQUIRE_KEY;
-    std::string error;
+    std::u16string error;
 
     scoped_refptr<const Extension> extension = Extension::Create(
             directory,
@@ -195,11 +195,11 @@ void ExtensionSystemQt::NotifyExtensionLoaded(const Extension *extension)
         }
         content::PluginService *plugin_service =
                 content::PluginService::GetInstance();
-        plugin_service->RefreshPlugins();
-        plugin_service->RegisterInternalPlugin(info, true);
+        plugin_service->GetPlugins();
+        plugin_service->RegisterInternalPlugin(info);
     }
     if (plugins_changed)
-      content::PluginService::GetInstance()->PurgePluginListCache(browser_context_, false);
+        content::PluginService::PurgePluginListCache(browser_context_);
 #endif // BUILDFLAG(ENABLE_PLUGINS)
 
     extension_registry_->AddReady(extension);

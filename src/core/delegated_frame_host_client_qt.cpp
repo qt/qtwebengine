@@ -15,7 +15,7 @@ ui::Layer *DelegatedFrameHostClientQt::DelegatedFrameHostGetLayer() const
 
 bool DelegatedFrameHostClientQt::DelegatedFrameHostIsVisible() const
 {
-    return !p->host()->is_hidden();
+    return !p->host()->IsHidden();
 }
 
 SkColor DelegatedFrameHostClientQt::DelegatedFrameHostGetGutterColor() const

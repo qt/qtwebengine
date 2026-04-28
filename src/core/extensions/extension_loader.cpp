@@ -52,11 +52,11 @@ ExtensionLoader::LoadingInfo ExtensionLoader::loadExtensionOnFileThread(const ba
     }
 
     int loadFlags = Extension::NO_FLAGS;
-    std::string error;
+    std::u16string error;
     scoped_refptr<Extension> extension =
             file_util::LoadExtension(path, mojom::ManifestLocation::kUnpacked, loadFlags, &error);
     if (!extension.get()) {
-        result.error = error;
+        result.error = QString::fromStdU16String(error).toStdString();
         return result;
     }
 

@@ -55,7 +55,6 @@ public:
 
     bool IsAutofillEnabled() const override;
     bool IsAutofillProfileEnabled() const override;
-    bool IsAutofillPaymentMethodsEnabled() const override;
     bool IsAutocompleteEnabled() const override;
     bool IsPasswordManagerEnabled() const override;
 

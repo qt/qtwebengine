@@ -176,6 +176,10 @@ public:
 
     int GetButtonState() const override { return 0; }
 
+    // Qt touch events provide a valid touch contact area. Report native touch-major
+    // support so Chromium does not enlarge the touch slop for zero touch-major input.
+    bool HasNativeTouchMajor(size_t) const override { return true; }
+
 private:
     QList<TouchPoint> touchPoints;
     base::TimeTicks eventTime;

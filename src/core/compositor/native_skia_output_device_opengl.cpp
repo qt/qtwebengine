@@ -318,10 +318,10 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             base::ScopedFD scopedFd(dmaBufFd);
 
             const uint32_t fourccFormat =
-                    ui::GetFourCCFormatFromBufferFormat(nativePixmap->GetBufferFormat());
+                    ui::GetFourCCFormatFromSharedImageFormat(nativePixmap->GetSharedImageFormat());
             qCDebug(lcWebEngineCompositor, "  FourCC Format: %s",
                     ui::DrmFormatToString(fourccFormat));
-            const uint64_t modifier = nativePixmap->GetBufferFormatModifier();
+            const uint64_t modifier = nativePixmap->GetFormatModifier();
             qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: %s",
                     OzoneUtilQt::drmFormatModifierToString(modifier).c_str());
 

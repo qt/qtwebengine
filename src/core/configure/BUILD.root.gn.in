@@ -331,6 +331,7 @@ source_set("qtwebengine_sources") {
     "//printing/buildflags:buildflags",
     "//qtwebengine/common:mojo_bindings",
     "//rlz/buildflags:buildflags",
+    "//services/proxy_resolver/public/mojom",
     "//third_party/blink/public/mojom:mojom_platform",
   ]
   sources = [
@@ -505,8 +506,8 @@ source_set("qtwebengine_sources") {
       "//chrome/browser/ui/webui/sandbox/sandbox_handler.cc",
       "//chrome/browser/ui/webui/sandbox/sandbox_handler.h",
     ]
-    deps += [ "//services/proxy_resolver_win",
-              "//services/proxy_resolver_win/public/mojom",
+    deps += [
+      "//services/proxy_resolver_win",
     ]
   }
   if (enable_spellcheck) {
@@ -638,6 +639,7 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/components/ukm_resources.pak",
+    "$root_gen_dir/components/user_actions_ui_resources.pak",
     "$root_gen_dir/content/attribution_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
@@ -653,9 +655,9 @@ repack("qtwebengine_repack_resources") {
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/strings/permission_element_generated_strings.pak",
+    "$root_gen_dir/ui/resources/ui_lottie_resources.pak",
     "$root_gen_dir/ui/webui/resources/webui_resources.pak",
-    "$root_gen_dir/components/user_actions_ui_resources.pak",
-  ]
+    ]
   if (!is_debug) {
     output = "$root_out_dir/qtwebengine_resources.pak"
   } else {
@@ -688,6 +690,7 @@ repack("qtwebengine_repack_resources") {
      "//net:net_resources_grit",
      "//third_party/blink/public:resources_grit",
      "//third_party/blink/public/strings:permission_element_generated_strings_grit",
+     "//ui/resources:ui_lottie_resources_grd_grit",
      "//ui/webui/resources",
   ]
   if (enable_extensions) {

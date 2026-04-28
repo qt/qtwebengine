@@ -7,6 +7,7 @@
 
 #include <QtCore/qscopedpointer.h>
 
+#include "components/viz/common/resources/shared_image_format.h"
 #include "ui/gfx/buffer_types.h"
 
 #include <vector>
@@ -57,7 +58,7 @@ public:
     GLXFunctions *functions() const { return m_functions.get(); }
     bool isDmaBufSupported() const { return m_isDmaBufSupported; }
     GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
-    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
+    bool canCreateNativePixmapForFormat(viz::SharedImageFormat format) const;
 
     GLXFBConfig getFBConfig();
     GLXPixmap importBufferAsPixmap(int dmaBufFd, uint32_t size, uint16_t width, uint16_t height,

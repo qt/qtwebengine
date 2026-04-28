@@ -42,7 +42,7 @@
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
 #if BUILDFLAG(IS_OZONE_X11)
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
+#include "ui/gfx/linux/gbm_support_x11.h"
 
 extern void *GetQtXDisplay();
 #endif
@@ -82,7 +82,8 @@ public:
         }
         return properties;
     }
-    bool IsNativePixmapConfigSupported(gfx::BufferFormat format, gfx::BufferUsage usage) const override;
+    bool IsNativePixmapConfigSupported(viz::SharedImageFormat format,
+                                       gfx::BufferUsage usage) const override;
     bool IsWindowCompositingSupported() const override { return false; }
 
 private:
@@ -116,8 +117,13 @@ const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformPropert
     static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
     static std::once_flag flag;
     std::call_once(flag, [this]() {
-        DCHECK(m_supportsNativePixmaps);
-        properties->fetch_buffer_formats_for_gmb_on_gpu = m_supportsNativePixmaps.value();
+#if BUILDFLAG(IS_OZONE_X11)
+        if (GetQtXDisplay()) {
+            properties->message_pump_type_for_viz_compositor =
+                    base::MessagePumpType::UI;
+            properties->skia_can_fall_back_to_x11 = true;
+        }
+#endif
     });
 
     return *properties;
@@ -248,7 +254,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &params)
         base::ThreadPool::PostTask(FROM_HERE,
                                    base::BindOnce([]()
             {
-                ui::GpuMemoryBufferSupportX11::GetInstance();
+                ui::GBMSupportX11::GetInstance();
             }));
     }
 #endif
@@ -260,8 +266,12 @@ std::unique_ptr<InputMethod> OzonePlatformQt::CreateInputMethod(ImeKeyEventDispa
     return nullptr;
 }
 
-bool OzonePlatformQt::IsNativePixmapConfigSupported(gfx::BufferFormat format, gfx::BufferUsage usage) const
+bool OzonePlatformQt::IsNativePixmapConfigSupported(viz::SharedImageFormat format,
+                                                    gfx::BufferUsage usage) const
 {
+    if (usage == gfx::BufferUsage::SCANOUT_CPU_READ_WRITE && format == viz::MultiPlaneFormat::kNV12)
+        return false;
+
     return gfx::ClientNativePixmapDmaBuf::IsConfigurationSupported(format, usage);
 }
 

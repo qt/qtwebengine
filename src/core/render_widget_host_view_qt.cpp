@@ -381,7 +381,7 @@ bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
 
 void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
                                              const gfx::Size &output_size,
-                                             base::OnceCallback<void(const SkBitmap &)> callback)
+                                             base::OnceCallback<void(const viz::CopyOutputBitmapWithMetadata &)> callback)
 {
     m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, std::move(callback));
 }

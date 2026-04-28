@@ -106,7 +106,7 @@ private:
         m_firstBytePosition = 0;
         m_device = nullptr;
         m_error = 0;
-        QWebEngineUrlScheme scheme = QWebEngineUrlScheme::schemeByName(QByteArray::fromStdString(request.url.scheme()));
+        QWebEngineUrlScheme scheme = QWebEngineUrlScheme::schemeByName(QByteArrayView(request.url.scheme()).toByteArray());
         m_corsEnabled = scheme.flags().testFlag(QWebEngineUrlScheme::CorsEnabled);
         m_isLocal = scheme.flags().testFlag(QWebEngineUrlScheme::LocalScheme);
     }

@@ -36,7 +36,6 @@ public:
     const char *GetNameForLogging() override;
 
 private:
-    void OnPluginsLoaded(const std::vector<content::WebPluginInfo> &plugins);
     void LoadPlaceholderHTML();
 
     base::WeakPtrFactory<PDFIFrameNavigationThrottleQt> weak_factory_{this};

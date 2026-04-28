@@ -18,6 +18,7 @@
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_clock.h"
 #include "cc/base/switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/features.h"
@@ -880,7 +881,8 @@ WebEngineContext::WebEngineContext()
     auto* provider = m_mainDelegate->CreateVariationsIdsProvider();
     if (!provider) {
         variations::VariationsIdsProvider::CreateInstance(
-                variations::VariationsIdsProvider::Mode::kUseSignedInState);
+                variations::VariationsIdsProvider::Mode::kUseSignedInState,
+                std::make_unique<base::DefaultClock>());
     }
     m_mainDelegate->PostEarlyInitialization({});
     content::StartBrowserThreadPool();

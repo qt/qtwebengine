@@ -72,7 +72,7 @@ public:
     bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
-                         base::OnceCallback<void(const SkBitmap &)> callback) override;
+                         base::OnceCallback<void(const viz::CopyOutputBitmapWithMetadata &)> callback) override;
     void ShowWithVisibility(content::PageVisibilityState page_visibility) override;
     void Hide() override;
     bool IsShowing() override;
@@ -144,6 +144,7 @@ public:
     void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() override {}
     void InvalidateLocalSurfaceIdAndAllocationGroup() override {}
     void OnRendererWidgetCreated() override;
+    void OnUnconfirmedTapConvertedToTap() override {}
 
     // Overridden from ui::GestureProviderClient.
     void OnGestureEvent(const ui::GestureEventData& gesture) override;

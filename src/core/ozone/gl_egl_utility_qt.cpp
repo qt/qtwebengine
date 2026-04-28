@@ -13,6 +13,7 @@
 #include "gl_egl_utility_qt.h"
 
 #include "base/containers/contains.h"
+#include "ui/base/ozone_buildflags.h"
 
 #include <algorithm>
 #include <vector>
@@ -21,7 +22,7 @@
 #if BUILDFLAG(IS_OZONE_X11)
 #include "ui/base/x/x11_gl_egl_utility.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
+#include "ui/gfx/linux/gbm_support_x11.h"
 #include "ui/gl/gl_implementation.h"
 
 extern void *GetQtXDisplay();
@@ -99,25 +100,6 @@ void GLEGLUtilityQt::ChooseEGLAlphaAndBufferSize(EGLint *alpha_size, EGLint *buf
 #if BUILDFLAG(IS_OZONE_X11)
     if (GetQtXDisplay())
         ChoosePlatformCustomAlphaAndBufferSize(alpha_size, buffer_size);
-#endif
-}
-
-void GLEGLUtilityQt::CollectGpuExtraInfo(bool enable_native_gpu_memory_buffers,
-                                         gfx::GpuExtraInfo &gpu_extra_info) const
-{
-#if BUILDFLAG(IS_OZONE_X11)
-    if (GetQtXDisplay()) {
-        // TODO(crbug.com/40110388): Enable by default.
-        if (enable_native_gpu_memory_buffers) {
-            gpu_extra_info.gpu_memory_buffer_support_x11 =
-                    ui::GpuMemoryBufferSupportX11::GetInstance()->supported_configs();
-        }
-
-        if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
-            // ANGLE does not yet support EGL_EXT_image_dma_buf_import[_modifiers].
-            gpu_extra_info.gpu_memory_buffer_support_x11.clear();
-        }
-    }
 #endif
 }
 

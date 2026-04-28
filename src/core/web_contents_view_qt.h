@@ -70,7 +70,10 @@ public:
 
     content::DropData* GetDropData() const override { QT_NOT_YET_IMPLEMENTED return nullptr; }
 
-    gfx::Rect GetViewBounds() const override { return gfx::Rect(); }
+    // These functions are currently unused.
+    gfx::Rect GetViewBounds() const override { Q_UNREACHABLE(); return {}; };
+    void Resize(const gfx::Rect&) override { Q_UNREACHABLE(); }
+    gfx::Size GetSize() const override { Q_UNREACHABLE(); return {}; };
 
     void FocusThroughTabTraversal(bool reverse) override;
     void OnCapturerCountChanged() override { QT_NOT_YET_IMPLEMENTED }

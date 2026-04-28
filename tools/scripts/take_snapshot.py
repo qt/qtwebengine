@@ -263,6 +263,7 @@ def isInChromiumBlacklist(file_path):
                  or file_path.startswith('base/test/launcher/')
                  or file_path.startswith('base/test/library_loader/')
                  or file_path.startswith('base/test/metrics/')
+                 or file_path.startswith('device/vr/public/mojom/test')
                )
            )
         ))):

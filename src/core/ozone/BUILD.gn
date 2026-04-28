@@ -38,7 +38,7 @@ source_set("qt") {
   if (ozone_platform_x11) {
     deps += [
       "//ui/base/x:gl",
-      "//ui/gfx/linux:gpu_memory_buffer_support_x11",
+      "//ui/gfx/linux:gbm_support_x11",
     ]
 
     libs += [ "X11" ]

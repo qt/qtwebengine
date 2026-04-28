@@ -115,9 +115,8 @@ void WebChannelTransport::NativeQtSendMessage(gin::Arguments *args)
         return;
     }
     v8::Local<v8::String> jsonString = v8::Local<v8::String>::Cast(jsonValue);
-    std::vector<uint8_t> json(jsonString->Utf8Length(isolate), 0);
-    jsonString->WriteUtf8(isolate, reinterpret_cast<char *>(json.data()), json.size(), nullptr,
-                          v8::String::REPLACE_INVALID_UTF8);
+    std::vector<uint8_t> json(jsonString->Utf8LengthV2(isolate), 0);
+    jsonString->WriteUtf8V2(isolate, reinterpret_cast<char *>(json.data()), json.size());
 
     if (!m_remote) {
         renderFrame->GetRemoteAssociatedInterfaces()->GetInterface(&m_remote);

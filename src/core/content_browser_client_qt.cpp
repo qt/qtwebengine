@@ -18,6 +18,7 @@
 #include "components/performance_manager/embedder/binders.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -520,7 +521,7 @@ void ContentBrowserClientQt::RegisterBrowserInterfaceBindersForFrame(
     content::BrowserContext *browser_context = render_frame_host->GetProcess()->GetBrowserContext();
     auto *extension = extensions::ExtensionRegistry::Get(browser_context)
                         ->enabled_extensions()
-                        .GetByID(site.host());
+                        .GetByID(std::string(site.host()));
     if (!extension)
         return;
     extensions::ExtensionsBrowserClient::Get()->RegisterBrowserInterfaceBindersForFrame(map,
@@ -1251,7 +1252,7 @@ void ContentBrowserClientQt::RegisterNonNetworkSubresourceURLLoaderFactories(int
     // Install file scheme if necessary:
     bool install_file_scheme = false;
     if (web_contents && !is_background_page) {
-        const std::string scheme = url.scheme();
+        const std::string scheme(url.scheme());
         install_file_scheme = base::Contains(url::GetLocalSchemes(), scheme);
         if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(scheme))
             install_file_scheme = cs->flags & (url::CustomScheme::LocalAccessAllowed | url::CustomScheme::Local);
@@ -1479,7 +1480,7 @@ void ContentBrowserClientQt::SiteInstanceGotProcessAndSite(content::SiteInstance
     auto site_url = site_instance->GetSiteURL();
     if (!site_url.SchemeIs(extensions::kExtensionScheme))
         return;
-    const extensions::Extension *extension = registry->enabled_extensions().GetByID(site_url.host());
+    const extensions::Extension *extension = registry->enabled_extensions().GetByID(std::string(site_url.host()));
     if (!extension)
         return;
 
@@ -1522,6 +1523,13 @@ ContentBrowserClientQt::GetWebAuthenticationRequestDelegate(
     return std::make_unique<AuthenticatorRequestClientDelegateQt>(render_frame_host);
 }
 #endif
+
+void ContentBrowserClientQt::CrossProcessSubframeRenderProcessGone(content::RenderFrameHost *render_frame_host)
+{
+    if (auto frame_node = performance_manager::PerformanceManager::GetFrameNodeForRenderFrameHost(render_frame_host))
+        frame_node->CrossProcessSubframeRenderProcessGone();
+    content::ContentBrowserClient::CrossProcessSubframeRenderProcessGone(render_frame_host);
+}
 
 void ContentBrowserClientQt::GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
                                                   const net::SiteForCookies & /*site_for_cookies*/,

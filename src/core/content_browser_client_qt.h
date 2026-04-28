@@ -250,6 +250,8 @@ public:
     std::unique_ptr<content::AuthenticatorRequestClientDelegate>
     GetWebAuthenticationRequestDelegate(content::RenderFrameHost *render_frame_host) override;
 #endif
+    void CrossProcessSubframeRenderProcessGone(
+            content::RenderFrameHost *render_frame_host) override;
 
     void GetMediaDeviceIDSalt(content::RenderFrameHost *rfh,
                               const net::SiteForCookies &site_for_cookies,

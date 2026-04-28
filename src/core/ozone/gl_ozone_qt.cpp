@@ -105,14 +105,14 @@ gl::EGLDisplayPlatform GLOzoneQt::GetNativeDisplay()
     return gl::EGLDisplayPlatform(EGL_DEFAULT_DISPLAY);
 }
 
-bool GLOzoneQt::CanImportNativePixmap(gfx::BufferFormat format)
+bool GLOzoneQt::CanImportNativePixmap(viz::SharedImageFormat format)
 {
     switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
-        return NativePixmapEGLBinding::IsBufferFormatSupported(format);
+        return NativePixmapEGLBinding::IsSharedImageFormatSupported(format);
 #if BUILDFLAG(IS_OZONE_X11)
     case NativePixmapSupportType::kX11Pixmap:
-        return NativePixmapEGLX11Binding::IsBufferFormatSupported(format);
+        return NativePixmapEGLX11Binding::IsSharedImageFormatSupported(format);
 #endif
     default:
         return false;
@@ -121,7 +121,7 @@ bool GLOzoneQt::CanImportNativePixmap(gfx::BufferFormat format)
 
 std::unique_ptr<NativePixmapGLBinding>
 GLOzoneQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
-                              gfx::BufferFormat plane_format, gfx::BufferPlane plane,
+                              viz::SharedImageFormat plane_format, gfx::BufferPlane plane,
                               gfx::Size plane_size, const gfx::ColorSpace &color_space,
                               GLenum target, GLuint texture_id)
 {

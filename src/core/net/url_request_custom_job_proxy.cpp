@@ -18,7 +18,7 @@
 namespace QtWebEngineCore {
 
 URLRequestCustomJobProxy::URLRequestCustomJobProxy(URLRequestCustomJobProxy::Client *client,
-                                                   const std::string &scheme,
+                                                   std::string_view scheme,
                                                    QPointer<ProfileAdapter> profileAdapter)
     : m_client(client)
     , m_started(false)

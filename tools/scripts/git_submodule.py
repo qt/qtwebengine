@@ -47,8 +47,10 @@ class SubmoduleDEPSParser(resolver.DEPSParser):
                 url = scope[dep]['url']
 
                 if ('condition' in scope[dep]) and \
-                (not 'checkout_linux' in scope[dep]['condition']) and \
-                (not dep in module_whitelist):
+                  (not 'checkout_linux' in scope[dep]['condition'] or
+                   'not build_with_chromium' in scope[dep]['condition']) and \
+                  (not dep in module_whitelist):
+                    print('skipping ' + url)
                     continue
             if url:
                 url = DepsFormatter().vformat(url, [], self.get_vars())

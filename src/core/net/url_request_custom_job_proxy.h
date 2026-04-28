@@ -52,7 +52,7 @@ public:
     };
 
     URLRequestCustomJobProxy(Client *client,
-                             const std::string &scheme,
+                             std::string_view scheme,
                              QPointer<ProfileAdapter> profileAdapter);
     ~URLRequestCustomJobProxy();
 

@@ -83,7 +83,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
 
     // We must compare hosts only since some of the Web UIs append extra stuff
     // after the host name.
-    if (url.host_piece() == chrome::kChromeUINetInternalsHost)
+    if (url.host() == chrome::kChromeUINetInternalsHost)
         return &NewWebUI<NetInternalsUI>;
 
     if (url.SchemeIs(content::kChromeDevToolsScheme)) {
@@ -91,45 +91,45 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
             return nullptr;
         return &NewWebUI<DevToolsUI>;
     }
-    if (url.host_piece() == chrome::kChromeUIAccessibilityHost)
+    if (url.host() == chrome::kChromeUIAccessibilityHost)
         return &NewWebUI<AccessibilityUI>;
 
-    if (url.host_piece() == chrome::kChromeUIUserActionsHost)
+    if (url.host() == chrome::kChromeUIUserActionsHost)
         return &NewWebUI<UserActionsUI>;
 
-    if (url.host_piece() == chrome::kChromeUIDeviceLogHost)
+    if (url.host() == chrome::kChromeUIDeviceLogHost)
         return &NewWebUI<chromeos::DeviceLogUI>;
 
-    if (url.host_piece() == chrome::kChromeUIUsbInternalsHost)
+    if (url.host() == chrome::kChromeUIUsbInternalsHost)
         return &NewWebUI<UsbInternalsUI>;
 
-    if (url.host_piece() == chrome::kChromeUIVersionQtHost)
+    if (url.host() == chrome::kChromeUIVersionQtHost)
         return &NewWebUI<VersionUIQt>;
 
-//    if (url.host_piece() == chrome::kChromeUIInspectHost)
+//    if (url.host() == chrome::kChromeUIInspectHost)
 //        return &NewWebUI<InspectUI>;
 //
 //#if defined(USE_NSS_CERTS) && defined(USE_AURA)
-//    if (url.host_piece() == chrome::kChromeUICertificateViewerHost)
+//    if (url.host() == chrome::kChromeUICertificateViewerHost)
 //        return &NewWebUI<CertificateViewerUI>;
 //#endif  // USE_NSS_CERTS && USE_AURA
 #if QT_CONFIG(webengine_extensions)
-    if (url.host_piece() == chrome::kChromeUIExtensionsHost) {
+    if (url.host() == chrome::kChromeUIExtensionsHost) {
         return &NewWebUI<ExtensionsUIQt>;
     }
 #endif
 //#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-//    if (url.host_piece() == chrome::kChromeUIPrintHost &&
+//    if (url.host() == chrome::kChromeUIPrintHost &&
 //        !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
 //        return &NewWebUI<PrintPreviewUI>;
 //    }
 //#endif
 #if QT_CONFIG(webengine_webrtc) && QT_CONFIG(webengine_extensions)
-    if (url.host_piece() == chrome::kChromeUIWebRtcLogsHost)
+    if (url.host() == chrome::kChromeUIWebRtcLogsHost)
         return &NewWebUI<WebRtcLogsUI>;
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-    if (url.host_piece() == chrome::kChromeUISandboxHost)
+    if (url.host() == chrome::kChromeUISandboxHost)
         return &NewWebUI<SandboxInternalsUI>;
 #endif
     return nullptr;

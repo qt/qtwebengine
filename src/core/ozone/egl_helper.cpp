@@ -9,7 +9,6 @@
 #include "ozone/ozone_util_qt.h"
 #include "rhi_gpu_info.h"
 
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_implementation.h"
@@ -337,7 +336,7 @@ EGLHelper::EGLHelper()
 
 EGLHelper::~EGLHelper() = default;
 
-bool EGLHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+bool EGLHelper::canCreateNativePixmapForFormat(viz::SharedImageFormat format) const
 {
     // TODO: Temporary EGL-based fallback. Be permissive here to simplify the fallback path.
     if (m_isImageDmaBufExportSupported)
@@ -349,7 +348,7 @@ bool EGLHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
     return m_gbmBufferFactory->canCreateNativePixmapForFormat(format);
 }
 
-const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(gfx::BufferFormat format) const
+const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(viz::SharedImageFormat format) const
 {
     auto it = m_supportedModifiers.find(format);
     if (it != m_supportedModifiers.end())
@@ -369,7 +368,7 @@ const std::vector<uint64_t> &EGLHelper::getSupportedModifiers(gfx::BufferFormat 
         return cachedModifiers;
     }
 
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromSharedImageFormat(format);
     EGLint numModifiers = 0;
     EGLBoolean success;
     success = m_functions->eglQueryDmaBufModifiers(m_eglDisplay, fourccFormat, 0, nullptr, nullptr,
@@ -476,14 +475,14 @@ gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(const gfx::Size &siz
     return bufferHandle;
 }
 
-gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(gfx::BufferFormat format,
+gfx::NativePixmapHandle EGLHelper::exportHandleFromEGLImage(viz::SharedImageFormat format,
                                                             const gfx::Size &size,
                                                             gfx::NativePixmapHandle handle)
 {
     if (!m_isDmaBufSupported || !m_isImageDmaBufExportSupported)
         return gfx::NativePixmapHandle();
 
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromSharedImageFormat(format);
     const size_t numPlanes = handle.planes.size();
 
     std::vector<EGLAttrib> attrs;

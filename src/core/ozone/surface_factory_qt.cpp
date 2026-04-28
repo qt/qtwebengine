@@ -12,7 +12,6 @@
 
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
@@ -82,7 +81,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         gfx::AcceleratedWidget widget,
         gpu::VulkanDeviceQueue *device_queue,
         gfx::Size size,
-        gfx::BufferFormat format,
+        viz::SharedImageFormat format,
         gfx::BufferUsage usage,
         std::optional<gfx::Size> framebuffer_size)
 {
@@ -112,10 +111,10 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
         // Multi-planar formats are only supported when creating NativePixmap from an existing
         // handle (eg. for hardware video decoding), which is handled by
         // CreateNativePixmapFromHandle().
-        if (gfx::BufferFormatIsMultiplanar(format)) {
+        if (format.is_multi_plane()) {
             qFatal("Direct allocation of multi-planar GBM buffer (format: %s) via EGL is "
                    "currently unsupported.",
-                   gfx::BufferFormatToString(format));
+                   format.ToString().c_str());
         }
 
         if (auto *gbm = EGLHelper::instance()->gbmFactory()) {
@@ -150,7 +149,7 @@ scoped_refptr<gfx::NativePixmap>
 SurfaceFactoryQt::CreateNativePixmapFromHandle(
         gfx::AcceleratedWidget /*widget*/,
         gfx::Size size,
-        gfx::BufferFormat format,
+        viz::SharedImageFormat format,
         gfx::NativePixmapHandle handle)
 {
     if (!SupportsNativePixmaps())
@@ -204,7 +203,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 #endif // QT_CONFIG(opengl)
 }
 
-bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
+bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(viz::SharedImageFormat format)
 {
 #if QT_CONFIG(opengl)
 #if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)

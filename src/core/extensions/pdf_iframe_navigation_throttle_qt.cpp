@@ -13,12 +13,14 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/pdf/common/constants.h"
 #include "content/public/browser/download_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/webplugininfo.h"
 #include "base/strings/escape.h"
 #include "net/http/http_response_headers.h"
@@ -61,7 +63,7 @@ private:
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PdfWebContentsLifetimeHelper);
 
-bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_stale)
+bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle)
 {
     content::WebContents *web_contents = navigation_handle->GetWebContents();
     Q_ASSERT(web_contents);
@@ -71,14 +73,10 @@ bool IsPDFPluginEnabled(content::NavigationHandle *navigation_handle, bool *is_s
 
     int process_id = web_contents->GetPrimaryMainFrame()->GetProcess()->GetDeprecatedID();
     int routing_id = web_contents->GetPrimaryMainFrame()->GetRoutingID();
-    content::WebPluginInfo plugin_info;
-    // Will check WebEngineSettings by PluginServiceFilterQt
-    return content::PluginService::GetInstance()->GetPluginInfo(
-                process_id, routing_id,
-                navigation_handle->GetWebContents()->GetBrowserContext(),
-                navigation_handle->GetURL(),
-                QtWebEngineCore::kPDFMimeType, false /* allow_wildcard */,
-                is_stale, &plugin_info, nullptr /* actual_mime_type */);
+    return content::PluginService::GetInstance()->HasPlugin(
+            process_id, routing_id,
+            navigation_handle->GetWebContents()->GetBrowserContext(),
+            navigation_handle->GetURL(), pdf::kPDFMimeType);
 }
 
 std::string GetPDFPlaceholderHTML(const GURL &pdf_url)
@@ -131,20 +129,12 @@ content::NavigationThrottle::ThrottleCheckResult PDFIFrameNavigationThrottleQt::
                                               navigation_handle()->GetURL(), response_headers, mime_type))
         return content::NavigationThrottle::PROCEED;
 
-    bool is_stale = false;
-    bool pdf_plugin_enabled = IsPDFPluginEnabled(navigation_handle(), &is_stale);
-
-    if (is_stale) {
-        // On browser start, the plugin list may not be ready yet.
-        content::PluginService::GetInstance()->GetPlugins(
-            base::BindOnce(&PDFIFrameNavigationThrottleQt::OnPluginsLoaded,
-                           weak_factory_.GetWeakPtr()));
-        return content::NavigationThrottle::DEFER;
-    }
+    // Refresh plugins.
+    content::PluginService::GetInstance()->GetPlugins();
 
     // If the plugin was found, proceed on the navigation. Otherwise fall through
     // to the placeholder case.
-    if (pdf_plugin_enabled)
+    if (IsPDFPluginEnabled(navigation_handle()))
         return content::NavigationThrottle::PROCEED;
 
     LoadPlaceholderHTML();
@@ -154,17 +144,6 @@ content::NavigationThrottle::ThrottleCheckResult PDFIFrameNavigationThrottleQt::
 const char *PDFIFrameNavigationThrottleQt::GetNameForLogging()
 {
     return "PDFIFrameNavigationThrottleQt";
-}
-
-void PDFIFrameNavigationThrottleQt::OnPluginsLoaded(
-                        const std::vector<content::WebPluginInfo> &plugins)
-{
-    if (IsPDFPluginEnabled(navigation_handle(), nullptr /* is_stale */)) {
-        Resume();
-    } else {
-        LoadPlaceholderHTML();
-        CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
-    }
 }
 
 void PDFIFrameNavigationThrottleQt::LoadPlaceholderHTML()

@@ -713,6 +713,8 @@ QAccessible::Role BrowserAccessibilityInterface::role() const
         return QAccessible::CheckBox;
     case ax::mojom::Role::kMenuItemRadio:
         return QAccessible::RadioButton;
+    case ax::mojom::Role::kMenuItemSeparator:
+        return QAccessible::Separator;
     case ax::mojom::Role::kMenuListOption:
         return QAccessible::MenuItem;
     case ax::mojom::Role::kMenuListPopup:

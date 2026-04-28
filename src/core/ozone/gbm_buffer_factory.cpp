@@ -9,7 +9,6 @@
 #include "ozone/ozone_util_qt.h"
 
 #include "ui/base/ozone_buildflags.h"
-#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/gbm_defines.h"
@@ -71,7 +70,7 @@ static base::ScopedFD openDrmNodePath(const std::string &path)
 
 GbmBufferFactory *GbmBufferFactory::instance()
 {
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX())
         return GLXHelper::instance()->gbmFactory();
 #endif
@@ -154,13 +153,13 @@ std::string GbmBufferFactory::drmDeviceString() const
     return deviceString;
 }
 
-bool GbmBufferFactory::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+bool GbmBufferFactory::canCreateNativePixmapForFormat(viz::SharedImageFormat format) const
 {
     QMutexLocker locker(&m_mutex);
     if (!m_gbmDevice)
         return false;
 
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromSharedImageFormat(format);
     return m_gbmDevice->CanCreateBufferForFormat(fourccFormat);
 }
 
@@ -180,7 +179,7 @@ bool GbmBufferFactory::isSinglePlanar(uint32_t fourccFormat, uint64_t modifier) 
 }
 
 std::unique_ptr<ui::GbmBuffer>
-GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size,
+GbmBufferFactory::createBufferWithModifiers(viz::SharedImageFormat format, gfx::Size size,
                                             gfx::BufferUsage usage,
                                             const std::vector<uint64_t> &modifiers)
 {
@@ -188,7 +187,7 @@ GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size 
     if (!m_gbmDevice)
         return nullptr;
 
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromSharedImageFormat(format);
     const uint32_t gbmFlags = ui::BufferUsageToGbmFlags(usage);
 
     // If no modifiers were passed, simply fall back to the LINEAR format modifier.
@@ -220,14 +219,14 @@ GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size 
 }
 
 std::unique_ptr<ui::GbmBuffer>
-GbmBufferFactory::createBufferFromHandle(gfx::BufferFormat format, gfx::Size size,
+GbmBufferFactory::createBufferFromHandle(viz::SharedImageFormat format, gfx::Size size,
                                          gfx::NativePixmapHandle handle)
 {
     QMutexLocker locker(&m_mutex);
     if (!m_gbmDevice)
         return nullptr;
 
-    const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
+    const uint32_t fourccFormat = ui::GetFourCCFormatFromSharedImageFormat(format);
     const uint64_t modifier = handle.modifier;
     const size_t numPlanes = handle.planes.size();
     std::unique_ptr<ui::GbmBuffer> buffer =

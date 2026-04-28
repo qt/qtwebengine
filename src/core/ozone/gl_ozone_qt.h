@@ -37,9 +37,9 @@ public:
                                                      gfx::AcceleratedWidget window) override;
     scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(gl::GLDisplay *display,
                                                           const gfx::Size &size) override;
-    bool CanImportNativePixmap(gfx::BufferFormat format) override;
+    bool CanImportNativePixmap(viz::SharedImageFormat format) override;
     std::unique_ptr<NativePixmapGLBinding>
-    ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap, gfx::BufferFormat plane_format,
+    ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap, viz::SharedImageFormat plane_format,
                        gfx::BufferPlane plane, gfx::Size plane_size,
                        const gfx::ColorSpace &color_space, GLenum target,
                        GLuint texture_id) override;

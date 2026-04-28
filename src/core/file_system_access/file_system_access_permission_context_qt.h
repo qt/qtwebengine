@@ -15,6 +15,8 @@
 #include "content/public/browser/file_system_access_permission_context.h"
 #include "content/public/browser/global_routing_id.h"
 
+#include <map>
+
 namespace content {
 class BrowserContext;
 }

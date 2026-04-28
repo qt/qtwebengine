@@ -20,7 +20,7 @@ namespace QtWebEngineCore {
 class ContentClientQt : public content::ContentClient {
 public:
 #if BUILDFLAG(ENABLE_PLUGINS)
-    void AddPlugins(std::vector<content::ContentPluginInfo> *plugins) override;
+    void AddPlugins(std::vector<content::WebPluginInfo> *plugins) override;
 #endif
     void AddContentDecryptionModules(std::vector<content::CdmInfo> *cdms,
                                      std::vector<media::CdmHostFilePath> *cdm_host_file_paths) override;

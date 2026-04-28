@@ -1608,10 +1608,17 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
         mimeData->setText(toQt(*dropData.text));
     if (dropData.html.has_value())
         mimeData->setHtml(toQt(*dropData.html));
-    if (dropData.url.is_valid()) {
-        mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
-        mimeData->setText(toQt(dropData.url_title));
+    if (dropData.url_infos.size()) {
+        QList<QUrl> urls(dropData.url_infos.size());
+        qsizetype i = 0;
+        for (const auto &url_info : dropData.url_infos)
+            urls[i++] = toQt(url_info.url);
+        mimeData->setUrls(urls);
+        // Qt can not have a url title per url.
+        if (!dropData.text.has_value())
+            mimeData->setText(toQt(dropData.url_infos[0].title));
     }
+    // maybe handle std::vector<FileSystemFileInfo> file_system_files?
     if (!dropData.custom_data.empty()) {
         base::Pickle pickle;
         ui::WriteCustomDataToPickle(dropData.custom_data, &pickle);
@@ -1738,10 +1745,13 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
     }
     if (!dropData->filenames.empty())
         return;
-    if (!urls.empty()) {
-        dropData->url = toGurl(urls.first());
+    if (!urls.isEmpty()) {
+        std::u16string url_title;
         if (mimeData->hasText())
-            dropData->url_title = toString16(mimeData->text());
+            url_title = toString16(mimeData->text());
+        for (const QUrl &url : urls) {
+            dropData->url_infos.push_back({ toGurl(url), url_title });
+        }
     }
     if (mimeData->hasHtml())
         dropData->html = toOptionalString16(mimeData->html());

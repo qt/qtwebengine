@@ -153,9 +153,7 @@ void PluginInfoHostQt::GetPluginInfo(const GURL& url,
                                        GetPluginInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GetPluginInfo_Params params = {url, origin, mime_type};
-  PluginService::GetInstance()->GetPlugins(
-      base::BindOnce(&PluginInfoHostQt::PluginsLoaded,
-                     weak_factory_.GetWeakPtr(), params, std::move(callback)));
+  PluginsLoaded(params, std::move(callback), PluginService::GetInstance()->GetPlugins());
 }
 
 void PluginInfoHostQt::PluginsLoaded(
@@ -187,11 +185,10 @@ bool PluginInfoHostQt::Context::FindEnabledPlugin(
     std::unique_ptr<PluginMetadata>* plugin_metadata) const {
   *status = qtwebengine::mojom::PluginStatus::kAllowed;
 
-  bool allow_wildcard = true;
   std::vector<WebPluginInfo> matching_plugins;
   std::vector<std::string> mime_types;
   PluginService::GetInstance()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &matching_plugins, &mime_types);
+      url, mime_type, &matching_plugins, &mime_types);
   if (matching_plugins.empty()) {
     *status = qtwebengine::mojom::PluginStatus::kNotFound;
     return false;

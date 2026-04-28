@@ -137,7 +137,7 @@ private:
                 &ResourceBundleFileLoader::OnReceiverError, base::Unretained(this)));
         client_.set_disconnect_handler(base::BindOnce(
                 &ResourceBundleFileLoader::OnMojoDisconnect, base::Unretained(this)));
-        auto data = GetResource(resource_id, request.url.host());
+        auto data = GetResource(resource_id, std::string(request.url.host()));
 
         std::string *read_mime_type = new std::string;
         base::ThreadPool::PostTaskAndReplyWithResult(

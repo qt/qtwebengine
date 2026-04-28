@@ -155,7 +155,7 @@ void DevToolsManagerDelegateQt::HandleCommand(content::DevToolsAgentHostClientCh
         if (!status.ok())
             return std::nullopt;
 
-        std::optional<base::Value> parsed = base::JSONReader::Read(messageJSON);
+        std::optional<base::Value> parsed = base::JSONReader::Read(messageJSON, base::JSON_PARSE_RFC);
         if (!parsed || !parsed->is_dict())
             return std::nullopt;
 

@@ -26,7 +26,7 @@ class PackageDEPSParser(resolver.DEPSParser):
         entities = []
         for dep in scope:
             if (type(scope[dep]) == dict and 'packages' in scope[dep] \
-            and 'dep_type' in scope[dep] and scope[dep]['dep_type'] == 'cipd'):
+              and 'dep_type' in scope[dep] and scope[dep]['dep_type'] == 'cipd'):
                 subdir = self.subdir(dep)
                 if subdir is None:
                     continue

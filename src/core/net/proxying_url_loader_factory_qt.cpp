@@ -219,7 +219,7 @@ InterceptedRequest::InterceptedRequest(
     if (!disable_web_security && request_.request_initiator) {
         const std::vector<std::string> &localSchemes = url::GetLocalSchemes();
         const std::string fromScheme = request_.request_initiator->GetTupleOrPrecursorTupleIfOpaque().scheme();
-        const std::string toScheme = request_.url.scheme();
+        const std::string toScheme(request_.url.scheme());
         const bool fromLocal = base::Contains(localSchemes, fromScheme);
         const bool toLocal = base::Contains(localSchemes, toScheme);
         bool hasLocalAccess = false;

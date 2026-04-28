@@ -35,12 +35,12 @@ public:
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }
     std::string drmRenderNodePath() const;
     std::string drmDeviceString() const;
-    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
+    bool canCreateNativePixmapForFormat(viz::SharedImageFormat format) const;
     bool isSinglePlanar(uint32_t fourccFormat, uint64_t modifier) const;
     std::unique_ptr<ui::GbmBuffer>
-    createBufferWithModifiers(gfx::BufferFormat format, gfx::Size size, gfx::BufferUsage usage,
+    createBufferWithModifiers(viz::SharedImageFormat format, gfx::Size size, gfx::BufferUsage usage,
                               const std::vector<uint64_t> &modifiers);
-    std::unique_ptr<ui::GbmBuffer> createBufferFromHandle(gfx::BufferFormat format, gfx::Size size,
+    std::unique_ptr<ui::GbmBuffer> createBufferFromHandle(viz::SharedImageFormat format, gfx::Size size,
                                                           gfx::NativePixmapHandle handle);
 
 private:

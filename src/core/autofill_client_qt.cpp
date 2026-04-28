@@ -98,17 +98,12 @@ void AutofillClientQt::HideAutofillSuggestions(autofill::SuggestionHidingReason)
 bool AutofillClientQt::IsAutofillEnabled() const
 {
     // Returns false, this is not required to be enabled for <datalist>.
-    return IsAutofillProfileEnabled() || IsAutofillPaymentMethodsEnabled();
+    return IsAutofillProfileEnabled();
 }
 
 bool AutofillClientQt::IsAutofillProfileEnabled() const
 {
     return autofill::prefs::IsAutofillProfileEnabled(GetPrefs());
-}
-
-bool AutofillClientQt::IsAutofillPaymentMethodsEnabled() const
-{
-    return autofill::prefs::IsAutofillPaymentMethodsEnabled(GetPrefs());
 }
 
 bool AutofillClientQt::IsAutocompleteEnabled() const

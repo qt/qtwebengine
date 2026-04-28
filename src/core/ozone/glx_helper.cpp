@@ -29,7 +29,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// Hard coded values for gfx::BufferFormat::BGRA_8888
+// Hard coded values for viz::SharedImageFormat::BGRA_8888
 const uint8_t kDepth = 32; // Same as NativePixmapEGLX11Binding::Depth()
 const uint8_t kBpp = 32; // Same as NativePixmapEGLX11Binding::Bpp()
 
@@ -135,11 +135,11 @@ GLXHelper::~GLXHelper()
     XFree(m_configs);
 }
 
-bool GLXHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
+bool GLXHelper::canCreateNativePixmapForFormat(viz::SharedImageFormat format) const
 {
     // Currently limited to BGRA_8888 and RGBA_8888 for compatibility.
     // This is consistent with the hardcoded constraints in NativePixmapEGLX11Binding.
-    if (format != gfx::BufferFormat::BGRA_8888 && format != gfx::BufferFormat::RGBA_8888)
+    if (format != viz::SinglePlaneFormat::kBGRA_8888 && format != viz::SinglePlaneFormat::kRGBA_8888)
         return false;
 
     return m_gbmBufferFactory->canCreateNativePixmapForFormat(format);
@@ -224,7 +224,7 @@ const std::vector<uint64_t> &GLXHelper::getSupportedModifiers() const
         xcb_screen_t *screen = xcb_setup_roots_iterator(setup).data;
 
         // The DRI3 query is currently locked to a 32-bit depth/BPP to match
-        // gfx::BufferFormat::BGRA_8888. This is consistent with the hardcoded
+        // viz::SharedImageFormat::BGRA_8888. This is consistent with the hardcoded
         // constraints in NativePixmapEGLX11Binding.
         xcb_dri3_get_supported_modifiers_cookie_t cookie =
                 xcb_dri3_get_supported_modifiers(m_connection, screen->root, kDepth, kBpp);

@@ -122,20 +122,22 @@ static QString getSystem32Dir()
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE.Chromium file.
 
-#include "content/public/common/content_plugin_info.h"
+#include "content/public/common/webplugininfo.h"
 
-void ComputeBuiltInPlugins(std::vector<content::ContentPluginInfo> *plugins)
+void ComputeBuiltInPlugins(std::vector<content::WebPluginInfo> *plugins)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
+    static constexpr char16_t kPDFPluginName[] = u"Chromium PDF Viewer";
+    static constexpr char16_t kPDFPluginDescription[] = u"Built-in PDF viewer";
     static constexpr char kPDFPluginExtension[] = "pdf";
-    static constexpr char kPDFPluginDescription[] = "Portable Document Format";
-    content::ContentPluginInfo pdf_info;
-    pdf_info.is_internal = true;
-    pdf_info.name = "Chromium PDF Viewer";
-    pdf_info.description = kPDFPluginDescription;
+    static constexpr char kPDFPluginExtensionDescription[] = "Portable Document Format";
+    content::WebPluginInfo pdf_info;
+    pdf_info.type = content::WebPluginInfo::PLUGIN_TYPE_BROWSER_INTERNAL_PLUGIN;
+    pdf_info.name = kPDFPluginName;
+    pdf_info.desc = kPDFPluginDescription;
     pdf_info.path = base::FilePath::FromUTF8Unsafe(kPdfPluginPath);
     content::WebPluginMimeType pdf_mime_type(
-        pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginDescription);
+        pdf::kInternalPluginMimeType, kPDFPluginExtension, kPDFPluginExtensionDescription);
     pdf_info.mime_types.push_back(pdf_mime_type);
     plugins->push_back(pdf_info);
 #endif // QT_CONFIG(webengine_printing_and_pdf)
@@ -143,7 +145,7 @@ void ComputeBuiltInPlugins(std::vector<content::ContentPluginInfo> *plugins)
 
 namespace QtWebEngineCore {
 
-void ContentClientQt::AddPlugins(std::vector<content::ContentPluginInfo> *plugins)
+void ContentClientQt::AddPlugins(std::vector<content::WebPluginInfo> *plugins)
 {
     ComputeBuiltInPlugins(plugins);
 }

@@ -330,7 +330,7 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(network::
     }
 #if BUILDFLAG(IS_WIN)
     if (command_line.HasSwitch(switches::kUseSystemProxyResolver)) {
-        network_context_params->windows_system_proxy_resolver =
+        network_context_params->system_proxy_resolver =
                 ChromeMojoProxyResolverWin::CreateWithSelfOwnedReceiver();
     }
 #endif
@@ -381,7 +381,8 @@ void configureStubHostResolver(QWebEngineGlobalSettings::SecureDnsMode dnsMode,
             networkService->ConfigureStubHostResolver(insecureDnsClientEnabled,
                                                       base::FeatureList::IsEnabled(net::features::kHappyEyeballsV3),
                                                       net::SecureDnsMode(dnsMode), *dohConfig,
-                                                      additionalInsecureDnsTypesEnabled);
+                                                      additionalInsecureDnsTypesEnabled,
+                                                      /*fallback_doh_nameservers =*/ {});
         }
     }
 }

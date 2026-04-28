@@ -7,6 +7,7 @@
 
 #include <QtCore/qscopedpointer.h>
 
+#include "components/viz/common/resources/shared_image_format.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -95,11 +96,11 @@ public:
     EGLFunctions *functions() const { return m_functions.get(); }
     bool isDmaBufSupported() const { return m_isDmaBufSupported; }
     GbmBufferFactory *gbmFactory() const { return m_gbmBufferFactory.get(); }
-    bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
+    bool canCreateNativePixmapForFormat(viz::SharedImageFormat format) const;
 
-    const std::vector<uint64_t> &getSupportedModifiers(gfx::BufferFormat format) const;
+    const std::vector<uint64_t> &getSupportedModifiers(viz::SharedImageFormat format) const;
     gfx::NativePixmapHandle exportHandleFromEGLImage(const gfx::Size &size);
-    gfx::NativePixmapHandle exportHandleFromEGLImage(gfx::BufferFormat format,
+    gfx::NativePixmapHandle exportHandleFromEGLImage(viz::SharedImageFormat format,
                                                      const gfx::Size &size,
                                                      gfx::NativePixmapHandle handle);
 
@@ -115,7 +116,7 @@ private:
 
     bool m_isImageDmaBufExportSupported = false;
     QScopedPointer<GbmBufferFactory> m_gbmBufferFactory;
-    mutable std::map<gfx::BufferFormat, std::vector<uint64_t>> m_supportedModifiers;
+    mutable std::map<viz::SharedImageFormat, std::vector<uint64_t>> m_supportedModifiers;
 };
 
 QT_END_NAMESPACE
