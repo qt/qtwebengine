@@ -88,6 +88,7 @@ void WebAuthDialog::updateDisplay()
     default:
         break;
     }
+    uiWebAuthDialog->m_description->adjustSize();
     adjustSize();
 }
 
@@ -108,7 +109,7 @@ void WebAuthDialog::setupSelectAccountUI()
 {
     uiWebAuthDialog->m_headingLabel->setText(tr("Choose a Passkey"));
     uiWebAuthDialog->m_description->setText(tr("Which passkey do you want to use for ")
-                                            + uxRequest->relyingPartyId() + tr("? "));
+                                            + uxRequest->relyingPartyId() + tr("?"));
     uiWebAuthDialog->m_pinGroupBox->setVisible(false);
     uiWebAuthDialog->m_mainVerticalLayout->removeWidget(uiWebAuthDialog->m_pinGroupBox);
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(false);
@@ -133,7 +134,7 @@ void WebAuthDialog::setupSelectAccountUI()
 void WebAuthDialog::setupFinishCollectTokenUI()
 {
     clearSelectAccountButtons();
-    uiWebAuthDialog->m_headingLabel->setText(tr("Use your security key with")
+    uiWebAuthDialog->m_headingLabel->setText(tr("Use your security key with ")
                                              + uxRequest->relyingPartyId());
     uiWebAuthDialog->m_description->setText(
             tr("Touch your security key again to complete the request."));
@@ -179,7 +180,7 @@ void WebAuthDialog::setupCollectPinUI()
     case QWebEngineWebAuthUxRequest::PinEntryError::NoError:
         break;
     case QWebEngineWebAuthUxRequest::PinEntryError::InternalUvLocked:
-        errorDetails = tr("Internal User Verification Locked ");
+        errorDetails = tr("Internal User Verification Locked");
         break;
     case QWebEngineWebAuthUxRequest::PinEntryError::WrongPin:
         errorDetails = tr("Wrong PIN");
@@ -195,7 +196,7 @@ void WebAuthDialog::setupCollectPinUI()
         break;
     }
     if (!errorDetails.isEmpty()) {
-        errorDetails += tr(" ") + QString::number(pinRequestInfo.remainingAttempts)
+        errorDetails += tr(". ") + QString::number(pinRequestInfo.remainingAttempts)
                 + tr(" attempts remaining");
     }
     uiWebAuthDialog->m_pinEntryErrorLabel->setText(errorDetails);
@@ -236,19 +237,19 @@ void WebAuthDialog::setupErrorUI()
         errorDescription = tr("Key not registered");
         break;
     case QWebEngineWebAuthUxRequest::RequestFailureReason::KeyAlreadyRegistered:
-        errorDescription = tr("You already registered this device."
+        errorDescription = tr("You already registered this device.\n"
                               "Try again with device");
         isVisibleRetry = true;
         break;
     case QWebEngineWebAuthUxRequest::RequestFailureReason::SoftPinBlock:
         errorDescription =
-                tr("The security key is locked because the wrong PIN was entered too many times."
+                tr("The security key is locked because the wrong PIN was entered too many times.\n"
                    "To unlock it, remove and reinsert it.");
         isVisibleRetry = true;
         break;
     case QWebEngineWebAuthUxRequest::RequestFailureReason::HardPinBlock:
         errorDescription =
-                tr("The security key is locked because the wrong PIN was entered too many times."
+                tr("The security key is locked because the wrong PIN was entered too many times.\n"
                    " You'll need to reset the security key.");
         break;
     case QWebEngineWebAuthUxRequest::RequestFailureReason::AuthenticatorRemovedDuringPinEntry:
@@ -280,7 +281,6 @@ void WebAuthDialog::setupErrorUI()
 
     uiWebAuthDialog->m_headingLabel->setText(errorHeading);
     uiWebAuthDialog->m_description->setText(errorDescription);
-    uiWebAuthDialog->m_description->adjustSize();
     uiWebAuthDialog->m_pinGroupBox->setVisible(false);
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Ok)->setVisible(false);
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(isVisibleRetry);
