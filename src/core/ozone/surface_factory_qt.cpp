@@ -87,12 +87,8 @@ bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(gfx::BufferFormat format)
 #endif
 
 #if QT_CONFIG(egl)
-    if (OzoneUtilQt::usingEGL()) {
-        // Multiplanar format support is not yet implemented. See EGLHelper::queryDmaBuf().
-        if (gfx::BufferFormatIsMultiplanar(format))
-            return false;
+    if (OzoneUtilQt::usingEGL())
         return ui::SurfaceFactoryOzone::CanCreateNativePixmapForFormat(format);
-    }
 #endif
 #endif // QT_CONFIG(opengl)
 
@@ -133,6 +129,15 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
+        // Multi-planar formats are only supported when creating NativePixmap from an existing
+        // handle (eg. for hardware video decoding), which is handled by
+        // CreateNativePixmapFromHandle().
+        if (gfx::BufferFormatIsMultiplanar(format)) {
+            qFatal("Direct allocation of multi-planar GBM buffer (format: %s) via EGL is "
+                   "currently unsupported.",
+                   gfx::BufferFormatToString(format));
+        }
+
         auto gbmBuffer = EGLHelper::instance()->createBuffer(format, size, usage);
         if (gbmBuffer)
             bufferHandle = gbmBuffer->ExportHandle();

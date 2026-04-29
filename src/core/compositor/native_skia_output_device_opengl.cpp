@@ -238,6 +238,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             GLXHelper *glxHelper = GLXHelper::instance();
             auto *glxFun = glxHelper->functions();
 
+            if (nativePixmap->GetNumberOfPlanes() != 1) {
+                qFatal("GLX: Importing multiple planes is not supported: %zu",
+                       nativePixmap->GetNumberOfPlanes());
+            }
+
             const auto dmaBufFd = HANDLE_EINTR(dup(nativePixmap->GetDmaBufFd(0)));
             if (dmaBufFd < 0) {
                 qFatal("GLX: Could not import the dma-buf as an XPixmap because the FD couldn't be "
@@ -298,6 +303,11 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             EGLHelper *eglHelper = EGLHelper::instance();
             auto *eglFun = eglHelper->functions();
             auto *glExtFun = GLHelper::instance()->functions();
+
+            if (nativePixmap->GetNumberOfPlanes() != 1) {
+                qFatal("EGL: Importing multiple planes is not supported: %zu",
+                       nativePixmap->GetNumberOfPlanes());
+            }
 
             const auto dmaBufFd = HANDLE_EINTR(dup(nativePixmap->GetDmaBufFd(0)));
             if (dmaBufFd < 0) {
