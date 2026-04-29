@@ -174,11 +174,13 @@ QSGTexture *NativeSkiaOutputDeviceVulkan::texture(QQuickWindow *win, uint32_t te
         qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: %s",
                 OzoneUtilQt::drmFormatModifierToString(modifier).c_str());
 
+        if (nativePixmapHandle.planes.size() != 1) {
+            qFatal("VULKAN: Importing multiple planes is not supported: %zu",
+                   nativePixmapHandle.planes.size());
+        }
+
         if (modifier != gfx::NativePixmapHandle::kNoModifier) {
             usingDrmModifier = true;
-            if (nativePixmapHandle.planes.size() != 1)
-                qFatal("VULKAN: Multiple planes are not supported.");
-
             planeLayout.offset = nativePixmapHandle.planes[0].offset;
             planeLayout.rowPitch = nativePixmapHandle.planes[0].stride;
             modifierInfo.drmFormatModifier = modifier;

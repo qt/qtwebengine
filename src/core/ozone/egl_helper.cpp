@@ -339,12 +339,6 @@ EGLHelper::~EGLHelper() = default;
 
 bool EGLHelper::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
 {
-    // TODO: Add support for multiplanar buffer formats after proper validation and testing.
-    // Direct Vulkan rendering may request it for video playback. It was not necessary when
-    // using ANGLE in Chromium 126.
-    if (gfx::BufferFormatIsMultiplanar(format))
-        return false;
-
     // TODO: Temporary EGL-based fallback. Be permissive here to simplify the fallback path.
     if (m_isImageDmaBufExportSupported)
         return true;

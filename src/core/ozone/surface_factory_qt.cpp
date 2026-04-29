@@ -12,6 +12,7 @@
 
 #include "media/gpu/buildflags.h"
 #include "ui/base/ozone_buildflags.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/gbm_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
@@ -108,6 +109,15 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 
 #if QT_CONFIG(egl)
     if (OzoneUtilQt::usingEGL()) {
+        // Multi-planar formats are only supported when creating NativePixmap from an existing
+        // handle (eg. for hardware video decoding), which is handled by
+        // CreateNativePixmapFromHandle().
+        if (gfx::BufferFormatIsMultiplanar(format)) {
+            qFatal("Direct allocation of multi-planar GBM buffer (format: %s) via EGL is "
+                   "currently unsupported.",
+                   gfx::BufferFormatToString(format));
+        }
+
         if (auto *gbm = EGLHelper::instance()->gbmFactory()) {
             const auto &modifiers = EGLHelper::instance()->getSupportedModifiers(format);
             if (auto gbmBuffer = gbm->createBufferWithModifiers(format, size, usage, modifiers))
