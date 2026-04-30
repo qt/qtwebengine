@@ -70,6 +70,7 @@ qt_internal_add_module(WebEngineCore
         Qt::Quick
     EXTRA_CMAKE_FILES
         "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}WebEngineCoreDeploySupport.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}WebEngineCoreExtraProperties.cmake"
     SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
 )
 
