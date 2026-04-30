@@ -19,3 +19,7 @@ wayland
 
 [datalist]
 wayland
+
+# QTBUG-144178
+[contextMenu:defaultContextMenu]
+wayland

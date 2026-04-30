@@ -427,6 +427,10 @@ void tst_InputMethod::inputMethodsTextFormat()
 
     QInputMethodEvent im(string, attributes);
     QApplication::sendEvent(view.focusProxy(), &im);
+
+    if (QSysInfo::productType() == QLatin1String("rhel") && QSysInfo::productVersion() == QLatin1String("10.0"))
+        QSKIP("Fails on RHEL 10 Wayland and flaky with Ubuntu 24.04 Wayland. Therefore QSKIP RHEL 10.0 is used as we cannot blacklist Wayland or rhel in general - QTBUG-144178");
+
     QTRY_COMPARE_WITH_TIMEOUT(
             evaluateJavaScriptSync(&page, u"document.getElementById('input').value"_s).toString(),
             string, 20000);
