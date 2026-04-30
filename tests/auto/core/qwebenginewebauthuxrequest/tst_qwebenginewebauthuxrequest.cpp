@@ -25,6 +25,7 @@ class tst_QWebEngineWebAuthUxRequest : public QObject
 
 private Q_SLOTS:
     void basic();
+    void noCrashOnExit();
 };
 
 void tst_QWebEngineWebAuthUxRequest::basic() {
@@ -48,6 +49,30 @@ void tst_QWebEngineWebAuthUxRequest::basic() {
     QCOMPARE(pinRequest.error, QWebEngineWebAuthUxRequest::PinEntryError::NoError);
     QCOMPARE(pinRequest.minPinLength, 0);
     QCOMPARE(pinRequest.remainingAttempts, 0);
+}
+
+class TestPage : public QWebEnginePage
+{
+    Q_OBJECT
+
+public Q_SLOTS:
+    void testSlot() { }
+};
+
+void tst_QWebEngineWebAuthUxRequest::noCrashOnExit()
+{
+#ifdef Q_OS_WIN
+    // FIXME
+    QSKIP("This test currently hangs indefinitely on Windows");
+#endif
+    TestPage page;
+    QSignalSpy spy(&page, &QWebEnginePage::webAuthUxRequested);
+    QUrl origin("http://localhost");
+    page.setHtml(kWebAuthRequestHtml, origin);
+    QVERIFY(spy.wait());
+    auto *request = spy[0][0].value<QWebEngineWebAuthUxRequest *>();
+    // Should not crash
+    connect(request, &QWebEngineWebAuthUxRequest::stateChanged, &page, &TestPage::testSlot);
 }
 
 QTEST_MAIN(tst_QWebEngineWebAuthUxRequest)
