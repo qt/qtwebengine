@@ -10,6 +10,7 @@
 #include <drm_fourcc.h>
 #include <iomanip>
 #include <sstream>
+#include <xf86drm.h>
 
 #if QT_CONFIG(opengl)
 #include <QtGui/qopenglcontext.h>
@@ -81,52 +82,44 @@ bool usingEGL()
 
 std::string drmFormatModifierToString(const uint64_t modifier)
 {
-    auto formatHex = [](uint64_t val, int width) {
-        std::stringstream ss;
-        ss << "0x" << std::hex << std::setfill('0') << std::setw(width) << val;
-        return ss.str();
-    };
-
-    std::string hexValue = formatHex(modifier, 16);
-
-    if (modifier == 0)
-        return "[LINEAR] " + hexValue;
+    if (modifier == DRM_FORMAT_MOD_LINEAR)
+        return "DRM_FORMAT_MOD_LINEAR";
 
     if (modifier == DRM_FORMAT_MOD_INVALID)
-        return "[INVALID] " + hexValue;
+        return "DRM_FORMAT_MOD_INVALID";
 
-    std::string vendorTag;
-    uint8_t vendor = fourcc_mod_get_vendor(modifier);
-    switch (vendor) {
-    case DRM_FORMAT_MOD_VENDOR_INTEL:
-        vendorTag = "[INTEL]";
-        break;
-    case DRM_FORMAT_MOD_VENDOR_AMD:
-        vendorTag = "[AMD]";
-        break;
-    case DRM_FORMAT_MOD_VENDOR_NVIDIA:
-        vendorTag = "[NVIDIA]";
-        break;
-    case DRM_FORMAT_MOD_VENDOR_ARM:
-        vendorTag = "[ARM]";
-        break;
-    default:
-        vendorTag = formatHex(vendor, 2);
-        break;
+    // Vendor
+    std::stringstream ss;
+    if (char *vendorName = drmGetFormatModifierVendor(modifier)) {
+        ss << "[" << vendorName << "]";
+        free(vendorName);
     }
 
-    return vendorTag + " " + hexValue;
-}
+    // Modifier Code
+    if (char *modifierName = drmGetFormatModifierName(modifier)) {
+        // Unknown Vendor
+        if (ss.tellp() <= 0) {
+            uint8_t vendor = fourcc_mod_get_vendor(modifier);
+            ss << "[0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(vendor)
+               << "]";
+        }
 
-std::string fourccToString(const uint32_t fourcc)
-{
-    char buf[5];
-    buf[0] = static_cast<char>(fourcc & 0xff);
-    buf[1] = static_cast<char>((fourcc >> 8) & 0xff);
-    buf[2] = static_cast<char>((fourcc >> 16) & 0xff);
-    buf[3] = static_cast<char>((fourcc >> 24) & 0xff);
-    buf[4] = 0;
-    return std::string(buf);
+        // Delimiter
+        ss << " ";
+
+        // Modifier Name
+        ss << modifierName;
+        free(modifierName);
+    } else {
+        // Delimiter
+        if (ss.tellp() > 0)
+            ss << " ";
+
+        // Raw Modifier
+        ss << "0x" << std::hex << std::setfill('0') << std::setw(16) << modifier;
+    }
+
+    return ss.str();
 }
 
 } // namespace OzoneUtilQt

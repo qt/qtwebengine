@@ -310,7 +310,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
             const uint32_t fourccFormat =
                     ui::GetFourCCFormatFromBufferFormat(nativePixmap->GetBufferFormat());
             qCDebug(lcWebEngineCompositor, "  FourCC Format: %s",
-                    OzoneUtilQt::fourccToString(fourccFormat).c_str());
+                    ui::DrmFormatToString(fourccFormat));
             const uint64_t modifier = nativePixmap->GetBufferFormatModifier();
             qCDebug(lcWebEngineCompositor, "  DRM Format Modifier: %s",
                     OzoneUtilQt::drmFormatModifierToString(modifier).c_str());
@@ -334,7 +334,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                                            (EGLClientBuffer)NULL, attributeList);
             if (eglImage == EGL_NO_IMAGE) {
                 qWarning("EGL: Failed to create EGLImage (Format: %s, Modifier: %s): %s",
-                         OzoneUtilQt::fourccToString(fourccFormat).c_str(),
+                         ui::DrmFormatToString(fourccFormat),
                          OzoneUtilQt::drmFormatModifierToString(modifier).c_str(),
                          eglHelper->getLastEGLErrorString());
                 return nullptr;

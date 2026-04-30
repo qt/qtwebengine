@@ -5,18 +5,54 @@
 #include "gbm_buffer_factory.h"
 
 #include "compositor/compositor.h"
+#include "ozone/ozone_util_qt.h"
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
+#include "ui/gfx/linux/gbm_defines.h"
 #include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/wayland/common/drm_render_node_handle.h"
 
+#include <QtCore/qdebug.h>
+
 #include <drm_fourcc.h>
+#include <sstream>
 #include <xf86drm.h>
 
 QT_BEGIN_NAMESPACE
+
+static std::string gbmFlagsToString(uint32_t flags)
+{
+    if (flags == 0)
+        return "NONE (0x0)";
+
+    std::stringstream ss;
+    auto append = [&](uint32_t f, const char *name) {
+        if (flags & f) {
+            if (ss.tellp() > 0)
+                ss << " | ";
+            ss << name;
+        }
+    };
+
+    // Based on ui::BufferUsageToGbmFlags() in //ui/gfx/linux/gbm_util.cc
+    append(GBM_BO_USE_CAMERA_WRITE, "GBM_BO_USE_CAMERA_WRITE");
+    append(GBM_BO_USE_FRONT_RENDERING, "GBM_BO_USE_FRONT_RENDERING");
+    append(GBM_BO_USE_HW_VIDEO_DECODER, "GBM_BO_USE_HW_VIDEO_DECODER");
+    append(GBM_BO_USE_HW_VIDEO_ENCODER, "GBM_BO_USE_HW_VIDEO_ENCODER");
+    append(GBM_BO_USE_LINEAR, "GBM_BO_USE_LINEAR");
+    append(GBM_BO_USE_PROTECTED, "GBM_BO_USE_PROTECTED");
+    append(GBM_BO_USE_RENDERING, "GBM_BO_USE_RENDERING");
+    append(GBM_BO_USE_SCANOUT, "GBM_BO_USE_SCANOUT");
+    append(GBM_BO_USE_SW_READ_OFTEN, "GBM_BO_USE_SW_READ_OFTEN");
+    append(GBM_BO_USE_TEXTURING, "GBM_BO_USE_TEXTURING");
+
+    ss << " (0x" << std::hex << flags << ")";
+    return ss.str();
+}
 
 static base::ScopedFD openDrmNodePath(const std::string &path)
 {
@@ -108,12 +144,31 @@ GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size 
 
     // If no modifiers were passed, simply fall back to the LINEAR format modifier.
     // It is expected to work with any GPU driver, though it may not be optimal.
-    if (modifiers.empty()) {
-        return m_gbmDevice->CreateBufferWithModifiers(fourccFormat, size, gbmFlags,
-                                                      { DRM_FORMAT_MOD_LINEAR });
+    const std::vector<uint64_t> linearFallback{ DRM_FORMAT_MOD_LINEAR };
+    const std::vector<uint64_t> &supportedModifiers =
+            modifiers.empty() ? linearFallback : modifiers;
+
+    std::unique_ptr<ui::GbmBuffer> buffer = m_gbmDevice->CreateBufferWithModifiers(
+            fourccFormat, size, gbmFlags, supportedModifiers);
+
+    if (!buffer) {
+        QStringList modStrings;
+        modStrings.reserve(supportedModifiers.size());
+        for (uint64_t mod : supportedModifiers)
+            modStrings << QLatin1StringView(OzoneUtilQt::drmFormatModifierToString(mod));
+
+        char *nodePath = drmGetRenderDeviceNameFromFd(m_drmNodeFD.get());
+        qWarning().noquote() << "GBM: Buffer creation failed with the following parameters:\n"
+                             << "  Device:   " << (nodePath ? nodePath : "unknown") << "\n"
+                             << "  Format:   " << ui::DrmFormatToString(fourccFormat) << "\n"
+                             << "  Size:     " << size.ToString().c_str() << "\n"
+                             << "  Flags:    " << gbmFlagsToString(gbmFlags) << "\n"
+                             << "  Modifiers:" << modStrings.join(" | ");
+        if (nodePath)
+            free(nodePath);
     }
 
-    return m_gbmDevice->CreateBufferWithModifiers(fourccFormat, size, gbmFlags, modifiers);
+    return buffer;
 }
 
 std::unique_ptr<ui::GbmBuffer>
@@ -125,7 +180,26 @@ GbmBufferFactory::createBufferFromHandle(gfx::BufferFormat format, gfx::Size siz
         return nullptr;
 
     const uint32_t fourccFormat = ui::GetFourCCFormatFromBufferFormat(format);
-    return m_gbmDevice->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
+    const uint64_t modifier = handle.modifier;
+    const size_t numPlanes = handle.planes.size();
+    std::unique_ptr<ui::GbmBuffer> buffer =
+            m_gbmDevice->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
+
+    if (!buffer) {
+        char *nodePath = drmGetRenderDeviceNameFromFd(m_drmNodeFD.get());
+        qWarning().noquote()
+                << "GBM: Buffer creation from handle failed with the following parameters:\n"
+                << "  Device:  " << (nodePath ? nodePath : "unknown") << "\n"
+                << "  Format:  " << ui::DrmFormatToString(fourccFormat) << "\n"
+                << "  Size:    " << size.ToString().c_str() << "\n"
+                << "  Planes:  " << numPlanes << "\n"
+                << "  Modifier:"
+                << QLatin1StringView(OzoneUtilQt::drmFormatModifierToString(modifier));
+        if (nodePath)
+            free(nodePath);
+    }
+
+    return buffer;
 }
 
 QT_END_NAMESPACE

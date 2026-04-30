@@ -19,7 +19,6 @@ QOpenGLContext *getQOpenGLContext();
 bool usingGLX();
 bool usingEGL();
 std::string drmFormatModifierToString(const uint64_t modifier);
-std::string fourccToString(const uint32_t fourcc);
 } // namespace OzoneUtilQt
 
 QT_END_NAMESPACE
