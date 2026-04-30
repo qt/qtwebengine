@@ -39,8 +39,7 @@ AuthenticatorRequestDialogControllerPrivate::AuthenticatorRequestDialogControlle
 AuthenticatorRequestDialogControllerPrivate::~AuthenticatorRequestDialogControllerPrivate()
 {
     if (m_request) {
-        delete m_request;
-        m_request = nullptr;
+        m_request->deleteLater();
     }
 }
 

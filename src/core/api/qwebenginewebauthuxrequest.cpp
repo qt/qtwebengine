@@ -6,6 +6,8 @@
 #include "qwebenginewebauthuxrequest_p.h"
 #include "authenticator_request_dialog_controller.h"
 
+#include <QTimer>
+
 /*!
     \qmltype WebEngineWebAuthUxRequest
     \nativetype QWebEngineWebAuthUxRequest
@@ -254,7 +256,8 @@ QWebEngineWebAuthUxRequest::QWebEngineWebAuthUxRequest(QWebEngineWebAuthUxReques
             [this](WebAuthUxState currentState) {
                 Q_D(QWebEngineWebAuthUxRequest);
                 d->m_currentState = currentState;
-                Q_EMIT stateChanged(d->m_currentState);
+                QTimer::singleShot(0, this,
+                                   [this, currentState]() { Q_EMIT stateChanged(currentState); });
             });
 }
 
