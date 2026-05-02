@@ -414,7 +414,7 @@ macro(append_compiler_linker_sdk_setup)
             )
         endif()
         list(APPEND gnArgArg
-            clang_base_path="${QWELibClang_BASE_PATH}"
+            clang_base_path="${QWELibClang_LLVM_BASE_PATH}"
             clang_version="${clang_runtime_path_version}"
             clang_use_chrome_plugins=false
             fatal_linker_warnings=false
@@ -465,7 +465,7 @@ macro(append_compiler_linker_sdk_setup)
         endif()
     else()
         if(QT_FEATURE_use_lld_linker OR QT_FEATURE_webengine_rust_build)
-            list(APPEND gnArgArg clang_base_path="${QWELibClang_BASE_PATH}")
+            list(APPEND gnArgArg clang_base_path="${QWELibClang_LLVM_BASE_PATH}")
             if (QT_FEATURE_webengine_rust_build)
                 get_clang_runtime_path_version(clang_runtime_path_version)
                 list(APPEND gnArgArg clang_version="${clang_runtime_path_version}")
