@@ -10,7 +10,7 @@ else()
 endif()
 
 function(try_clang_executable Clang_EXECUTABLE)
-    if(NOT DEFINED QWELibClang_BIN_PATH)
+    if(NOT DEFINED QWELibClang_LLVM_BIN_PATH)
         # Extract the base dir from the clang executable
         if(MSVC)
             set(CLANG_PRINT_PATH_COMMAND /clang:-print-prog-name=clang)
@@ -28,13 +28,13 @@ function(try_clang_executable Clang_EXECUTABLE)
         file(TO_CMAKE_PATH "${clang_output}" clang_output) # $base_path/bin/clang
         get_filename_component(clang_output "${clang_output}" DIRECTORY) # $base_path/bin
 
-        set(QWELibClang_BIN_PATH "${clang_output}" CACHE INTERNAL "internal")
+        set(QWELibClang_LLVM_BIN_PATH "${clang_output}" CACHE INTERNAL "internal")
     endif()
 
     # Try to find the llvm-config executable, and extract the library location from it
     find_program(QWELibClang_LLVM_CONFIG_EXECUTABLE
         NAMES llvm-config
-        PATHS ${QWELibClang_BIN_PATH}
+        PATHS ${QWELibClang_LLVM_BIN_PATH}
         NO_DEFAULT_PATH)
 
     if (QWELibClang_LLVM_CONFIG_EXECUTABLE)
@@ -45,17 +45,17 @@ function(try_clang_executable Clang_EXECUTABLE)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         file(TO_CMAKE_PATH "${llvm_config_output}" llvm_config_output)
-        get_filename_component(QWELibClang_BAS_PATH "${llvm_config_output}" DIRECTORY)
+        get_filename_component(llvm_base_path "${llvm_config_output}" DIRECTORY)
     else()
         # No llvm-config. Get the base path from the binary directory
         # This is the expected path for Windows and macOS
-        get_filename_component(QWELibClang_BAS_PATH "${QWELibClang_BIN_PATH}" DIRECTORY)
+        get_filename_component(llvm_base_path "${QWELibClang_LLVM_BIN_PATH}" DIRECTORY)
     endif()
-    set(QWELibClang_BASE_PATH ${QWELibClang_BAS_PATH} CACHE INTERNAL "internal")
+    set(QWELibClang_LLVM_BASE_PATH ${llvm_base_path} CACHE INTERNAL "internal")
 
     find_file(Libclang_LIBRARY
         NAMES libclang.dll libclang.dylib libclang.so
-        PATHS ${llvm_config_output} ${QWELibClang_BIN_PATH} ${QWELibClang_BASE_PATH}/lib ${QWELibClang_BASE_PATH}/lib64
+        PATHS ${llvm_config_output} ${QWELibClang_LLVM_BIN_PATH} ${QWELibClang_LLVM_BASE_PATH}/lib ${QWELibClang_LLVM_BASE_PATH}/lib64
         NO_DEFAULT_PATH)
 
     get_filename_component(Libclang_LIBRARY_DIR "${Libclang_LIBRARY}" DIRECTORY)
@@ -110,9 +110,9 @@ if(Clang_EXECUTABLE)
 endif()
 
 # As a backup find the clang version used by pyside on CI
-if(NOT (QWELibClang_LIBRARY_DIR AND QWELibClang_BASE_PATH AND QWELibClang_BIN_PATH) AND DEFINED ENV{LLVM_DYNAMIC_LIBS_100})
+if(NOT (QWELibClang_LIBRARY_DIR AND QWELibClang_LLVM_BASE_PATH AND QWELibClang_LLVM_BIN_PATH) AND DEFINED ENV{LLVM_DYNAMIC_LIBS_100})
     unset(Clang_EXECUTABLE)
-    unset(QWELibClang_BIN_PATH CACHE)
+    unset(QWELibClang_LLVM_BIN_PATH CACHE)
     find_program(Clang_EXECUTABLE NAMES clang PATHS $ENV{LLVM_DYNAMIC_LIBS_100}/bin)
     if(Clang_EXECUTABLE)
         try_clang_executable(${Clang_EXECUTABLE})
@@ -122,12 +122,12 @@ endif()
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(QWELibClang
-    REQUIRED_VARS QWELibClang_LIBRARY_DIR QWELibClang_BASE_PATH QWELibClang_BIN_PATH
+    REQUIRED_VARS QWELibClang_LIBRARY_DIR QWELibClang_LLVM_BASE_PATH QWELibClang_LLVM_BIN_PATH
     VERSION_VAR QWELibClang_VERSION
 )
 
-mark_as_advanced(QWELibClang_BIN_PATH)
-mark_as_advanced(QWELibClang_BASE_PATH)
+mark_as_advanced(QWELibClang_LLVM_BIN_PATH)
+mark_as_advanced(QWELibClang_LLVM_BASE_PATH)
 mark_as_advanced(QWELibClang_LIBRARY_DIR)
 mark_as_advanced(QWELibClang_RUNTIME_PATH)
 mark_as_advanced(QWELibClang_RESOURCE_PATH)
