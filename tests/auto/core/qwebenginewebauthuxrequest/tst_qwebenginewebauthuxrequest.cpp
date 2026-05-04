@@ -38,7 +38,16 @@ void tst_QWebEngineWebAuthUxRequest::basic() {
     page.setHtml(kWebAuthRequestHtml, origin);
     QVERIFY(spy.wait());
     auto *request = spy[0][0].value<QWebEngineWebAuthUxRequest *>();
+    QVERIFY(request->userNames().empty());
     QCOMPARE(request->state(), QWebEngineWebAuthUxRequest::WebAuthUxState::Discovery);
+    QCOMPARE(request->relyingPartyId(), "localhost");
+    QCOMPARE(request->requestFailureReason(),
+             QWebEngineWebAuthUxRequest::RequestFailureReason::Timeout);
+    auto pinRequest = request->pinRequest();
+    QCOMPARE(pinRequest.reason, QWebEngineWebAuthUxRequest::PinEntryReason::Set);
+    QCOMPARE(pinRequest.error, QWebEngineWebAuthUxRequest::PinEntryError::NoError);
+    QCOMPARE(pinRequest.minPinLength, 0);
+    QCOMPARE(pinRequest.remainingAttempts, 0);
 }
 
 QTEST_MAIN(tst_QWebEngineWebAuthUxRequest)
