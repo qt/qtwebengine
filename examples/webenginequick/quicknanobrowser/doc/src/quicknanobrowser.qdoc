@@ -55,7 +55,7 @@
 
     We use the \l Action type to create new tabs:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \quotefromfile webenginequick/quicknanobrowser/ActionManager.qml
     \skipto reload
     \skipto Action
     \printuntil }
@@ -136,12 +136,9 @@
     We use the \l Action type in the settings menu to create a shortcut for leaving fullscreen mode
     by pressing the escape key:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
-    \skipto Settings
-    \printuntil appSettings
-    \skipto fullScreenSupportEnabled
-    \printuntil Action
-    \skipto Escape
+    \quotefromfile webenginequick/quicknanobrowser/ActionManager.qml
+    \skipuntil root.browserWindow.close
+    \skipuntil }
     \printuntil /^\ {4}\}/
 
     \section1 Handling WebAuth/FIDO UX Requests
