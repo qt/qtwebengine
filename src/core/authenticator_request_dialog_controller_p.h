@@ -67,10 +67,11 @@ private:
             QWebEngineWebAuthUxRequest::WebAuthUxState::NotStarted;
     base::WeakPtr<AuthenticatorRequestClientDelegateQt> m_authenticatorRequestDelegate;
     bool m_isDialogCreated = false;
-    QWebEngineWebAuthPinRequest m_pinRequest;
+    QWebEngineWebAuthPinRequest m_pinRequest = { };
 
     QWebEngineWebAuthUxRequest *m_request = nullptr;
-    QWebEngineWebAuthUxRequest::RequestFailureReason m_requestFailureReason;
+    QWebEngineWebAuthUxRequest::RequestFailureReason m_requestFailureReason =
+            QWebEngineWebAuthUxRequest::RequestFailureReason::Timeout;
 
     // m_pendingState holds requested steps until the UI is shown. The UI is only
     // shown once the TransportAvailabilityInfo is available, but authenticators
