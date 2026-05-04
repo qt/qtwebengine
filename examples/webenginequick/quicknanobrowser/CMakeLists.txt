@@ -44,6 +44,7 @@ set_source_files_properties(BrowserManager.qml
 qt_add_qml_module(quicknanobrowser
     URI BrowserUtils
     QML_FILES
+        ActionManager.qml
         ApplicationRoot.qml
         BrowserManager.qml
         BrowserDialog.qml

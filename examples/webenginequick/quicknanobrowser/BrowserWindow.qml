@@ -53,123 +53,14 @@ ApplicationWindow {
           }
         }
 
-    Action {
-        shortcut: "Ctrl+D"
-        onTriggered: {
-            downloadView.visible = !downloadView.visible;
-        }
-    }
-    Action {
-        id: focusAction
-        shortcut: "Ctrl+L"
-        onTriggered: {
-            navigationBar.addressBar.forceActiveFocus();
-            navigationBar.addressBar.selectAll();
-        }
-    }
-    Action {
-        shortcut: StandardKey.Refresh
-        onTriggered: {
-            if (win.currentWebView)
-                win.currentWebView.reload();
-        }
-    }
-    Action {
-        shortcut: StandardKey.AddTab
-        onTriggered: {
-            tabBar.createTab(tabBar.count !== 0
-                             ? win.currentWebView.profile
-                             : BrowserManager.defaultProfilePrototype.instance());
-            navigationBar.addressBar.forceActiveFocus();
-            navigationBar.addressBar.selectAll();
-        }
-    }
-    Action {
-        shortcut: StandardKey.Close
-        onTriggered: {
-            win.currentWebView.triggerWebAction(WebEngineView.RequestClose);
-        }
-    }
-    Action {
-        shortcut: StandardKey.Quit
-        onTriggered: win.close()
-    }
-    Action {
-        shortcut: "Escape"
-        onTriggered: {
-            if (win.currentWebView.state === "FullScreen") {
-                win.visibility = win.previousVisibility;
-                fullScreenNotification.hide();
-                win.currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
-            }
-
-            if (findBar.visible)
-                findBar.visible = false;
-        }
-    }
-    Action {
-        shortcut: "Ctrl+0"
-        onTriggered: win.currentWebView.zoomFactor = 1.0
-    }
-    Action {
-        shortcut: StandardKey.ZoomOut
-        onTriggered: win.currentWebView.zoomFactor -= 0.1
-    }
-    Action {
-        shortcut: StandardKey.ZoomIn
-        onTriggered: win.currentWebView.zoomFactor += 0.1
-    }
-
-    Action {
-        shortcut: StandardKey.Copy
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Copy)
-    }
-    Action {
-        shortcut: StandardKey.Cut
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Cut)
-    }
-    Action {
-        shortcut: StandardKey.Paste
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Paste)
-    }
-    Action {
-        shortcut: "Shift+"+StandardKey.Paste
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.PasteAndMatchStyle)
-    }
-    Action {
-        shortcut: StandardKey.SelectAll
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.SelectAll)
-    }
-    Action {
-        shortcut: StandardKey.Undo
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Undo)
-    }
-    Action {
-        shortcut: StandardKey.Redo
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Redo)
-    }
-    Action {
-        shortcut: StandardKey.Back
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Back)
-    }
-    Action {
-        shortcut: StandardKey.Forward
-        onTriggered: win.currentWebView.triggerWebAction(WebEngineView.Forward)
-    }
-    Action {
-        shortcut: StandardKey.Find
-        onTriggered: {
-            if (!findBar.visible)
-                findBar.visible = true;
-        }
-    }
-    Action {
-        shortcut: StandardKey.FindNext
-        onTriggered: findBar.findNext()
-    }
-    Action {
-        shortcut: StandardKey.FindPrevious
-        onTriggered: findBar.findPrevious()
+    ActionManager {
+        browserWindow: win
+        webView: win.currentWebView
+        downloads: downloadView
+        toolBar: navigationBar
+        searchBar: findBar
+        fullScreenNotifications: fullScreenNotification
+        onNewTabRequested: tabBar.createTab(BrowserManager.defaultProfilePrototype.instance())
     }
 
     menuBar: WebToolBar {
