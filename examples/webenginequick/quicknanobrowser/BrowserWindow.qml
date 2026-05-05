@@ -168,20 +168,15 @@ ApplicationWindow {
 
         Component {
             id: tabComponent
-            WebEngineView {
+            BrowserTab {
                 id: webEngineView
-                property int index: 0
-                focus: true
-
-                onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl === "")
-                        hideStatusText.start();
-                    else {
-                        statusText.text = hoveredUrl;
-                        statusBubble.visible = true;
-                        hideStatusText.stop();
-                    }
-                }
+                toolBar: navigationBar
+                tabs: tabBar
+                searchBar: findBar
+                certificateDialog: sslDialog
+                permissionPrompt: permissionDialog
+                webAuthenticationDialog: webAuthDialog
+                imageAnimationPolicy: appSettings.imageAnimationPolicy
 
                 states: [
                     State {
@@ -193,34 +188,19 @@ ApplicationWindow {
                         }
                     }
                 ]
-                settings.localContentCanAccessRemoteUrls: true
-                settings.localContentCanAccessFileUrls: false
-                settings.autoLoadImages: appSettings.autoLoadImages
-                settings.javascriptEnabled: appSettings.javaScriptEnabled
-                settings.errorPageEnabled: appSettings.errorPageEnabled
-                settings.pluginsEnabled: appSettings.pluginsEnabled
-                settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEnabled
-                settings.autoLoadIconsForPage: appSettings.autoLoadIconsForPage
-                settings.touchIconsEnabled: appSettings.touchIconsEnabled
-                settings.webRTCPublicInterfacesOnly: appSettings.webRTCPublicInterfacesOnly
-                settings.pdfViewerEnabled: appSettings.pdfViewerEnabled
-                settings.imageAnimationPolicy: appSettings.imageAnimationPolicy
-                settings.screenCaptureEnabled: true
-                settings.javascriptCanAccessClipboard: appSettings.javascriptCanAccessClipboard
-                settings.javascriptCanPaste: appSettings.javascriptCanPaste
+
+                onLinkHovered: function(hoveredUrl) {
+                    if (hoveredUrl === "")
+                        hideStatusText.start();
+                    else {
+                        statusText.text = hoveredUrl;
+                        statusBubble.visible = true;
+                        hideStatusText.stop();
+                    }
+                }
 
                 onWindowCloseRequested: function() {
                     tabBar.removeView(webEngineView.index);
-                }
-
-                onCertificateError: function(error) {
-                    if (!error.isMainFrame) {
-                        error.rejectCertificate();
-                        return;
-                    }
-
-                    error.defer();
-                    sslDialog.enqueue(error);
                 }
 
                 onNewWindowRequested: function(request) {
@@ -241,75 +221,16 @@ ApplicationWindow {
                     }
                 }
 
-                onFullScreenRequested: function(request) {
-                    if (request.toggleOn) {
-                        webEngineView.state = "FullScreen";
+                onFullScreenToggled: function(toggleOn) {
+                    webEngineView.state = toggleOn ? "FullScreen" : "";
+                    if (toggleOn) {
                         win.previousVisibility = win.visibility;
                         win.showFullScreen();
                         fullScreenNotification.show();
                     } else {
-                        webEngineView.state = "";
                         win.visibility = win.previousVisibility;
                         fullScreenNotification.hide();
                     }
-                    request.accept();
-                }
-
-                onRegisterProtocolHandlerRequested: function(request) {
-                    console.log("accepting registerProtocolHandler request for "
-                                + request.scheme + " from " + request.origin);
-                    request.accept();
-                }
-
-                onDesktopMediaRequested: function(request) {
-                    // select the primary screen
-                    request.selectScreen(request.screensModel.index(0, 0));
-                }
-
-                onRenderProcessTerminated: function(terminationStatus, exitCode) {
-                    var status = "";
-                    switch (terminationStatus) {
-                    case WebEngineView.NormalTerminationStatus:
-                        status = "(normal exit)";
-                        break;
-                    case WebEngineView.AbnormalTerminationStatus:
-                        status = "(abnormal exit)";
-                        break;
-                    case WebEngineView.CrashedTerminationStatus:
-                        status = "(crashed)";
-                        break;
-                    case WebEngineView.KilledTerminationStatus:
-                        status = "(killed)";
-                        break;
-                    }
-
-                    print("Render process exited with code " + exitCode + " " + status);
-                    Qt.callLater(function() { win.currentWebView.reload() })
-                }
-
-                onSelectClientCertificate: function(selection) {
-                    selection.certificates[0].select();
-                }
-
-                onFindTextFinished: function(result) {
-                    if (!findBar.visible)
-                        findBar.visible = true;
-
-                    findBar.numberOfMatches = result.numberOfMatches;
-                    findBar.activeMatch = result.activeMatch;
-                }
-
-                onLoadingChanged: function(loadRequest) {
-                    if (loadRequest.status === WebEngineView.LoadStartedStatus)
-                        findBar.reset();
-                }
-
-                onPermissionRequested: function(permission) {
-                    permissionDialog.permission = permission;
-                    permissionDialog.visible = true;
-                }
-                onWebAuthUxRequested: function(request) {
-                    webAuthDialog.init(request);
                 }
             }
         }
