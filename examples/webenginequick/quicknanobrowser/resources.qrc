@@ -4,6 +4,7 @@
         <file>ApplicationRoot.qml</file>
         <file>BrowserManager.qml</file>
         <file>BrowserDialog.qml</file>
+        <file>BrowserTab.qml</file>
         <file>BrowserWindow.qml</file>
         <file>WebToolBar.qml</file>
         <file>DownloadView.qml</file>
