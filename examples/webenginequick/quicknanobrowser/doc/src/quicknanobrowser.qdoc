@@ -40,9 +40,14 @@
     \skipto width
     \printuntil title
 
-    We use the TabBar Qt Quick control to create a tab bar anchored to the top of the window, and
-    create a new, empty tab:
+    We use the TabBar Qt Quick control to create a tab bar anchored to the top of the window:
 
+    \skipto BrowserTabBar {
+    \printuntil /^\ {4}\}/
+
+    We implement the tab bar in the \e BrowserTabBar.qml file, where we also create a new, empty tab:
+
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTabBar.qml
     \skipto TabBar {
     \printuntil return webview
     \printuntil }

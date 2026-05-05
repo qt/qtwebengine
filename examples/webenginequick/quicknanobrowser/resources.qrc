@@ -6,6 +6,7 @@
         <file>BrowserDialog.qml</file>
         <file>BrowserTab.qml</file>
         <file>BrowserWindow.qml</file>
+        <file>BrowserTabBar.qml</file>
         <file>WebToolBar.qml</file>
         <file>DownloadView.qml</file>
         <file>FindBar.qml</file>

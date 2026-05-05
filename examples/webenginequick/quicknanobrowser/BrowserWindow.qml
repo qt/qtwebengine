@@ -78,159 +78,84 @@ ApplicationWindow {
         anchors.right: parent.right
     }
 
-    Component {
-        id: tabButtonComponent
-
-        TabButton {
-            id: tabButton
-            property color frameColor: "#999999"
-            property color fillColor: "#eeeeee"
-            property color nonSelectedColor: "#dddddd"
-            property string tabTitle: "New Tab"
-
-            contentItem: Rectangle {
-                id: tabRectangle
-                color: tabButton.down ? tabButton.fillColor : tabButton.nonSelectedColor
-                border.width: 1
-                border.color: tabButton.frameColor
-                implicitWidth: Math.max(tabText.width + 30, 80)
-                implicitHeight: Math.max(tabText.height + 10, 20)
-                Rectangle { height: 1 ; width: parent.width ; color: tabButton.frameColor}
-                Rectangle { height: parent.height ; width: 1; color: tabButton.frameColor}
-                Rectangle { x: parent.width - 2; height: parent.height ; width: 1; color: tabButton.frameColor}
-                Text {
-                    id: tabText
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 6
-                    text: tabButton.tabTitle
-                    elide: Text.ElideRight
-                    color: tabButton.down ? "black" : tabButton.frameColor
-                    width: parent.width - button.background.width
-                }
-                Button {
-                    id: button
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.rightMargin: 4
-                    height: 12
-                    background: Rectangle {
-                        implicitWidth: 12
-                        implicitHeight: 12
-                        color: button.hovered ? "#cccccc" : tabRectangle.color
-                        Text {text: "x"; anchors.centerIn: parent; color: "gray"}
-                    }
-                    onClicked: tabButton.closeTab()
-                }
-            }
-
-            onClicked: navigationBar.addressBar.text = (tabLayout.itemAt(TabBar.index) as WebEngineView).url;
-            function closeTab() {
-                tabBar.tryCloseView(TabBar.index);
-            }
-        }
-    }
-
-    TabBar {
+    BrowserTabBar {
         id: tabBar
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        Component.onCompleted: createTab(BrowserManager.defaultProfilePrototype.instance())
-
-        function createTab(profile, focusOnNewTab = true, url = undefined) {
-            var webview = tabComponent.createObject(tabLayout, {profile: profile});
-            var newTabButton = tabButtonComponent.createObject(tabBar, {tabTitle: Qt.binding(function () { return webview.title; })});
-            webview.index = Qt.binding(function () { return newTabButton.TabBar.index; })
-            tabBar.addItem(newTabButton);
-            if (focusOnNewTab) {
-                tabBar.setCurrentIndex(tabBar.count - 1);
-            }
-            if (url !== undefined) {
-                webview.url = url;
-            }
-            return webview;
+        viewStack: tabLayout
+        toolBar: navigationBar
+        webViewComponent: tabComponent
+        onLastTabClosed: {
+            win.lastTabClosing = true;
+            win.close();
         }
+    }
 
-        function tryCloseView(index) {
-            tabLayout.children[index].triggerWebAction(WebEngineView.RequestClose);
-        }
+    Component {
+        id: tabComponent
+        BrowserTab {
+            id: webEngineView
+            toolBar: navigationBar
+            tabs: tabBar
+            searchBar: findBar
+            certificateDialog: sslDialog
+            permissionPrompt: permissionDialog
+            webAuthenticationDialog: webAuthDialog
+            imageAnimationPolicy: appSettings.imageAnimationPolicy
+            states: [
+                State {
+                    name: "FullScreen"
+                    PropertyChanges {
+                        tabBar.visible: false
+                        tabBar.height: 0
+                        navigationBar.visible: false
+                    }
+                 }
+            ]
 
-        function removeView(index) {
-            if (tabBar.count > 1) {
-                tabBar.removeItem(tabBar.itemAt(index));
-                tabLayout.children[index].destroy();
-            } else {
-                win.lastTabClosing = true;
-                win.close();
+            onLinkHovered: function(hoveredUrl) {
+                if (hoveredUrl === "")
+                    hideStatusText.start();
+                else {
+                    statusText.text = hoveredUrl;
+                    statusBubble.visible = true;
+                    hideStatusText.stop();
+                }
             }
-        }
 
-        Component {
-            id: tabComponent
-            BrowserTab {
-                id: webEngineView
-                toolBar: navigationBar
-                tabs: tabBar
-                searchBar: findBar
-                certificateDialog: sslDialog
-                permissionPrompt: permissionDialog
-                webAuthenticationDialog: webAuthDialog
-                imageAnimationPolicy: appSettings.imageAnimationPolicy
+            onWindowCloseRequested: function() {
+                tabBar.removeView(webEngineView.index);
+            }
 
-                states: [
-                    State {
-                        name: "FullScreen"
-                        PropertyChanges {
-                            tabBar.visible: false
-                            tabBar.height: 0
-                            navigationBar.visible: false
-                        }
-                    }
-                ]
-
-                onLinkHovered: function(hoveredUrl) {
-                    if (hoveredUrl === "")
-                        hideStatusText.start();
-                    else {
-                        statusText.text = hoveredUrl;
-                        statusBubble.visible = true;
-                        hideStatusText.stop();
-                    }
+            onNewWindowRequested: function(request) {
+                if (!request.userInitiated)
+                    console.warn("Blocked a popup window.");
+                else if (request.destination === WebEngineNewWindowRequest.InNewTab) {
+                    let tab = tabBar.createTab(win.currentWebView.profile, true, request.requestedUrl);
+                    tab.acceptAsNewWindow(request);
+                } else if (request.destination === WebEngineNewWindowRequest.InNewBackgroundTab) {
+                    let backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
+                    backgroundTab.acceptAsNewWindow(request);
+                } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
+                    let dialog = BrowserManager.createDialog(win.currentWebView.profile);
+                    dialog.currentWebView.acceptAsNewWindow(request);
+                } else {
+                    let window = BrowserManager.createWindow(win.currentWebView.profile);
+                    window.currentWebView.acceptAsNewWindow(request);
                 }
+            }
 
-                onWindowCloseRequested: function() {
-                    tabBar.removeView(webEngineView.index);
-                }
 
-                onNewWindowRequested: function(request) {
-                    if (!request.userInitiated)
-                        console.warn("Blocked a popup window.");
-                    else if (request.destination === WebEngineNewWindowRequest.InNewTab) {
-                        let tab = tabBar.createTab(win.currentWebView.profile, true, request.requestedUrl);
-                        tab.acceptAsNewWindow(request);
-                    } else if (request.destination === WebEngineNewWindowRequest.InNewBackgroundTab) {
-                        let backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
-                        backgroundTab.acceptAsNewWindow(request);
-                    } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                        let dialog = BrowserManager.createDialog(win.currentWebView.profile);
-                        dialog.currentWebView.acceptAsNewWindow(request);
-                    } else {
-                        let window = BrowserManager.createWindow(win.currentWebView.profile);
-                        window.currentWebView.acceptAsNewWindow(request);
-                    }
-                }
-
-                onFullScreenToggled: function(toggleOn) {
-                    webEngineView.state = toggleOn ? "FullScreen" : "";
-                    if (toggleOn) {
-                        win.previousVisibility = win.visibility;
-                        win.showFullScreen();
-                        fullScreenNotification.show();
-                    } else {
-                        win.visibility = win.previousVisibility;
-                        fullScreenNotification.hide();
-                    }
+            onFullScreenToggled: function(toggleOn) {
+                webEngineView.state = toggleOn ? "FullScreen" : "";
+                if (toggleOn) {
+                    win.previousVisibility = win.visibility;
+                    win.showFullScreen();
+                    fullScreenNotification.show();
+                } else {
+                    win.visibility = win.previousVisibility;
+                    fullScreenNotification.hide();
                 }
             }
         }
