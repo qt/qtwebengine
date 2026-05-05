@@ -48,6 +48,7 @@ qt_add_qml_module(quicknanobrowser
         ApplicationRoot.qml
         BrowserManager.qml
         BrowserDialog.qml
+        BrowserTab.qml
         BrowserWindow.qml
         WebToolBar.qml
         DownloadView.qml

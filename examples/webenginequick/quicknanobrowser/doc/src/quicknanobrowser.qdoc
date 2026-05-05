@@ -47,11 +47,13 @@
     \printuntil return webview
     \printuntil }
 
-    The tab contains a web engine view that loads web content:
+    The tab contains a web engine view that loads web content. We create it in the
+    \e BrowserTab.qml file:
 
-    \skipto Component {
-    \printuntil currentWebView.reload
-    \printuntil /^\ {8}\}/
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
+    \skipto WebEngineView {
+    \printuntil root.reload
+    \printuntil /^\ {4}\}/
 
     We use the \l Action type to create new tabs:
 
@@ -81,7 +83,7 @@
     For all other cases, we call the \l{webEngineCertificateError::}{defer()} QML method to pause
     the URL request and wait for user input:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
     \skipto onCertificateError
     \printuntil }
     \printuntil }
@@ -93,6 +95,7 @@
     \l{webEngineCertificateError::}{rejectCertificate()} method to reject the request and stop
     loading content from the URL:
 
+    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
     \skipto Dialog {
     \printuntil /^\ {4}\}/
 
@@ -103,7 +106,7 @@
     WebEnginePermission type, which can be used to handle the incoming request. We temporarily store
     this object, since we need to use it to construct the message of the dialog:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
     \skipto onPermissionRequested
     \printuntil }
 
@@ -113,6 +116,7 @@
     If user selects \uicontrol Yes, we call the \l{webEnginePermission::grant}{grant()}
     method, and if they select \uicontrol No we call \l{webEnginePermission::deny}{deny()}.
 
+    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
     \skipto id: sslDialog
     \skipto Dialog {
     \printuntil /^\ {4}\}/
@@ -126,8 +130,12 @@
     The methdod sets the \l{WebEngineView::}{isFullScreen} property to be equal to the
     \l{fullScreenRequest::}{toggleOn} property.
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
     \skipto onFullScreenRequested
+    \printuntil /^\ {4}\}/
+
+    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \skipto onFullScreenToggled
     \printuntil /^\ {16}\}/
 
     When entering fullscreen mode, we display a notification using the FullScreenNotification custom
@@ -148,7 +156,7 @@
     which contains UX request details and APIs required to process the request.
     We use it to construct WebAuthUX dialog and initiates the UX request flow.
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
+    \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
     \skipto onWebAuthUxRequested
     \printuntil }
 
