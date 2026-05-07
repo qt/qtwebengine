@@ -36,6 +36,7 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
 {
     switch (type) {
     case blink::PermissionType::GEOLOCATION:
+    case blink::PermissionType::GEOLOCATION_APPROXIMATE:
         return QWebEnginePermission::PermissionType::Geolocation;
     case blink::PermissionType::AUDIO_CAPTURE:
         return QWebEnginePermission::PermissionType::MediaAudioCapture;
@@ -64,7 +65,7 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::MIDI_SYSEX:
     case blink::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case blink::PermissionType::MIDI:
-    case blink::PermissionType::DURABLE_STORAGE:
+    case blink::PermissionType::PERSISTENT_STORAGE:
     case blink::PermissionType::SENSORS:
     case blink::PermissionType::PAYMENT_HANDLER:
     case blink::PermissionType::BACKGROUND_FETCH:
@@ -84,6 +85,8 @@ static QWebEnginePermission::PermissionType toQt(blink::PermissionType type)
     case blink::PermissionType::HAND_TRACKING:
     case blink::PermissionType::WEB_APP_INSTALLATION:
     case blink::PermissionType::LOCAL_NETWORK_ACCESS:
+    case blink::PermissionType::LOCAL_NETWORK:
+    case blink::PermissionType::LOOPBACK_NETWORK:
         break;
     }
     return QWebEnginePermission::PermissionType::Unsupported;
@@ -225,7 +228,7 @@ std::string permissionTypeString(QWebEnginePermission::PermissionType permission
     case QWebEnginePermission::PermissionType::LocalFontsAccess:
         return "LocalFontsAccess";
     default:
-        Q_UNREACHABLE_RETURN(nullptr);
+        Q_UNREACHABLE_RETURN({ });
     }
 }
 

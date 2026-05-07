@@ -4,6 +4,7 @@
 
 #include "platform_notification_service_qt.h"
 
+#include "base/functional/callback_helpers.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"

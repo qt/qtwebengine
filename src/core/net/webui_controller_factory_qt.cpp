@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/webui/devtools/devtools_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
-#include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/common/url_constants.h"
+#include "components/webui/user_actions/user_actions_ui.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/buildflags/buildflags.h"
@@ -95,7 +95,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI *web_ui, Profile *profile, co
         return &NewWebUI<AccessibilityUI>;
 
     if (url.host() == chrome::kChromeUIUserActionsHost)
-        return &NewWebUI<UserActionsUI>;
+        return &NewWebUI<user_actions_ui::UserActionsUI>;
 
     if (url.host() == chrome::kChromeUIDeviceLogHost)
         return &NewWebUI<chromeos::DeviceLogUI>;

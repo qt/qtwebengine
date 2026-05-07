@@ -5225,7 +5225,13 @@ void tst_QWebEnginePage::clientHints()
     QCOMPARE(clientHints->platform().toLower(), "windows");
 #endif
     QCOMPARE_NE(clientHints->fullVersion(), fullVersion);
+#ifdef Q_OS_LINUX
+    // Chromium intentionally returns an empty UA platform version on Linux
+    // to reduce fingerprinting. See: https://crbug.com/40245146
+    QVERIFY(clientHints->platformVersion().isEmpty());
+#else
     QCOMPARE_NE(clientHints->platformVersion(), platformVersion);
+#endif
     QCOMPARE_NE(clientHints->bitness(), bitness);
     QCOMPARE_NE(clientHints->formFactors(), formFactors);
     QCOMPARE(clientHints->fullVersionList().size(), 2);

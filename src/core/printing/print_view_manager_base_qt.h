@@ -42,7 +42,7 @@ public:
     void DidPrintDocument(printing::mojom::DidPrintDocumentParamsPtr params,
                           DidPrintDocumentCallback callback) override;
     void GetDefaultPrintSettings(GetDefaultPrintSettingsCallback callback) override;
-    void UpdatePrintSettings(base::Value::Dict, UpdatePrintSettingsCallback) override;
+    void UpdatePrintSettings(base::DictValue, UpdatePrintSettingsCallback) override;
     void IsPrintingEnabled(IsPrintingEnabledCallback callback) override;
     void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr,
                        printing::mojom::PrintManagerHost::ScriptedPrintCallback) override;

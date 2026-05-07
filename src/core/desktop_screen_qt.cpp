@@ -11,7 +11,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 
-#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(SUPPORTS_OZONE_X11)
 #define USE_XSCREENSAVER
 #include "ui/base/x/x11_screensaver.h"
 #include "ui/base/x/x11_util.h"

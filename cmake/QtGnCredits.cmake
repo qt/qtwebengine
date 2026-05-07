@@ -31,13 +31,14 @@ endif()
 
 execute_process(
     COMMAND ${Python3_EXECUTABLE} ${LICENSE_SCRIPT}
+        credits
         --file-template ${FILE_TEMPLATE}
         --entry-template ${ENTRY_TEMPLATE}
         --gn-binary ${Gn_EXECUTABLE}
         --gn-target ${GN_TARGET}
         --gn-out-dir ${BUILDDIR}
         --extra-third-party-dirs=[${extra_third_party_dirs}]
-        credits ${OUTPUT}
+        ${OUTPUT}
     WORKING_DIRECTORY ${BUILDDIR}
     RESULT_VARIABLE gn_result
     OUTPUT_VARIABLE gn_output

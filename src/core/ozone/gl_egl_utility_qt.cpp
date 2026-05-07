@@ -19,7 +19,7 @@
 #include <vector>
 #include <optional>
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 #include "ui/base/x/x11_gl_egl_utility.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/linux/gbm_support_x11.h"
@@ -65,7 +65,7 @@ GLEGLUtilityQt::~GLEGLUtilityQt() = default;
 void GLEGLUtilityQt::GetAdditionalEGLAttributes(EGLenum platform_type,
                                                 std::vector<EGLAttrib> *display_attributes)
 {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     if (GetQtXDisplay()) {
         GetPlatformExtraDisplayAttribs(platform_type, display_attributes);
         return;
@@ -97,7 +97,7 @@ void GLEGLUtilityQt::GetAdditionalEGLAttributes(EGLenum platform_type,
 
 void GLEGLUtilityQt::ChooseEGLAlphaAndBufferSize(EGLint *alpha_size, EGLint *buffer_size)
 {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     if (GetQtXDisplay())
         ChoosePlatformCustomAlphaAndBufferSize(alpha_size, buffer_size);
 #endif
@@ -105,7 +105,7 @@ void GLEGLUtilityQt::ChooseEGLAlphaAndBufferSize(EGLint *alpha_size, EGLint *buf
 
 bool GLEGLUtilityQt::HasVisualManager()
 {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     if (GetQtXDisplay())
         return true;
 #endif
@@ -116,7 +116,7 @@ bool GLEGLUtilityQt::HasVisualManager()
 std::optional<base::ScopedEnvironmentVariableOverride>
 GLEGLUtilityQt::MaybeGetScopedDisplayUnsetForVulkan()
 {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     // Unset DISPLAY env, so the vulkan can be initialized successfully, if the
     // X server doesn't support Vulkan surface.
     if (GetQtXDisplay() && !ui::IsVulkanSurfaceSupported())

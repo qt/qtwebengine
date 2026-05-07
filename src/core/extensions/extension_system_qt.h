@@ -77,7 +77,10 @@ public:
     const base::OneShotEvent &ready() const override { return ready_; }
     bool is_ready() const override;
 
-    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::Value::Dict &) override { /* fixme? */}
+    void PerformActionBasedOnOmahaAttributes(const std::string &, const base::DictValue &) override
+    {
+        /* fixme? */
+    }
 
 #if QT_CONFIG(webengine_extensions)
     QtWebEngineCore::ExtensionManager *extensionManager();
@@ -85,7 +88,7 @@ public:
 
 private:
     void NotifyExtensionLoaded(const Extension *extension);
-    void LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory);
+    void LoadExtension(const base::DictValue &manifest, const base::FilePath &directory);
 
     // The services that are shared between normal and incognito profiles.
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;

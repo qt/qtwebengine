@@ -478,7 +478,7 @@ const ComponentExtensionResourceManager *ExtensionsBrowserClientQt::GetComponent
 
 void ExtensionsBrowserClientQt::BroadcastEventToRenderers(events::HistogramValue histogram_value,
                                                           const std::string &event_name,
-                                                          base::Value::List args,
+                                                          base::ListValue args,
                                                           bool dispatch_to_off_the_record_profiles)
 {
     NOTIMPLEMENTED();

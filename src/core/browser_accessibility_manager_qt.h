@@ -29,9 +29,9 @@ public:
             const ui::AXTreeUpdate &initialTree, ui::AXNodeIdDelegate &nodeDelegate,
             ui::AXPlatformTreeManagerDelegate *delegate);
     ~BrowserAccessibilityManagerQt() override;
-    void FireBlinkEvent(ax::mojom::Event event_type,
-                        BrowserAccessibility *node,
-                        int action_request_id) override;
+    void FireSourceEvent(ax::mojom::Event event_type,
+                         BrowserAccessibility *node,
+                         int action_request_id) override;
     void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                             const ui::AXNode *node) override;
 

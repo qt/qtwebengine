@@ -260,7 +260,7 @@ bool RhiGpuInfo::determineGbmSupport() const
         return false;
     }
 
-#if !BUILDFLAG(IS_OZONE_X11)
+#if !BUILDFLAG(SUPPORTS_OZONE_X11)
     if (OzoneUtilQt::usingGLX()) {
         qWarning("GLX: Disable GBM because Ozone X11 is not available. "
                  "Possibly caused by missing libraries for qpa-xcb support.");

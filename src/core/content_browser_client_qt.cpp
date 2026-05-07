@@ -4,6 +4,8 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
@@ -1103,13 +1105,6 @@ std::string ContentBrowserClientQt::getUserAgent()
     return embedder_support::BuildUserAgentFromProduct("QtWebEngine/" + std::string(qWebEngineVersion())
                                                         + " Chrome/" + version_info::GetMajorVersionNumber()
                                                         + ".0.0.0");
-}
-
-std::string ContentBrowserClientQt::GetUserAgentBasedOnPolicy(content::BrowserContext *context)
-{
-    if (!context)
-        return getUserAgent();
-    return static_cast<ProfileQt *>(context)->profileAdapter()->httpUserAgent().toStdString();
 }
 
 blink::UserAgentMetadata ContentBrowserClientQt::GetUserAgentMetadata()

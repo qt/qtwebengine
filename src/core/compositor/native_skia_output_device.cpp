@@ -21,7 +21,7 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "ui/base/ozone_buildflags.h"
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 // We need to define USE_VULKAN_XCB for proper vulkan function pointers.
 // Avoiding it may lead to call wrong vulkan functions.
 // This is originally defined in chromium/gpu/vulkan/BUILD.gn.

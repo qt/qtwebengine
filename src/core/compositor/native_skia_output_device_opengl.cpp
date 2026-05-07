@@ -21,7 +21,7 @@
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
 #include <GL/glx.h>
 #endif
@@ -31,14 +31,14 @@
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 // We need to define USE_VULKAN_XCB for proper vulkan function pointers.
 // Avoiding it may lead to call wrong vulkan functions.
 // This is originally defined in chromium/gpu/vulkan/BUILD.gn.
 #if !defined(USE_VULKAN_XCB)
 #define USE_VULKAN_XCB
 #endif
-#endif // BUILDFLAG(IS_OZONE_X11)
+#endif // BUILDFLAG(SUPPORTS_OZONE_X11)
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
@@ -232,7 +232,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
     if (nativePixmap) {
         Q_ASSERT(m_contextState->gr_context_type() == gpu::GrContextType::kGL);
 
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
         if (OzoneUtilQt::usingGLX()) {
             qCDebug(lcWebEngineCompositor, "GLX: Importing NativePixmap into GL Texture.");
 
@@ -295,7 +295,7 @@ QSGTexture *NativeSkiaOutputDeviceOpenGL::texture(QQuickWindow *win, uint32_t te
                 glxHelper->freePixmap(pixmapId);
             };
         }
-#endif // BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#endif // BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 
 #if QT_CONFIG(egl)
         if (OzoneUtilQt::usingEGL()) {

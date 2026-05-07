@@ -390,6 +390,7 @@ foreach(arch ${archs})
             use_static_angle=true
             devtools_skip_typecheck=false
             headless_use_policy=false
+            use_cxx23=false
         )
         extend_gn_list(gnArgArg
             ARGS use_v8_context_snapshot v8_use_external_startup_data

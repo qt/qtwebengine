@@ -7,6 +7,7 @@
 #include "gl_egl_utility_qt.h"
 
 #include "build/build_config.h"
+#include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "media/gpu/buildflags.h"
@@ -41,7 +42,7 @@
 #include <filesystem>
 #endif // BUILDFLAG(USE_XKBCOMMON)
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 #include "ui/gfx/linux/gbm_support_x11.h"
 
 extern void *GetQtXDisplay();
@@ -117,7 +118,7 @@ const ui::OzonePlatform::PlatformProperties &OzonePlatformQt::GetPlatformPropert
     static base::NoDestructor<ui::OzonePlatform::PlatformProperties> properties;
     static std::once_flag flag;
     std::call_once(flag, [this]() {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
         if (GetQtXDisplay()) {
             properties->message_pump_type_for_viz_compositor =
                     base::MessagePumpType::UI;
@@ -249,7 +250,7 @@ void OzonePlatformQt::InitializeGPU(const ui::OzonePlatform::InitParams &params)
 {
     surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     if (params.enable_native_gpu_memory_buffers) {
         base::ThreadPool::PostTask(FROM_HERE,
                                    base::BindOnce([]()

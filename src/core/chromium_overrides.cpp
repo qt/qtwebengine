@@ -28,7 +28,7 @@
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #endif
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 #include "ozone/ozone_util_qt.h"
 #endif
 
@@ -43,7 +43,7 @@
 #endif // BUILDFLAG(IS_OZONE)
 #endif // BUILDFLAG(ENABLE_VULKAN)
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 void *GetQtXDisplay()
 {
     return OzoneUtilQt::getXDisplay();
@@ -83,12 +83,12 @@ base::FilePath getSandboxPath()
 namespace content {
 
 // content/common/font_list.h
-base::Value::List GetFontList_SlowBlocking()
+base::ListValue GetFontList_SlowBlocking()
 {
-    base::Value::List font_list;
+    base::ListValue font_list;
 
     for (auto family : QFontDatabase::families()){
-        base::Value::List font_item;
+        base::ListValue font_item;
         font_item.Append(family.toStdString());
         font_item.Append(family.toStdString());  // localized name.
         // TODO(yusukes): Support localized family names.
@@ -164,11 +164,6 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopFunction::Run()
 }
 
 ExtensionFunction::ResponseAction WebrtcLoggingPrivateStoreFunction::Run()
-{
-    return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction WebrtcLoggingPrivateUploadStoredFunction::Run()
 {
     return RespondNow(NoArguments());
 }

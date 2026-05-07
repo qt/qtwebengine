@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -298,7 +300,7 @@ void InterceptedRequest::Restart()
     if (!allow_local_ && local_access_) {
         // Check for specifically granted file access:
         if (auto *frame_tree = content::FrameTreeNode::GloballyFindByID(frame_tree_node_id_)) {
-            const int renderer_id = frame_tree->current_frame_host()->GetProcess()->GetDeprecatedID();
+            const auto renderer_id = frame_tree->current_frame_host()->GetProcess()->GetID();
             base::FilePath file_path;
             if (net::FileURLToFilePath(request_.url, &file_path)) {
                 if (content::ChildProcessSecurityPolicy::GetInstance()->CanReadFile(renderer_id, file_path))

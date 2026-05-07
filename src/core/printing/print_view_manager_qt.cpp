@@ -71,9 +71,9 @@ static void SavePdfFile(scoped_refptr<base::RefCountedSharedMemoryMapping> data,
                    base::BindOnce(std::move(saveCallback), success));
 }
 
-static base::Value::Dict createPrintSettings()
+static base::DictValue createPrintSettings()
 {
-    base::Value::Dict printSettings;
+    base::DictValue printSettings;
     // TO DO: Check if we can use the request ID from Qt here somehow.
     static int internalRequestId = 0;
 
@@ -103,17 +103,17 @@ static base::Value::Dict createPrintSettings()
     return printSettings;
 }
 
-static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout,
-                                                            bool useCSSMargins)
+static base::DictValue createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout,
+                                                          bool useCSSMargins)
 {
-    base::Value::Dict printSettings = createPrintSettings();
+    base::DictValue printSettings = createPrintSettings();
 
     if (useCSSMargins) {
         printSettings.Set(printing::kSettingMarginsType,
                           (int)printing::mojom::MarginType::kDefaultMargins);
     } else {
         QMargins pageMarginsInPoints = pageLayout.marginsPoints();
-        base::Value::Dict marginsDict;
+        base::DictValue marginsDict;
         marginsDict.Set(printing::kSettingMarginTop, pageMarginsInPoints.top());
         marginsDict.Set(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
         marginsDict.Set(printing::kSettingMarginLeft, pageMarginsInPoints.left());
@@ -128,7 +128,7 @@ static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &p
 
     // Set page size attributes, Chromium expects these in micrometers
     QRectF pageSizeInMillimeter = pageLayout.pageSize().rect(QPageSize::Millimeter);
-    base::Value::Dict sizeDict;
+    base::DictValue sizeDict;
     sizeDict.Set(printing::kSettingMediaSizeWidthMicrons, int(pageSizeInMillimeter.width() * kMicronsToMillimeter));
     sizeDict.Set(printing::kSettingMediaSizeHeightMicrons, int(pageSizeInMillimeter.height() * kMicronsToMillimeter));
     printSettings.Set(printing::kSettingMediaSize, std::move(sizeDict));
@@ -136,11 +136,11 @@ static base::Value::Dict createPrintSettingsFromQPageLayout(const QPageLayout &p
     return printSettings;
 }
 
-static base::Value::List createPageRangeSettings(const QList<QPageRanges::Range> &ranges)
+static base::ListValue createPageRangeSettings(const QList<QPageRanges::Range> &ranges)
 {
-    base::Value::List pageRangeArray;
+    base::ListValue pageRangeArray;
     for (int i = 0; i < ranges.count(); i++) {
-        base::Value::Dict pageRange;
+        base::DictValue pageRange;
         pageRange.Set(printing::kSettingPageRangeFrom, ranges.at(i).from);
         pageRange.Set(printing::kSettingPageRangeTo, ranges.at(i).to);
         pageRangeArray.Append(std::move(pageRange));

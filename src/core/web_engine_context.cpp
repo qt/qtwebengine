@@ -22,10 +22,10 @@
 #include "cc/base/switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/common/features.h"
-#include "content/common/process_visibility_tracker.h"
-#include "content/browser/memory_coordinator/browser_memory_consumer_registry.h"
+#include "content/common/process_priority_tracker.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
+#include "content/browser/memory_coordinator/browser_memory_coordinator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #if QT_CONFIG(webengine_printing_and_pdf)
 #include "chrome/browser/printing/print_job_manager.h"
@@ -66,6 +66,9 @@
 #include "media/base/media_switches.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/port_util.h"
+#if QT_CONFIG(webengine_printing_and_pdf)
+#include "pdf/pdf_features.h"
+#endif
 #include "sandbox/policy/switches.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -741,6 +744,31 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kSkiaGraphite.name);
 #endif
 
+#if QT_CONFIG(webengine_printing_and_pdf)
+    disableFeatures.push_back(chrome_pdf::features::kPdfOopif.name);
+#endif
+
+    // TODO: Temporary workaround. Enabling this breaks tests that set focus immediately on an
+    // input event. Update tests to wait for the first compositor frame sent to cc.
+    disableFeatures.push_back(blink::features::kDropInputEventsWhilePaintHolding.name);
+
+    // TODO: Temporary workaround. Enabling this enforces Local Network Access permissions for
+    // local/loopback requests. This broke tests fetching localhost resources from qrc: pages.
+    // Re-enable this once the QWebEnginePermission::PermissionType::LoobackNetwork is
+    // implemented for blink::PermissionType::LOOPBACK_NETWORK and the test grants the
+    // required loopback permission.
+    disableFeatures.push_back(network::features::kLocalNetworkAccessChecks.name);
+
+    // TODO: Temporary workaround. Enabling this feature inserts an extra load during a failed
+    // navigation, breaking tests that validate navigation order.
+    // Try to adapt auto tests or selectively disable this feature for them.
+    disableFeatures.push_back(::features::kAvoidUnnecessaryBeforeUnloadCheckSync.name);
+
+    // TODO: Remove once speculative main-frame widgets are initialized with the
+    // correct viewport size. Using RenderDocument for all frames currently causes
+    // new main-frame widgets to start with a 0x0 viewport.
+    enableFeatures.push_back(std::string(features::kRenderDocument.name) + ":level/subframe");
+
     if (useEmbeddedSwitches) {
         // embedded switches are based on the switches for Android, see content/browser/android/content_startup_flags.cc
         enableFeatures.push_back(features::kOverlayScrollbar.name);
@@ -873,8 +901,7 @@ WebEngineContext::WebEngineContext()
 
     // This block mirrors ContentMainRunnerImpl::RunBrowser():
 
-    m_browserMemoryConsumerRegistry =
-            std::make_unique<base::ScopedMemoryConsumerRegistry<content::BrowserMemoryConsumerRegistry>>();
+    m_browserMemoryCoordinator = std::make_unique<content::BrowserMemoryCoordinator>();
     m_mainDelegate->PreBrowserMain();
     base::MessagePump::OverrideMessagePumpForUIFactory(messagePumpFactory);
     content::BrowserTaskExecutor::Create();
@@ -889,8 +916,9 @@ WebEngineContext::WebEngineContext()
     tracing::InitTracingPostFeatureList(/*enable_consumer=*/true, /*will_trace_thread_restart=*/false);
     tracing::PerfettoTracedProcess::Get().SetAllowSystemTracingConsumerCallback(
             base::BindRepeating(&ShouldAllowSystemTracingConsumer));
-    base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource());
-    content::ProcessVisibilityTracker::GetInstance();
+    base::PowerMonitor::GetInstance()->Initialize(MakePowerMonitorDeviceSource(),
+                                                  /*emit_global_event=*/true);
+    content::ProcessPriorityTracker::GetInstance();
     m_discardableSharedMemoryManager = std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
     m_mojoIpcSupport = std::make_unique<content::MojoIpcSupport>(content::BrowserTaskExecutor::CreateIOThread());

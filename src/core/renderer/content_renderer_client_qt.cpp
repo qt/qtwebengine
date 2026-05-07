@@ -299,7 +299,7 @@ void ContentRendererClientQt::GetNavigationErrorStringsInternal(content::RenderF
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
 
-        base::Value::Dict error_page_params;
+        base::DictValue error_page_params;
         error_page::LocalizedError::PageState errorPageState =
                 error_page::LocalizedError::GetPageState(
                         error.reason(), error.domain(), error.url(), isPost, false,

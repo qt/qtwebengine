@@ -93,9 +93,9 @@ QWebEngineSettings *BrowserAccessibilityManagerQt::webEngineSettings() const
     return m_webContentsAccessibility->webEngineSettings();
 }
 
-void BrowserAccessibilityManagerQt::FireBlinkEvent(ax::mojom::Event event_type,
-                                                   BrowserAccessibility *node,
-                                                   int action_request_id)
+void BrowserAccessibilityManagerQt::FireSourceEvent(ax::mojom::Event event_type,
+                                                    BrowserAccessibility *node,
+                                                    int action_request_id)
 {
     auto *iface = toQAccessibleInterface(node);
     if (!iface) {

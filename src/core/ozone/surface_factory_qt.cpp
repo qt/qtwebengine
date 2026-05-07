@@ -18,7 +18,7 @@
 #include <QDebug>
 #include <QtGui/qtgui-config.h>
 
-#if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if QT_CONFIG(opengl) && BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
 #include "ozone/glx_helper.h"
 #endif
 
@@ -94,7 +94,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryQt::CreateNativePixmap(
 
     gfx::NativePixmapHandle bufferHandle;
 
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
         if (auto *gbm = GLXHelper::instance()->gbmFactory()) {
             const auto &modifiers = GLXHelper::instance()->getSupportedModifiers();
@@ -158,7 +158,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 #if QT_CONFIG(opengl)
     gfx::NativePixmapHandle bufferHandle;
 
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX()) {
         if (auto *gbm = GLXHelper::instance()->gbmFactory()) {
             if (auto gbmBuffer = gbm->createBufferFromHandle(format, size, std::move(handle)))
@@ -206,7 +206,7 @@ SurfaceFactoryQt::CreateNativePixmapFromHandle(
 bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(viz::SharedImageFormat format)
 {
 #if QT_CONFIG(opengl)
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX())
         return GLXHelper::instance()->canCreateNativePixmapForFormat(format);
 #endif
@@ -224,7 +224,7 @@ bool SurfaceFactoryQt::CanCreateNativePixmapForFormat(viz::SharedImageFormat for
 bool SurfaceFactoryQt::SupportsNativePixmaps()
 {
 #if QT_CONFIG(opengl)
-#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(SUPPORTS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX())
         return GLXHelper::instance()->isDmaBufSupported();
 #endif

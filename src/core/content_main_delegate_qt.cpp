@@ -66,7 +66,7 @@ struct LazyDirectoryListerCacher
 {
     LazyDirectoryListerCacher()
     {
-        base::Value::Dict dict;
+        base::DictValue dict;
         dict.Set("header", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_HEADER));
         dict.Set("parentDirText", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_PARENT));
         dict.Set("headerName", l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_NAME));

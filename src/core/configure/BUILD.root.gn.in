@@ -90,9 +90,9 @@ config("embedded_config") {
 
 config("cpp20_config") {
   # Chromium is built with C++20
-  if (is_win) {
+  if (is_win && !is_clang) {
     cflags_cc = [ "/std:c++20" ]
-  } else if(is_gcc) {
+  } else if (is_gcc) {
     cflags_cc = [ "-std=gnu++20" ]
   } else {
     cflags_cc = [ "-std=c++20" ]
@@ -163,6 +163,7 @@ shared_library("QtWebEngineCore") {
     "//services/proxy_resolver:lib",
     "//skia",
     "//third_party/blink/public:blink",
+    "//third_party/highway:libhwy",
     "//ui/accessibility",
     "//ui/gl",
     "//ui/touch_selection/vector_icons",
@@ -269,6 +270,8 @@ source_set("devtools_sources") {
     "//rlz/buildflags:buildflags",
     ]
   sources = [
+     "//chrome/browser/devtools/features.cc",
+     "//chrome/browser/devtools/features.h",
      "//chrome/browser/devtools/devtools_dispatch_http_request_params.cc",
      "//chrome/browser/devtools/devtools_dispatch_http_request_params.h",
      "//chrome/browser/devtools/devtools_eye_dropper.cc",
@@ -291,6 +294,8 @@ source_set("devtools_sources") {
      "//chrome/browser/devtools/devtools_settings.h",
      "//chrome/browser/devtools/devtools_embedder_message_dispatcher.cc",
      "//chrome/browser/devtools/devtools_embedder_message_dispatcher.h",
+     "//chrome/browser/devtools/gdp_service_handler.cc",
+     "//chrome/browser/devtools/gdp_service_handler.h",
      "//chrome/browser/devtools/url_constants.cc",
      "//chrome/browser/devtools/url_constants.h",
   ]
@@ -325,6 +330,7 @@ source_set("qtwebengine_sources") {
     "//components/plugins/renderer/",
     "//components/push_messaging",
     "//components/compose:buildflags",
+    "//components/webui/user_actions",
     "//content/browser/resources/quota:resources",
     "//extensions/buildflags:buildflags",
     "//pdf:buildflags",
@@ -383,8 +389,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/signin/force_signin_verifier.h",
     "//chrome/browser/signin/identity_manager_factory.cc",
     "//chrome/browser/signin/identity_manager_factory.h",
-    "//chrome/browser/signin/signin_util.cc",
-    "//chrome/browser/signin/signin_util.h",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.cc",
     "//chrome/browser/tab_contents/form_interaction_tab_helper.h",
     "//chrome/browser/tab_contents/web_contents_collection.cc",
@@ -403,10 +407,6 @@ source_set("qtwebengine_sources") {
     "//chrome/browser/ui/webui/usb_internals/usb_internals_page_handler.h",
     "//chrome/browser/ui/webui/usb_internals/usb_internals_ui.cc",
     "//chrome/browser/ui/webui/usb_internals/usb_internals_ui.h",
-    "//chrome/browser/ui/webui/user_actions/user_actions_ui.cc",
-    "//chrome/browser/ui/webui/user_actions/user_actions_ui.h",
-    "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.cc",
-    "//chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h",
     "//chrome/common/chrome_switches.cc",
     "//chrome/common/chrome_switches.h",
     "//chrome/common/pref_names.h",
@@ -415,6 +415,8 @@ source_set("qtwebengine_sources") {
     "//chrome/common/webui_url_constants.h",
     "//components/security_interstitials/core/ssl_error_options_mask.cc",
     "//components/security_interstitials/core/ssl_error_options_mask.h",
+    "//components/security_interstitials/core/pref_names.cc",
+    "//components/security_interstitials/core/pref_names.h",
     "//ui/webui/mojo_web_ui_controller.cc",
     "//ui/webui/mojo_web_ui_controller.h",
     "//ui/webui/webui_util.cc",
@@ -454,6 +456,7 @@ source_set("qtwebengine_sources") {
       "//components/crx_file:crx_creator",
       "//components/services/unzip:lib",
       "//components/spellcheck:buildflags",
+      "//components/update_client",
       "//extensions/buildflags:buildflags",
       "//extensions/common",
       "//extensions/common/api",
@@ -481,8 +484,6 @@ source_set("qtwebengine_sources") {
       "//chrome/common/extensions/permissions/chrome_permission_message_rules.h",
       "//extensions/browser/zipfile_installer.cc",
       "//extensions/browser/zipfile_installer.h",
-      "//components/update_client/update_query_params.cc",
-      "//components/update_client/update_query_params.h",
     ]
   } else {
     sources += [

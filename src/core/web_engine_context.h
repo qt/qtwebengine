@@ -23,7 +23,7 @@ class FieldTrialList;
 
 namespace content {
 class BrowserMainRunner;
-class BrowserMemoryConsumerRegistry;
+class BrowserMemoryCoordinator;
 class ContentMainRunner;
 class MojoIpcSupport;
 }
@@ -102,8 +102,7 @@ private:
 #if QT_CONFIG(webengine_printing_and_pdf)
     std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif
-    std::unique_ptr<base::ScopedMemoryConsumerRegistry<content::BrowserMemoryConsumerRegistry>>
-            m_browserMemoryConsumerRegistry;
+    std::unique_ptr<content::BrowserMemoryCoordinator> m_browserMemoryCoordinator;
 
     static scoped_refptr<QtWebEngineCore::WebEngineContext> m_handle;
     static bool m_destroyed;

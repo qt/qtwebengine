@@ -146,6 +146,7 @@ function(add_linker_options target buildDir completeStatic)
             # enable larger PDBs if webenginecore debug build
             if(cmakeTarget STREQUAL "WebEngineCore")
                 target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:Debug>:/pdbpagesize:16384>")
+                target_link_options(${cmakeTarget} PRIVATE "/FORCE:MULTIPLE")
             endif()
         endif()
         target_link_options(${cmakeTarget} PRIVATE "$<$<CONFIG:${config}>:@${objects_rsp}>")

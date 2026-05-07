@@ -174,8 +174,11 @@ network::mojom::URLLoaderFactory *SystemNetworkContextManager::GetURLLoaderFacto
     }
 
     network::mojom::URLLoaderFactoryParamsPtr params = network::mojom::URLLoaderFactoryParams::New();
-    params->process_id = network::mojom::kBrowserProcessId;
+    params->process_id = network::OriginatingProcess::browser();
     params->is_orb_enabled = false;
+    params->is_trusted = true;
+
+    url_loader_factory_.reset();
     GetContext()->CreateURLLoaderFactory(url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
     return url_loader_factory_.get();
 }

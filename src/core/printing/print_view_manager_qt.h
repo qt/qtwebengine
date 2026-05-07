@@ -83,7 +83,7 @@ private:
     base::FilePath m_pdfOutputPath;
     PrintToPDFCallback m_pdfPrintCallback;
     PrintToPDFFileCallback m_pdfSaveCallback;
-    base::Value::Dict m_printSettings;
+    base::DictValue m_printSettings;
 
     friend class content::WebContentsUserData<PrintViewManagerQt>;
 };

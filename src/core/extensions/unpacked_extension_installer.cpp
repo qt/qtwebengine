@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 
 #include <algorithm>
@@ -38,7 +39,7 @@ bool generateDirNameOnFileThread(const base::FilePath &baseDir,
         base::FilePath::StringType newName;
         newName.assign(prefix);
 #if BUILDFLAG(IS_WIN)
-        // based on 'CreateTemporaryDirInDir' in chromium/base/file_util_win.cc
+        // based on 'CreateTemporaryDirInDir' in chromium/base/files/file_util_win.cc
         newName.append(base::AsWString(base::NumberToString16(base::GetCurrentProcId())));
         newName.push_back('_');
         newName.append(base::AsWString(

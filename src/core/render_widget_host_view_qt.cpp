@@ -381,9 +381,10 @@ bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy()
 
 void RenderWidgetHostViewQt::CopyFromSurface(const gfx::Rect &src_rect,
                                              const gfx::Size &output_size,
-                                             base::OnceCallback<void(const viz::CopyOutputBitmapWithMetadata &)> callback)
+                                             base::TimeDelta timeout,
+                                             base::OnceCallback<void(const content::CopyFromSurfaceResult&)> callback)
 {
-    m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, std::move(callback));
+    m_delegatedFrameHost->CopyFromCompositingSurface(src_rect, output_size, timeout, std::move(callback));
 }
 
 void RenderWidgetHostViewQt::ShowWithVisibility(content::PageVisibilityState page_visibility)

@@ -51,10 +51,4 @@ void BrowsingDataRemoverDelegateQt::RemoveEmbedderData(const base::Time &delete_
     std::move(callback).Run(0);
 }
 
-std::vector<std::string> BrowsingDataRemoverDelegateQt::GetDomainsForDeferredCookieDeletion(
-            content::StoragePartition *, uint64_t)
-{
-    return {};
-}
-
 } // namespace QtWebEngineCore

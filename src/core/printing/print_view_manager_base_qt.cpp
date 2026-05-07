@@ -566,7 +566,7 @@ void PrintViewManagerBaseQt::StopWorker(int documentCookie)
             m_printerQueriesQueue->PopPrinterQuery(documentCookie);
 }
 
-void PrintViewManagerBaseQt::UpdatePrintSettings(base::Value::Dict job_settings,
+void PrintViewManagerBaseQt::UpdatePrintSettings(base::DictValue job_settings,
                                                  UpdatePrintSettingsCallback callback)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

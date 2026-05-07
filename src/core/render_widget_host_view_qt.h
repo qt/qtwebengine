@@ -72,7 +72,8 @@ public:
     bool IsSurfaceAvailableForCopy() override;
     void CopyFromSurface(const gfx::Rect &src_rect,
                          const gfx::Size &output_size,
-                         base::OnceCallback<void(const viz::CopyOutputBitmapWithMetadata &)> callback) override;
+                         base::TimeDelta timeout,
+                         base::OnceCallback<void(const content::CopyFromSurfaceResult&)> callback) override;
     void ShowWithVisibility(content::PageVisibilityState page_visibility) override;
     void Hide() override;
     bool IsShowing() override;
@@ -127,12 +128,12 @@ public:
     void OverrideDisplayFeatureForEmulation(const content::DisplayFeature*) override {}
     content::WebContentsAccessibility *GetWebContentsAccessibility() override;
 #if BUILDFLAG(IS_MAC)
-    void ShowSharePicker(
-        const std::string &title,
-        const std::string &text,
-        const std::string &url,
-        const std::vector<std::string> &file_paths,
-            blink::mojom::ShareService::ShareCallback callback) override { QT_NOT_YET_IMPLEMENTED }
+    void ShowSharePicker(const std::string &title, const std::string &text, const GURL &url,
+                         const std::vector<std::string> &file_paths,
+                         blink::mojom::ShareService::ShareCallback callback) override
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
     void SetActive(bool active) override { QT_NOT_YET_IMPLEMENTED }
     void SpeakSelection() override { QT_NOT_YET_IMPLEMENTED }
     void ShowDefinitionForSelection() override { QT_NOT_YET_IMPLEMENTED }

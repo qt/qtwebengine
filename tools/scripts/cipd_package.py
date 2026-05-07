@@ -8,7 +8,7 @@ import subprocess
 import sys
 import version_resolver as resolver
 
-androidx_package_name = 'chromium/third_party/androidx'
+androidx_package_name = 'chromium/third_party/androidx/cipd'
 
 def subprocessCall(args):
     print(args)
@@ -17,6 +17,14 @@ def subprocessCall(args):
 def subprocessCheckOutput(args):
     print(args)
     return subprocess.check_output(args).decode()
+
+def FileRead(filename):
+    with open(filename, mode='rb') as f:
+        s = f.read()
+    try:
+        return s.decode('utf-8', 'replace')
+    except (UnicodeDecodeError, AttributeError):
+        return s
 
 class PackageDEPSParser(resolver.DEPSParser):
     def __init__(self):
@@ -33,8 +41,13 @@ class PackageDEPSParser(resolver.DEPSParser):
                 entity = CIPDEntity(subdir, sp=self.topmost_supermodule_path_prefix)
                 path = entity.pathRelativeToTopMostSupermodule()
                 for pkg in scope[dep]['packages']:
-                   p = Package(pkg['package'], pkg['version'], path)
-                   entity.packages.append(p)
+                    if pkg.get('version_file'):
+                        fp = os.path.join(self.topmost_supermodule_path_prefix, pkg['version_file'])
+                        version = FileRead(fp).strip()
+                    else:
+                        version = pkg['version']
+                    p = Package(pkg['package'], version, path)
+                    entity.packages.append(p)
                 entities.append(entity)
         return entities
 

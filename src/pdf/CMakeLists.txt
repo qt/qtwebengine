@@ -147,6 +147,7 @@ foreach(arch ${archs})
           v8_use_external_startup_data=false
           build_with_tflite_lib=false
           webnn_use_tflite=false
+          use_cxx23=false
         )
 
         if(LINUX OR ANDROID)
@@ -170,10 +171,6 @@ foreach(arch ${archs})
             extend_gn_list(gnArgArg
                 ARGS use_system_libopenjpeg2
                 CONDITION QT_FEATURE_webengine_system_libopenjpeg2
-            )
-            extend_gn_list(gnArgArg
-                ARGS is_gcc_legacy
-                CONDITION QT_FEATURE_webengine_gcc_legacy_support
             )
          endif()
         if(MACOS)

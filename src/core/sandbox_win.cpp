@@ -8,6 +8,7 @@
 
 #ifndef NDEBUG
 #include "base/command_line.h"
+#include "base/logging/logging_settings.h"
 #include "base/logging.h"
 #endif
 

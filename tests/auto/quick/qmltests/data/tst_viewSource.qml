@@ -113,8 +113,8 @@ TestWebEngineView {
                    { tag: "view-source:about:blank", userInputUrl: "view-source:about:blank", loadSucceed: true, url: "view-source:about:blank", title: "view-source:about:blank" },
                    { tag: testLocalUrl, userInputUrl: testLocalUrl, loadSucceed: true, url: testLocalUrl, title: "test1.html" },
                    { tag: testLocalUrlWithoutScheme, userInputUrl: testLocalUrlWithoutScheme, loadSucceed: true, url: testLocalUrl, title: "test1.html" },
-                   { tag: "view-source:http://non.existent", userInputUrl: "view-source:http://non.existent", loadSucceed: false, url: "http://non.existent/", title: "non.existent" },
-                   { tag: "view-source:non.existent", userInputUrl: "view-source:non.existent", loadSucceed: false, url: "http://non.existent/", title: "non.existent" },
+                   { tag: "view-source:http://non.existent", userInputUrl: "view-source:http://non.existent", loadSucceed: false, url: "view-source:http://non.existent/", title: "non.existent" },
+                   { tag: "view-source:non.existent", userInputUrl: "view-source:non.existent", loadSucceed: false, url: "view-source:http://non.existent/", title: "non.existent" },
             ];
         }
 
@@ -127,15 +127,11 @@ TestWebEngineView {
             let expectedStatus = row.loadSucceed ? WebEngineView.LoadSucceededStatus : WebEngineView.LoadFailedStatus
             compare(load.status, expectedStatus);
             compare(load.isErrorPage, !row.loadSucceed);
-            tryVerify(function() { return titleChangedSpy.count == 1; });
+            tryVerify(function() { return titleChangedSpy.count == (row.loadSucceed ? 1 : 2); });
 
             compare(webEngineView.url, row.url);
             tryCompare(webEngineView, "title", row.title);
-            if (row.loadSucceed) {
-                verify(!webEngineView.action(WebEngineView.ViewSource).enabled);
-            } else {
-                verify(webEngineView.action(WebEngineView.ViewSource).enabled);
-            }
+            verify(!webEngineView.action(WebEngineView.ViewSource).enabled);
         }
     }
 }

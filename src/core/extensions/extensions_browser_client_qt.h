@@ -71,7 +71,7 @@ public:
     GetComponentExtensionResourceManager() override;
     void BroadcastEventToRenderers(events::HistogramValue histogram_value,
                                    const std::string &event_name,
-                                   base::Value::List args,
+                                   base::ListValue args,
                                    bool dispatch_to_off_the_record_profiles) override;
     ExtensionCache *GetExtensionCache() override;
     bool IsBackgroundUpdateAllowed() override;

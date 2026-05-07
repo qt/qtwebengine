@@ -32,8 +32,7 @@ namespace QtWebEngineCore {
 class AutofillPopupController;
 class WebContentsAdapterClient;
 
-class AutofillClientQt : public autofill::ContentAutofillClient,
-                         public content::WebContentsObserver
+class AutofillClientQt : public autofill::ContentAutofillClient
 {
 public:
     ~AutofillClientQt() override;

@@ -23,7 +23,7 @@ public:
     MessagingDelegateQt();
 
     // MessagingDelegate implementation.
-    std::optional<base::Value::Dict> MaybeGetTabInfo(content::WebContents *web_contents) override;
+    std::optional<base::DictValue> MaybeGetTabInfo(content::WebContents *web_contents) override;
 };
 
 } // namespace extensions

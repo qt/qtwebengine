@@ -138,7 +138,7 @@ WebContentsDelegateQt *DevToolsFrontendQt::frontendDelegate() const
 
 void DevToolsFrontendQt::ColorPickedInEyeDropper(int r, int g, int b, int a)
 {
-    base::Value::Dict color;
+    base::DictValue color;
     color.Set("r", r);
     color.Set("g", g);
     color.Set("b", b);

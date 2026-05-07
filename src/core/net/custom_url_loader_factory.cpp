@@ -4,6 +4,7 @@
 
 #include "custom_url_loader_factory.h"
 
+#include "base/containers/contains.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"

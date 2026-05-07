@@ -164,6 +164,18 @@ void AuthenticatorRequestClientDelegateQt::SetUIPresentation(UIPresentation ui_p
     m_dialogController->setUiPresentation(ui_presentation);
 }
 
+void AuthenticatorRequestClientDelegateQt::StartObserving(
+        device::FidoRequestHandlerBase *requestHandler)
+{
+    requestHandlerObservation.Observe(requestHandler);
+}
+
+void AuthenticatorRequestClientDelegateQt::StopObserving(
+        device::FidoRequestHandlerBase *requestHandler)
+{
+    requestHandlerObservation.Reset();
+}
+
 // This method will not be invoked until the observer is set.
 void AuthenticatorRequestClientDelegateQt::OnTransportAvailabilityEnumerated(
         device::FidoRequestHandlerBase::TransportAvailabilityInfo data)

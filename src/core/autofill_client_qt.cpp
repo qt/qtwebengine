@@ -30,7 +30,6 @@ void AutofillClientQt::CreateForWebContents(content::WebContents *contents)
 
 AutofillClientQt::AutofillClientQt(content::WebContents *webContents)
     : autofill::ContentAutofillClient(webContents)
-    , content::WebContentsObserver(webContents)
     , m_popupController(new AutofillPopupController(new AutofillPopupControllerPrivate))
 {
 }

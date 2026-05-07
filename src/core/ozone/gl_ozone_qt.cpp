@@ -21,7 +21,7 @@
 #include "ui/gl/gl_utils.h"
 #include "ui/ozone/common/native_pixmap_egl_binding.h"
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
 #include "ozone_util_qt.h"
 
 #include "ui/ozone/platform/x11/native_pixmap_egl_x11_binding.h"
@@ -48,7 +48,7 @@ NativePixmapSupportType GLOzoneQt::getNativePixmapSupportType()
     if (gl::GLSurfaceEGL::GetGLDisplayEGL()->ext->b_EGL_EXT_image_dma_buf_import)
         return NativePixmapSupportType::kDMABuf;
 
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     if (NativePixmapEGLX11Binding::CanImportNativeGLXPixmap())
         return NativePixmapSupportType::kX11Pixmap;
 #endif
@@ -92,7 +92,7 @@ scoped_refptr<gl::GLSurface> GLOzoneQt::CreateOffscreenGLSurface(gl::GLDisplay *
 
 gl::EGLDisplayPlatform GLOzoneQt::GetNativeDisplay()
 {
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     static EGLNativeDisplayType nativeDisplay =
             reinterpret_cast<EGLNativeDisplayType>(OzoneUtilQt::getXDisplay());
     if (nativeDisplay)
@@ -110,7 +110,7 @@ bool GLOzoneQt::CanImportNativePixmap(viz::SharedImageFormat format)
     switch (getNativePixmapSupportType()) {
     case NativePixmapSupportType::kDMABuf:
         return NativePixmapEGLBinding::IsSharedImageFormatSupported(format);
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     case NativePixmapSupportType::kX11Pixmap:
         return NativePixmapEGLX11Binding::IsSharedImageFormatSupported(format);
 #endif
@@ -129,7 +129,7 @@ GLOzoneQt::ImportNativePixmap(scoped_refptr<gfx::NativePixmap> pixmap,
     case NativePixmapSupportType::kDMABuf:
         return NativePixmapEGLBinding::Create(pixmap, plane_format, plane, plane_size, color_space,
                                               target, texture_id);
-#if BUILDFLAG(IS_OZONE_X11)
+#if BUILDFLAG(SUPPORTS_OZONE_X11)
     case NativePixmapSupportType::kX11Pixmap:
         return NativePixmapEGLX11Binding::Create(pixmap, plane_format, plane_size, target,
                                                  texture_id);

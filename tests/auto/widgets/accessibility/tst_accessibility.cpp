@@ -613,7 +613,9 @@ void tst_Accessibility::roles_data()
     QTest::newRow("ax::mojom::Role::kRegion")
             << QString("<section aria-label='section with name'/>") << 0 << QAccessible::Section;
     QTest::newRow("ax::mojom::Role::kRow") << QString("<table role=table><tr><td>a</td></tr></table>") << 1 << QAccessible::Row;
-    QTest::newRow("ax::mojom::Role::kRowGroup") << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>") << 1 << QAccessible::Section;
+    QTest::newRow("ax::mojom::Role::kRowGroup")
+            << QString("<table role=table><tbody role=rowgroup><tr><td>a</td></tr></tbody></table>")
+            << 1 << QAccessible::Row;
     QTest::newRow("ax::mojom::Role::kRowHeader") << QString("<table role=table><tr><th>a</td><td>b</td></tr></table>") << 2 << QAccessible::Cell;
     QTest::newRow("ax::mojom::Role::kRuby") << QString("<ruby>a</ruby>") << 1 << QAccessible::Grouping;
     //QTest::newRow("ax::mojom::Role::kRubyAnnotation") // No mapping to ARIA role (presents as property on enclosing ruby element)

@@ -33,7 +33,7 @@ ComponentExtensionResourceManagerQt::ComponentExtensionResourceManagerQt()
     AddComponentResourceEntries(kComponentExtensionResources, std::size(kComponentExtensionResources));
 #if BUILDFLAG(ENABLE_PDF)
     AddComponentResourceEntries(kPdfResources, std::size(kPdfResources));
-    base::Value::Dict dict;
+    base::DictValue dict;
     pdf_extension_util::AddStrings(pdf_extension_util::PdfViewerContext::kPdfViewer, &dict);
 
     ui::TemplateReplacements pdf_viewer_replacements;

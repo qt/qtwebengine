@@ -43,7 +43,7 @@ LoadablePluginPlaceholderQt* LoadablePluginPlaceholderQt::CreateLoadableMissingP
 {
     std::string template_html(ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(IDR_BLOCKED_PLUGIN_HTML));
 
-    base::Value::Dict values;
+    base::DictValue values;
     values.Set("name", "");
     values.Set("message", l10n_util::GetStringUTF8(IDS_PLUGIN_NOT_SUPPORTED));
 

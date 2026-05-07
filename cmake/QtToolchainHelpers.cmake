@@ -361,6 +361,8 @@ macro(append_build_type_setup)
         if (MSVC AND NOT CLANG)
             # We need these to keep the PDB size below the limit on MSVC builds
             list(APPEND gnArgArg device_symbol_level=0)
+            list(APPEND gnArgArg mojo_symbol_level=0)
+            list(APPEND gnArgArg skia_symbol_level=0)
             list(APPEND gnArgArg webrtc_symbol_level=0)
             if (QT_FEATURE_webengine_rust_build)
                 list(APPEND gnArgArg rust_symbol_level=0)

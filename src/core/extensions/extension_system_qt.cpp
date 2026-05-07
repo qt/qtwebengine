@@ -72,7 +72,7 @@ namespace extensions {
 namespace {
 
 // Implementation based on ComponentLoader::ParseManifest.
-std::optional<base::Value::Dict> ParseManifest(std::string_view manifest_contents)
+std::optional<base::DictValue> ParseManifest(std::string_view manifest_contents)
 {
     JSONStringValueDeserializer deserializer(manifest_contents);
     std::unique_ptr<base::Value> manifest = deserializer.Deserialize(nullptr, nullptr);
@@ -128,7 +128,8 @@ QtWebEngineCore::ExtensionManager *ExtensionSystemQt::extensionManager()
 }
 #endif
 
-void ExtensionSystemQt::LoadExtension(const base::Value::Dict &manifest, const base::FilePath &directory)
+void ExtensionSystemQt::LoadExtension(const base::DictValue &manifest,
+                                      const base::FilePath &directory)
 {
     int flags = Extension::REQUIRE_KEY;
     std::u16string error;
@@ -317,7 +318,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             base::FilePath path;
             base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
             path = path.Append(base::FilePath(FILE_PATH_LITERAL("pdf")));
-            LoadExtension(pdfManifestDict.value(), path);
+            LoadExtension(*pdfManifestDict, path);
         }
 #endif // BUILDFLAG(ENABLE_PDF)
 
@@ -329,7 +330,7 @@ void ExtensionSystemQt::Init(bool extensions_enabled)
             base::FilePath path;
             base::PathService::Get(base::DIR_QT_LIBRARY_DATA, &path);
             path = path.Append(base::FilePath(FILE_PATH_LITERAL("hangout_services")));
-            LoadExtension(hangoutManifestDict.value(), path);
+            LoadExtension(*hangoutManifestDict, path);
         }
 #endif // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     }

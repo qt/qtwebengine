@@ -6,6 +6,7 @@
 #define AUTHENTICATOR_REQUEST_CLIENT_DELEGATE_QT_H
 
 #include "qtwebenginecoreglobal_p.h"
+#include "base/scoped_observation.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/web_authentication_delegate.h"
 #include <unordered_map>
@@ -53,6 +54,9 @@ public:
             base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)> callback) override;
     void SetUIPresentation(UIPresentation ui_presentation) override;
 
+    void StartObserving(device::FidoRequestHandlerBase *requestHandler) override;
+    void StopObserving(device::FidoRequestHandlerBase *requestHandler) override;
+
     // device::FidoRequestHandlerBase::Observer overrides:
     // This method will not be invoked until the observer is set.
     void OnTransportAvailabilityEnumerated(
@@ -78,6 +82,10 @@ private:
     AccountPreselectedCallback m_accountPreselectedCallback;
     device::FidoRequestHandlerBase::RequestCallback m_requestCallback;
     base::RepeatingClosure m_bluetoothAdapterPowerOnCallback;
+
+    base::ScopedObservation<device::FidoRequestHandlerBase,
+                            device::FidoRequestHandlerBase::Observer>
+            requestHandlerObservation{ this };
 
     // Select account details;
     std::vector<device::AuthenticatorGetAssertionResponse> m_authenticatorGetAssertionResponse;
