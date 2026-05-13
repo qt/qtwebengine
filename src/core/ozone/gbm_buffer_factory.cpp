@@ -4,7 +4,8 @@
 
 #include "gbm_buffer_factory.h"
 
-#include "compositor/compositor.h"
+#include "ozone/egl_helper.h"
+#include "ozone/glx_helper.h"
 #include "ozone/ozone_util_qt.h"
 
 #include "ui/gfx/buffer_format_util.h"
@@ -17,8 +18,10 @@
 #include "ui/ozone/platform/wayland/common/drm_render_node_handle.h"
 
 #include <QtCore/qdebug.h>
+#include <QtGui/qtguiglobal.h>
 
 #include <drm_fourcc.h>
+#include <string>
 #include <sstream>
 #include <xf86drm.h>
 
@@ -65,6 +68,21 @@ static base::ScopedFD openDrmNodePath(const std::string &path)
     return nodeHandle.PassFD();
 }
 
+GbmBufferFactory *GbmBufferFactory::instance()
+{
+#if QT_CONFIG(xcb_glx_plugin)
+    if (OzoneUtilQt::usingGLX())
+        return GLXHelper::instance()->gbmFactory();
+#endif
+
+#if QT_CONFIG(egl)
+    if (OzoneUtilQt::usingEGL())
+        return EGLHelper::instance()->gbmFactory();
+#endif
+
+    return nullptr;
+}
+
 // Path-based (EGL)
 GbmBufferFactory::GbmBufferFactory(const std::string &drmNodePath)
     : GbmBufferFactory(openDrmNodePath(drmNodePath))
@@ -84,18 +102,6 @@ GbmBufferFactory::GbmBufferFactory(base::ScopedFD drmNodeFD) : m_drmNodeFD(std::
         return;
     }
 
-    if (Q_UNLIKELY(QtWebEngineCore::lcWebEngineCompositor().isDebugEnabled())) {
-        if (drmVersionPtr drmVersion = drmGetVersion(m_drmNodeFD.get())) {
-            qCDebug(QtWebEngineCore::lcWebEngineCompositor,
-                    "GBM: DRM device found: %s v%d.%d.%d (%s)", drmVersion->name,
-                    drmVersion->version_major, drmVersion->version_minor,
-                    drmVersion->version_patchlevel, drmVersion->desc);
-            drmFreeVersion(drmVersion);
-        } else {
-            qCDebug(QtWebEngineCore::lcWebEngineCompositor, "GBM: Failed to identify DRM device.");
-        }
-    }
-
     m_gbmDevice = ui::CreateGbmDevice(m_drmNodeFD.get());
     if (!m_gbmDevice) {
         qWarning("GBM: Failed to initialize GBM device.");
@@ -104,6 +110,48 @@ GbmBufferFactory::GbmBufferFactory(base::ScopedFD drmNodeFD) : m_drmNodeFD(std::
 }
 
 GbmBufferFactory::~GbmBufferFactory() = default;
+
+std::string GbmBufferFactory::drmRenderNodePath() const
+{
+    if (!m_drmNodeFD.is_valid())
+        return { };
+
+    char *nodeName = drmGetRenderDeviceNameFromFd(m_drmNodeFD.get());
+    if (!nodeName)
+        return { };
+
+    std::string path(nodeName);
+    free(nodeName);
+
+    return path;
+}
+
+std::string GbmBufferFactory::drmDeviceString() const
+{
+    if (!m_drmNodeFD.is_valid())
+        return { };
+
+    drmVersionPtr version = drmGetVersion(m_drmNodeFD.get());
+    if (!version)
+        return { };
+
+    std::string deviceString;
+    deviceString.reserve(64);
+
+    deviceString += std::string(version->name);
+    deviceString += " v";
+    deviceString += std::to_string(version->version_major);
+    deviceString += ".";
+    deviceString += std::to_string(version->version_minor);
+    deviceString += ".";
+    deviceString += std::to_string(version->version_patchlevel);
+    deviceString += " (";
+    deviceString += version->desc;
+    deviceString += ")";
+
+    drmFreeVersion(version);
+    return deviceString;
+}
 
 bool GbmBufferFactory::canCreateNativePixmapForFormat(gfx::BufferFormat format) const
 {
@@ -157,15 +205,14 @@ GbmBufferFactory::createBufferWithModifiers(gfx::BufferFormat format, gfx::Size 
         for (uint64_t mod : supportedModifiers)
             modStrings << QLatin1StringView(OzoneUtilQt::drmFormatModifierToString(mod));
 
-        char *nodePath = drmGetRenderDeviceNameFromFd(m_drmNodeFD.get());
+        std::string nodePath = drmRenderNodePath();
         qWarning().noquote() << "GBM: Buffer creation failed with the following parameters:\n"
-                             << "  Device:   " << (nodePath ? nodePath : "unknown") << "\n"
+                             << "  Device:   " << (!nodePath.empty() ? nodePath.c_str() : "unknown")
+                             << "\n"
                              << "  Format:   " << ui::DrmFormatToString(fourccFormat) << "\n"
                              << "  Size:     " << size.ToString().c_str() << "\n"
                              << "  Flags:    " << gbmFlagsToString(gbmFlags) << "\n"
                              << "  Modifiers:" << modStrings.join(" | ");
-        if (nodePath)
-            free(nodePath);
     }
 
     return buffer;
@@ -186,17 +233,15 @@ GbmBufferFactory::createBufferFromHandle(gfx::BufferFormat format, gfx::Size siz
             m_gbmDevice->CreateBufferFromHandle(fourccFormat, size, std::move(handle));
 
     if (!buffer) {
-        char *nodePath = drmGetRenderDeviceNameFromFd(m_drmNodeFD.get());
+        std::string nodePath = drmRenderNodePath();
         qWarning().noquote()
                 << "GBM: Buffer creation from handle failed with the following parameters:\n"
-                << "  Device:  " << (nodePath ? nodePath : "unknown") << "\n"
+                << "  Device:  " << (!nodePath.empty() ? nodePath.c_str() : "unknown") << "\n"
                 << "  Format:  " << ui::DrmFormatToString(fourccFormat) << "\n"
                 << "  Size:    " << size.ToString().c_str() << "\n"
                 << "  Planes:  " << numPlanes << "\n"
                 << "  Modifier:"
                 << QLatin1StringView(OzoneUtilQt::drmFormatModifierToString(modifier));
-        if (nodePath)
-            free(nodePath);
     }
 
     return buffer;

@@ -115,7 +115,12 @@
 #include <QLoggingCategory>
 
 #if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE)
+#include "ozone/gbm_buffer_factory.h"
+#include "ozone/egl_helper.h"
+#include "ozone/glx_helper.h"
 #include "ozone/ozone_util_qt.h"
+
+#include "ui/ozone/public/ozone_switches.h"
 #endif // QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE)
 
 #define STRINGIFY_LITERAL(x) #x
@@ -225,6 +230,40 @@ static std::string getANGLEType(const base::CommandLine &cmd)
     return "disabled";
 }
 
+#if QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE)
+static void syncDrmRenderNode(base::CommandLine *cmd)
+{
+    if (cmd->HasSwitch(switches::kDisableGpu) || !RhiGpuInfo::instance()->isGbmSupported())
+        return;
+
+    GbmBufferFactory *gbm = GbmBufferFactory::instance();
+    if (!gbm)
+        return;
+
+    const std::string qtRenderNodePath = gbm->drmRenderNodePath();
+    if (qtRenderNodePath.empty())
+        return;
+
+    if (cmd->HasSwitch(switches::kRenderNodeOverride)) {
+        const std::string &userRenderNodePath =
+                cmd->GetSwitchValueASCII(switches::kRenderNodeOverride);
+        if (userRenderNodePath != qtRenderNodePath) {
+            qWarning("User-override DRM node (%s) conflicts with Qt's node (%s). "
+                     "Rendering may fail.",
+                     userRenderNodePath.c_str(), qtRenderNodePath.c_str());
+        }
+        return;
+    }
+
+    // Explicitly synchronize Chromium's device selection with Qt for EGL/Wayland. This prevents
+    // mismatches on multi-GPU systems where Chromium's default discovery might pick a different
+    // node than the one used by the Qt application.
+    // GLX/X11 is currently excluded to maintain existing behavior.
+    if (OzoneUtilQt::usingEGL())
+        cmd->AppendSwitchASCII(switches::kRenderNodeOverride, qtRenderNodePath);
+}
+#endif // QT_CONFIG(opengl) && BUILDFLAG(IS_OZONE)
+
 static void logContext(const base::CommandLine &cmd)
 {
     if (Q_UNLIKELY(webEngineContextLog().isDebugEnabled())) {
@@ -253,6 +292,20 @@ static void logContext(const base::CommandLine &cmd)
         log += "Using Shared GL: "_L1 + (QOpenGLContext::globalShareContext() ? "yes"_L1 : "no"_L1)
                 + u'\n';
         log += u'\n';
+
+#if BUILDFLAG(IS_OZONE)
+        if (RhiGpuInfo::instance()->isGbmSupported()) {
+            GbmBufferFactory *gbm = GbmBufferFactory::instance();
+            const std::string nodePath = gbm ? gbm->drmRenderNodePath() : "";
+            const std::string deviceString = gbm ? gbm->drmDeviceString() : "";
+
+            log += "DRM Device Path: "_L1
+                    + (!nodePath.empty() ? QLatin1StringView(nodePath) : "N/A"_L1) + u'\n';
+            log += "DRM Device Name: "_L1
+                    + (!deviceString.empty() ? QLatin1StringView(deviceString) : "N/A"_L1) + u'\n';
+        }
+        log += u'\n';
+#endif // BUILDFLAG(IS_OZONE)
 #endif // QT_CONFIG(opengl)
 
         log += "Init Parameters:\n"_L1;
@@ -722,6 +775,10 @@ WebEngineContext::WebEngineContext()
     }
 
 #if BUILDFLAG(IS_OZONE)
+#if QT_CONFIG(opengl)
+    syncDrmRenderNode(&parsedCommandLine);
+#endif
+
     if ((QQuickWindow::graphicsApi() == QSGRendererInterface::OpenGL
          || QQuickWindow::graphicsApi() == QSGRendererInterface::Vulkan)
         && usingSupportedSGBackend()) {

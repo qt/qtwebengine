@@ -26,11 +26,15 @@ QT_BEGIN_NAMESPACE
 class GbmBufferFactory
 {
 public:
+    static GbmBufferFactory *instance();
+
     GbmBufferFactory(const std::string &drmNodePath);
     GbmBufferFactory(base::ScopedFD drmNodeFD);
     ~GbmBufferFactory();
 
     bool hasDevice() const { return m_gbmDevice.get() != nullptr; }
+    std::string drmRenderNodePath() const;
+    std::string drmDeviceString() const;
     bool canCreateNativePixmapForFormat(gfx::BufferFormat format) const;
     bool isSinglePlanar(uint32_t fourccFormat, uint64_t modifier) const;
     std::unique_ptr<ui::GbmBuffer>
