@@ -20,6 +20,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qvariant.h>
+#include <QtQml/qqmlregistration.h>
 #include <QtWebEngineCore/qwebenginescript.h>
 #include <QtWebEngineQuick/private/qtwebenginequickglobal_p.h>
 
@@ -29,6 +30,8 @@ class QWebEngineScriptCollection;
 class Q_WEBENGINEQUICK_EXPORT QQuickWebEngineScriptCollection : public QObject
 {
     Q_OBJECT
+    QML_ANONYMOUS
+
 public:
     Q_PROPERTY(QList<QWebEngineScript> collection READ collection WRITE setCollection NOTIFY collectionChanged)
     ~QQuickWebEngineScriptCollection();
