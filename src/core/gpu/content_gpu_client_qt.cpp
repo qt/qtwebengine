@@ -177,7 +177,10 @@ public:
         Q_ASSERT(manager->IsEssentialGpuInfoAvailable());
 
         const gpu::GPUInfo &gpuInfo = manager->GetGPUInfo();
-        Q_ASSERT(gpuInfo.IsInitialized());
+        if (!gpuInfo.IsInitialized()) {
+            qWarning("GPUInfo not initialized on GpuInfoUpdate");
+            return;
+        }
 
         // Avoid logging the info again if the device hasn't changed.
         // A change in the device is unexpected, as we currently don't support or implement
