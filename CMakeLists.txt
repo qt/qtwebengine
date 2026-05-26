@@ -12,11 +12,13 @@ include(cmake/Functions.cmake)
 include(cmake/QtGnTargetHelpers.cmake)
 include(cmake/QtGnConfigHelpers.cmake)
 include(cmake/QtConfigureHelpers.cmake)
-include(cmake/QtWebEngineSbomHelpers.cmake)
 include(cmake/QtToolchainHelpers.cmake)
 
 project(QtWebEngineDummy)
 find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals)
+
+# Should be after find_package to ensure SBOM functions are available
+include(cmake/QtWebEngineSbomHelpers.cmake)
 
 # Sepcial case of just doing gn build
 if(DEFINED BUILD_ONLY_GN)
