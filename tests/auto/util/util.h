@@ -179,7 +179,8 @@ static inline bool webActionLoadSync(QWebEnginePage *page, QWebEnginePage::WebAc
     return (!spy.empty() || spy.wait(timeout)) && (spy.front().value(0).toBool() == ok);
 }
 
-static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
+template<typename T>
+static inline QRect elementGeometry(T *target, const QString &id)
 {
     const QString jsCode(
                 "(function() {"
@@ -187,7 +188,7 @@ static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
                 "   var rect = elem.getBoundingClientRect();"
                 "   return [rect.left, rect.top, rect.width, rect.height];"
                 "})()");
-    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
+    QVariantList coords = evaluateJavaScriptSync(target, jsCode).toList();
 
     if (coords.size() != 4) {
         qWarning("elementGeometry failed.");
@@ -200,6 +201,11 @@ static inline QRect elementGeometry(QWebEnginePage *page, const QString &id)
 static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
 {
     return elementGeometry(page, id).center();
+}
+
+static inline QPoint elementCenter(QWebEngineFrame *frame, const QString &id)
+{
+    return elementGeometry(frame, id).center();
 }
 
 #endif /* UTIL_H */

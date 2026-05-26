@@ -246,10 +246,15 @@ void tst_QWebEnginePermission::triggerFromJavascript()
 
     evaluateJavaScriptSync(&page, "triggerFunc = function() {"_L1 + triggerFunction + "}"_L1);
     evaluateJavaScriptSync(&page, "testFunc = function() {"_L1 + testFunction + "done = true;" + "}"_L1);
+    QTRY_VERIFY(evaluateJavaScriptSync(
+                        &page, QStringLiteral("document.getElementById('clickMe-btn') !== null"))
+                        .toBool());
 
     // Access to some pf the APIs requires recent user interaction
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, QPoint{100, 100});
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {},
+                      elementCenter(&page, u"clickMe-btn"_s));
 
+    QTRY_VERIFY(evaluateJavaScriptSync(&page, QStringLiteral("clicked")).toBool());
     QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(&page, QStringLiteral("done")).toBool(), 5000);
     if (evaluateJavaScriptSync(&page, QStringLiteral("skipReason")).toBool()) {
         // Catch expected failures and skip test
@@ -264,9 +269,14 @@ void tst_QWebEnginePermission::triggerFromJavascript()
     QCOMPARE(permission.state(), QWebEnginePermission::State::Ask);
     evaluateJavaScriptSync(&page, "done = false; data = undefined"_L1);
     grant = false;
+    QTRY_VERIFY(evaluateJavaScriptSync(
+                        &page, QStringLiteral("document.getElementById('clickMe-btn') !== null"))
+                        .toBool());
 
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, QPoint{100, 100});
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {},
+                      elementCenter(&page, u"clickMe-btn"_s));
 
+    QTRY_VERIFY(evaluateJavaScriptSync(&page, QStringLiteral("clicked")).toBool());
     QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(&page, QStringLiteral("done")).toBool(), 5000);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("testFunc()")).toBool(), false);
     QCOMPARE(permission.state(), QWebEnginePermission::State::Denied);
@@ -308,8 +318,14 @@ void tst_QWebEnginePermission::preGrant()
     evaluateJavaScriptSync(&page, "testFunc = function() {"_L1 + testFunction + "done = true;" + "}"_L1);
 
     QSignalSpy spy(&page, &QWebEnginePage::permissionRequested);
+    QTRY_VERIFY(evaluateJavaScriptSync(
+                        &page, QStringLiteral("document.getElementById('clickMe-btn') !== null"))
+                        .toBool());
 
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, QPoint{100, 100});
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {},
+                      elementCenter(&page, u"clickMe-btn"_s));
+
+    QTRY_VERIFY(evaluateJavaScriptSync(&page, QStringLiteral("clicked")).toBool());
     QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(&page, QStringLiteral("done")).toBool(), 5000);
     if (evaluateJavaScriptSync(&page, QStringLiteral("skipReason")).toBool()) {
         // No media devices, or no geolocation plugin
@@ -362,9 +378,14 @@ void tst_QWebEnginePermission::iframe()
 
     evaluateJavaScriptSync(&frame, "triggerFunc = function() {"_L1 + triggerFunction + "}"_L1);
     evaluateJavaScriptSync(&frame, "testFunc = function() {"_L1 + testFunction + "done = true;" + "}"_L1);
+    QTRY_VERIFY(evaluateJavaScriptSync(
+                        &frame, QStringLiteral("document.getElementById('clickMe-btn') !== null"))
+                        .toBool());
 
-    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {}, QPoint{100, 100});
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, {},
+                      elementCenter(&frame, u"clickMe-btn"_s));
 
+    QTRY_VERIFY(evaluateJavaScriptSync(&frame, QStringLiteral("clicked")).toBool());
     QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(&frame, QStringLiteral("done")).toBool(), 10000);
     if (evaluateJavaScriptSync(&frame, QStringLiteral("skipReason")).toBool()) {
         // Catch expected failures and skip test
