@@ -890,9 +890,25 @@ int QPdfDocument::pageIndexForLabel(const QString &label)
     return -1;
 }
 
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
+{
+    return render(page, imageSize, renderOptions, QImage::Format_ARGB32, Qt::transparent);
+}
+#endif
+
 /*!
-    Renders the \a page into a QImage of size \a imageSize according to the
-    provided \a renderOptions.
+    Renders the \a page into a QImage of size \a imageSize with the given \a format
+    according to the provided \a renderOptions.
+
+    The \a format is \l {QImage::Format_ARGB32}{ARGB} by default.
+    Before rendering, the image is filled with the given \a fillColor, which is
+    \l {Qt::transparent}{transparent} by default. Thus the default result is
+    suitable for compositing onto any background; but you can specify a
+    different background color to get an image suitable for direct rendering.
+    Some PDF pages may include their own background: if the rendering is fully
+    opaque, it will cover up the background color.
 
     Returns the rendered page or an empty image in case of an error.
 
@@ -900,7 +916,8 @@ int QPdfDocument::pageIndexForLabel(const QString &label)
     PDF document, the page is rendered scaled, so that it covers the
     complete \a imageSize.
 */
-QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
+QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions,
+                            QImage::Format format, const QColor &fillColor)
 {
     if (!d->doc || !d->checkPageComplete(page))
         return QImage();
@@ -914,8 +931,8 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     if (!pdfPage)
         return QImage();
 
-    QImage result(imageSize, QImage::Format_ARGB32);
-    result.fill(Qt::transparent);
+    QImage result(imageSize, format);
+    result.fill(fillColor);
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(result.width(), result.height(), FPDFBitmap_BGRA, result.bits(), result.bytesPerLine());
 
     const QPdfDocumentRenderOptions::RenderFlags renderFlags = renderOptions.renderFlags();
