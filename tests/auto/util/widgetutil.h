@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) \
     \
     QApplication app(w_argc, const_cast<char **>(w_argv.data())); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
-    QTEST_DISABLE_KEYPAD_NAVIGATION \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
     return QTest::qExec(&tc, argc, argv); \
