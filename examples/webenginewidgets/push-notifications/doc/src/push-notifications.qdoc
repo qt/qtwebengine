@@ -198,6 +198,7 @@ After granting the permission we can send our ping request:
 
 We should see the coming push notification:
 
-\image notification.png
+\image notification.png {Desktop push notification titled Ping! with the
+       text Visit qt.io and a Close button}
 
 */
