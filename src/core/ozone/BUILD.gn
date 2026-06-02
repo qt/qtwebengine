@@ -26,6 +26,7 @@ source_set("qt") {
     "//ui/base:buildflags",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
+    "//media/gpu:buildflags"
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
