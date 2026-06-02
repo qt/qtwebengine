@@ -260,6 +260,10 @@ source_set("devtools_sources") {
     "//chrome/app:generated_resources",
     "//components/zoom",
     "//third_party/blink/public/mojom:mojom_platform",
+    "//chrome/common:buildflags",
+    "//components/compose:buildflags",
+    "//extensions/common:mojom",
+    "//rlz/buildflags:buildflags",
     ]
   sources = [
      "//chrome/browser/devtools/devtools_eye_dropper.cc",
@@ -294,6 +298,7 @@ source_set("qtwebengine_sources") {
     "//build:branding_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
     "//chrome/browser/resources/accessibility:resources",
+    "//chrome/browser/resources/device_log:resources",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//chrome/browser/signin:identity_manager_provider",
@@ -305,6 +310,7 @@ source_set("qtwebengine_sources") {
     "//components/embedder_support",
     "//components/embedder_support:user_agent",
     "//components/enterprise/buildflags:buildflags",
+    "//components/gcm_driver:gcm_buildflags",
     "//components/performance_manager",
     "//components/permissions:permissions_common",
     "//components/plugins/renderer/",
