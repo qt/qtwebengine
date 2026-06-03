@@ -259,6 +259,11 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout,
             return false;
         rfh = ftn->current_frame_host();
     }
+
+    if (rfh && rfh->IsNestedWithinFencedFrame()) {
+        return false;
+    }
+
     GetPrintRenderFrame(rfh)->InitiatePrintPreview(false);
 
     DCHECK(!m_printPreviewRfh);
