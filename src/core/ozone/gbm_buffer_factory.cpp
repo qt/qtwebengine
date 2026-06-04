@@ -8,6 +8,7 @@
 #include "ozone/glx_helper.h"
 #include "ozone/ozone_util_qt.h"
 
+#include "ui/base/ozone_buildflags.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/linux/gbm_buffer.h"
@@ -70,7 +71,7 @@ static base::ScopedFD openDrmNodePath(const std::string &path)
 
 GbmBufferFactory *GbmBufferFactory::instance()
 {
-#if QT_CONFIG(xcb_glx_plugin)
+#if BUILDFLAG(IS_OZONE_X11) && QT_CONFIG(xcb_glx_plugin)
     if (OzoneUtilQt::usingGLX())
         return GLXHelper::instance()->gbmFactory();
 #endif
