@@ -474,9 +474,12 @@ QSGNode *RenderWidgetHostViewQtDelegateItem::updatePaintNode(QSGNode *oldNode, U
 
     comp->swapFrame();
 
-    QSize texSize = comp->size();
-    QSizeF texSizeInDips = QSizeF(texSize) / comp->devicePixelRatio();
-    node->setRect(QRectF(QPointF(0, 0), texSizeInDips));
+    // The size of the node inside the shader graph
+    node->setRect(QRectF(QPointF(0, 0), size()));
+
+    // The crop of the received texture we're actually interested in. Chromium can pass
+    // a larger texture during resizes and only draw to a portion of it
+    node->setSourceRect(QRectF(QPointF(0, 0), size() * comp->devicePixelRatio()));
 
     QQuickWindow::CreateTextureOptions texOpts;
     if (comp->requiresAlphaChannel() || m_clearColor.alpha() < 255)
