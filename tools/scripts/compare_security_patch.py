@@ -14,9 +14,12 @@ import re
 import logging
 import shlex
 import urllib.request
+import traceback
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
+
+QT_API_URL_BASE = 'https://codereview.qt-project.org/changes/qt%2Fqtwebengine-chromium~'
 
 def diff_one_file(file_info, diff_method, context_lines):
     file_from = file_info['from']
@@ -127,7 +130,8 @@ def assemble_diff(chunk_map, diff_method, context_lines, report_unchanged):
             headers.append(f'only in {label} patch: {fn}\n')
     if headers:
         headers = ['~~~~~\n'] + headers + ['~~~~~\n\n']
-    return headers + r
+    result = headers + r
+    return result or ['*** Qt and external patch are identical\n']
 
 def download(url):
     logger.debug(f"download: {url}")
@@ -168,12 +172,12 @@ def resolve_ref(ref, api_url_base):
     else:
         raise ValueError(f'Could not resolve ref: "{ref}"')
 
-    return f'{api_url_base}{review_num}/revisions/{revision_num}/patch?download'
+    return f'{api_url_base}{review_num}/revisions/{revision_num}'
 
 
 def get_patch_contents(ref, api_url_base):
     logger.debug(f"get_patch_contents: ref={ref} api_url_base={api_url_base}")
-    url = resolve_ref(ref, api_url_base)
+    url = resolve_ref(ref, api_url_base) + '/patch?download'
     base64_content = download(url)
     decoded = base64.b64decode(base64_content)
     try:
@@ -198,7 +202,8 @@ def get_external_patch_url(contents, fallback_to_first_url):
         elif m := re.match(r'.*?(https?://[^ :]+)', l):
             if 'qt-project' in m.group(1):
                 continue
-            first_url = m.group(1)
+            if not first_url:
+                first_url = m.group(1)
         elif re.fullmatch('---', l):
             break
 
@@ -214,25 +219,96 @@ def get_external_api_url_base(url):
     #   Output: "https://chromium-review.googlesource.com/changes/chromium%2Fsrc~"
     logger.debug(f"get_external_api_url_base: url={url}")
     match = re.fullmatch(r'(.*?)/c/(.*?)/\+/.*', url)
-    escaped_inner_path = match.group(2).replace('/', '%2F')
-    return f'{match.group(1)}/changes/{escaped_inner_path}~'
+    if match:
+        escaped_inner_path = match.group(2).replace('/', '%2F')
+        return f'{match.group(1)}/changes/{escaped_inner_path}~'
+    else:
+        raise ValueError(f"'{url}' does not look like a valid Gerrit review URL")
 
 
-def main(args):
-    qt_api_url_base = 'https://codereview.qt-project.org/changes/qt%2Fqtwebengine-chromium~'
-    qt_patch_contents = get_patch_contents(args.qt_patch_ref, qt_api_url_base)
+def get_cherry_pick_url(qt_patch_contents, branch):
+    logger.debug(f"get_cherry_pick_url: branch={branch}")
+    change_id_line = re.search('^Change-Id: (I[a-f0-9]*)$', qt_patch_contents, re.MULTILINE)
+    assert change_id_line, "Couldn't find Change-Id line in Qt patch"
+
+    change_id = change_id_line.group(1)
+    query_url = f"https://codereview.qt-project.org/changes/?O=a&q=project:qt/qtwebengine-chromium%20change:{change_id}%20branch:{branch}%20-is:abandoned"
+    logger.debug(f"get_cherry_pick_url: query_url={query_url}")
+
+    contents = download(query_url)
+    contents = contents.split(b'\n')[-2]
+    logger.debug(f"get_cherry_pick_url: contents={contents}")
+
+    contents = json.loads(contents)
+    logger.debug(f"get_cherry_pick_url: to json -> {contents}")
+    if len(contents) != 1:
+        raise ValueError(f"Got more than one cherry-pick patch matching for branch {branch}: {contents}")
+
+    result = QT_API_URL_BASE + str(contents[0]['virtual_id_number'])
+    logger.debug(f"get_cherry_pick_url: result={result}")
+    return result
+
+
+def get_qt_patch_chain(ref):
+    logger.debug(f"get_qt_patch_chain: ref={ref}")
+
+    query_url = resolve_ref(ref, QT_API_URL_BASE) + '/related'
+    logger.debug(f"get_qt_patch_chain: query_url={query_url}")
+
+    contents = download(query_url)
+    logger.debug(f"get_qt_patch_chain: download -> {contents}")
+
+    contents = contents.split(b'\n')[-2]
+    logger.debug(f"get_qt_patch_chain: last line -> {contents}")
+
+    contents = json.loads(contents)['changes']
+    logger.debug(f"get_qt_patch_chain: to json -> {contents}")
+
+    result = []
+    for o in reversed(contents):
+        ref = f'{o["_change_number"]}/{o["_current_revision_number"]}'
+        title = o['commit']['subject']
+        url = 'https://codereview.qt-project.org/c/qt/qtwebengine-chromium/+/' + ref
+        result.append((ref, title, url))
+    logger.debug(f"get_qt_patch_chain: result -> {result}")
+
+    return result
+
+
+def review_one_patch(qt_patch_ref, args):
+    qt_patch_contents = get_patch_contents(qt_patch_ref, QT_API_URL_BASE)
 
     external_patch_url = args.external_patch_url
-    if external_patch_url is None:
-        external_patch_url = get_external_patch_url(qt_patch_contents, args.fallback_to_first_url)
-
-    external_api_url_base = get_external_api_url_base(external_patch_url)
-    external_patch_contents = get_patch_contents(external_patch_url, external_api_url_base)
+    if args.branch:
+        external_patch_url = get_cherry_pick_url(qt_patch_contents, args.branch)
+        external_patch_contents = get_patch_contents(external_patch_url, QT_API_URL_BASE)
+    else:
+        if external_patch_url is None:
+            external_patch_url = get_external_patch_url(qt_patch_contents, args.fallback_to_first_url)
+        external_api_url_base = get_external_api_url_base(external_patch_url)
+        external_patch_contents = get_patch_contents(external_patch_url, external_api_url_base)
 
     chunk_map = get_chunks(qt_patch_contents, external_patch_contents)
     diff = assemble_diff(chunk_map, args.diff_method, args.context_lines, args.report_unchanged)
 
     sys.stdout.writelines(diff)
+
+
+def main(args):
+    if not args.whole_chain:
+        review_one_patch(args.qt_patch_ref, args)
+        return
+
+    chain = get_qt_patch_chain(args.qt_patch_ref)
+    for idx, chain_entry in enumerate(chain):
+        ref, title, url = chain_entry
+        try:
+            review_one_patch(ref, args)
+        except Exception as e:
+            print(f"\nEncountered an exception: {e}")
+            print(f'{traceback.format_exc()}')
+        print(f"\n******* Reviewing patch {idx+1}/{len(chain)} '{title}' ({url})")
+        input("    *** Press enter to continue\n")
 
 
 if __name__ == '__main__':
@@ -242,6 +318,12 @@ f"""Takes a review URL or ID (for example: "https://codereview.qt-project.org/c/
 The external URL can be supplied directly if needed.
 
 Basic usage: {sys.argv[0]} 737091
+
+This script can also review all the patches in a chain in sequence (-W) and/or compare against the Qt patches on
+a different branch. For example, this command will review the full chain associated with patch 737091, and
+compare each one with the corresponding 134-based patch if it can be found.
+
+    {sys.argv[0]} -W -B 134-based 737091
 """)
     parser.add_argument('qt_patch_ref', help='Can be full Gerrit URL, <rvw-num>/<revision>, or just <rvw-num>')
     parser.add_argument('external_patch_url', nargs='?', help='Full Gerrit URL. If not provided, will be inferred from Qt patch contents')
@@ -250,6 +332,8 @@ Basic usage: {sys.argv[0]} 737091
     parser.add_argument('-d', '--diff-method', help='Diff method to use, one of [unified, ndiff, context]', default='unified')
     parser.add_argument('-C', '--context-lines', type=int, help='Num lines to show for context diff', default=3)
     parser.add_argument('-u', '--report-unchanged', action='store_true', help='Report files with no diff')
+    parser.add_argument('-W', '--whole-chain', action='store_true', help='Review the entire chain that the patch is a part of')
+    parser.add_argument('-B', '--branch', help='Instead of using the external patch, compare with cherry-picks on the given Qt branch')
 
     args = parser.parse_args()
     if args.verbose:
