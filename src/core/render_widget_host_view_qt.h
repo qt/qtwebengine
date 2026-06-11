@@ -239,6 +239,9 @@ private:
     std::unique_ptr<ui::TouchSelectionController> m_touchSelectionController;
     gfx::SelectionBound m_selectionStart;
     gfx::SelectionBound m_selectionEnd;
+
+    // Popup
+    bool m_isPopupInitializing = false;
 };
 
 class WebContentsAccessibilityQt : public content::WebContentsAccessibility
