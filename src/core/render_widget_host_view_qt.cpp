@@ -276,6 +276,7 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect, const gfx::Rect& anchorRect)
 {
     Q_UNUSED(anchorRect);
+    m_isPopupInitializing = true;
     m_delegate->initAsPopup(toQt(rect));
 }
 
@@ -290,6 +291,11 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size &sizeInDips)
 void RenderWidgetHostViewQt::SetBounds(const gfx::Rect &windowRectInDips)
 {
     DCHECK(isPopup());
+
+    // Ignore empty bounds updates until the initial layout synchronization finishes.
+    if (m_isPopupInitializing && windowRectInDips.IsEmpty())
+        return;
+
     m_delegate->move(toQt(windowRectInDips.origin()));
     m_delegate->resize(windowRectInDips.width(), windowRectInDips.height());
 }
@@ -379,6 +385,8 @@ void RenderWidgetHostViewQt::ShowWithVisibility(content::PageVisibilityState pag
 void RenderWidgetHostViewQt::Hide()
 {
     Q_ASSERT(m_delegate);
+    if (isPopup())
+        m_isPopupInitializing = false;
     m_delegate->hide();
 }
 
@@ -1129,6 +1137,9 @@ void RenderWidgetHostViewQt::synchronizeVisualProperties(const std::optional<viz
             cc::DeadlinePolicy::UseDefaultDeadline());
 
     host()->SynchronizeVisualProperties();
+
+    if (isPopup())
+        m_isPopupInitializing = false;
 }
 
 void RenderWidgetHostViewQt::resetTouchSelectionController()
