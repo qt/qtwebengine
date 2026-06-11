@@ -1362,6 +1362,8 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
     QTRY_VERIFY((popup = findPopup(m_window.get())));
     QCOMPARE(activeElementId(&view), QStringLiteral("select"));
 
+    QTRY_VERIFY(popup->width() > 0);
+    QTRY_VERIFY(popup->height() > 0);
     makeTouch(popup, QPoint(popup->width() / 2, popup->height() / 2));
     QTRY_VERIFY(!popup);
     QCOMPARE(evaluateJavaScriptSync(&view, "document.getElementById('select').value").toString(), QStringLiteral("O2"));
