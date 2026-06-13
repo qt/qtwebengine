@@ -20,10 +20,10 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QJSValue;
 
-namespace QtWebEngine {
+namespace QtWebEnginePrivate {
 template<typename Functor, typename Arg>
-using if_callback_taking_t = std::enable_if_t<QtPrivate::AreFunctionsCompatible<void(*)(Arg), Functor>::value, bool>;
-} // namespace QtWebEngine
+using if_callback_with_arg_t = std::enable_if_t<QtPrivate::AreFunctionsCompatible<void(*)(Arg), Functor>::value, bool>;
+} // namespace QtWebEnginePrivate
 
 class QWebEngineFrame
 {
@@ -53,12 +53,12 @@ public:
     Q_WEBENGINECORE_EXPORT QSizeF size() const;
     Q_WEBENGINECORE_EXPORT bool isMainFrame() const;
 
-    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true>
     void runJavaScript(const QString &script, Functor &&callback)
     {
         runJavaScript(script, 0, std::forward<Functor>(callback));
     }
-    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true>
     void runJavaScript(const QString &script, quint32 worldId, Functor &&callback)
     {
         if constexpr (std::is_constructible_v<bool, Functor>) {
@@ -68,6 +68,16 @@ public:
         runJavaScriptImpl(script, worldId,
                           QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::forward<Functor>(callback)));
     }
+#if QT_DEPRECATED_SINCE(6, 12)
+    void runJavaScript(const QString &script, std::nullptr_t)
+    {
+        return runJavaScriptImpl(script, 0, nullptr);
+    }
+    void runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
+    {
+        return runJavaScriptImpl(script, worldId, nullptr);
+    }
+#endif
 
 #if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
     Q_WEBENGINECORE_EXPORT void

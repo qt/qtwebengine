@@ -290,12 +290,12 @@ public:
     {
         runJavaScriptImpl(scriptSource, worldId, nullptr);
     }
-    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true>
     void runJavaScript(const QString &script, Functor &&resultCallback)
     {
         runJavaScript(script, 0, std::forward<Functor>(resultCallback));
     }
-    template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true>
+    template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true>
     void runJavaScript(const QString &script, quint32 worldId, Functor &&resultCallback)
     {
         if constexpr (std::is_constructible_v<bool, Functor>) {
@@ -305,6 +305,17 @@ public:
         runJavaScriptImpl(script, worldId,
                           QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::forward<Functor>(resultCallback)));
     }
+
+#if QT_DEPRECATED_SINCE(6, 12)
+    void runJavaScript(const QString &script, std::nullptr_t)
+    {
+        return runJavaScriptImpl(script, 0, nullptr);
+    }
+    void runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
+    {
+        return runJavaScriptImpl(script, worldId, nullptr);
+    }
+#endif
 
 #if QT_WEBENGINECORE_REMOVED_SINCE(6, 12)
     void runJavaScript(const QString &scriptSource, const std::function<void(const QVariant &)> &resultCallback);

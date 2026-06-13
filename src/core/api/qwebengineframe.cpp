@@ -140,8 +140,8 @@ bool QWebEngineFrame::isMainFrame() const
 }
 
 /*! \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId)
-    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, Functor &&callback)
-    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, Functor &&callback)
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, Functor &&callback)
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true> void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, Functor &&callback)
 
     Runs the JavaScript code contained in \a script on this frame, without checking
     whether the DOM of the page has been constructed.
@@ -170,6 +170,13 @@ bool QWebEngineFrame::isMainFrame() const
    instance inside it.
     \sa QWebEngineScript::ScriptWorldId, QWebEnginePage::runJavaScript, {Script Injection}
  */
+
+/*! \fn void QWebEngineFrame::runJavaScript(const QString &script, std::nullptr_t)
+    \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
+
+    \overload
+    \deprecated [6.12] Use QWebEngineFrame::runJavaScript without callback argument instead.
+*/
 
 void QWebEngineFrame::runJavaScriptImpl(const QString &script, quint32 worldId, QtPrivate::QSlotObjectBase *callback)
 {
