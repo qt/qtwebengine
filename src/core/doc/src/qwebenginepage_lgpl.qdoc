@@ -743,8 +743,8 @@
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId = 0)
-    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, Functor &&resultCallback)
-    \fn template<typename Functor, QtWebEngine::if_callback_taking_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, quint32 worldId, Functor &&resultCallback)
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, Functor &&resultCallback)
+    \fn template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QVariant &> = true> void QWebEnginePage::runJavaScript(const QString &script, quint32 worldId, Functor &&resultCallback)
 
     Runs the JavaScript code contained in \a scriptSource without checking
     whether the DOM of the page has been constructed. If you need more
@@ -779,6 +779,13 @@
     value and it is not safe to use the corresponding QWebEnginePage or QWebEngineView instance inside it.
 
     \sa scripts(), QWebEngineScript::ScriptWorldId, QWebEngineFrame::runJavaScript, {Script Injection}
+*/
+
+/*! \fn void QWebEnginePage::runJavaScript(const QString &script, std::nullptr_t)
+    \fn void QWebEnginePage::runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
+
+    \overload
+    \deprecated [6.12] Use QWebEnginePage::runJavaScript without callback argument instead.
 */
 
 /*!

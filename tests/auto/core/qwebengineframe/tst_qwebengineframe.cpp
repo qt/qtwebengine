@@ -41,6 +41,7 @@ private Q_SLOTS:
     void isMainFrame();
     void runJavaScript();
     void runJavaScriptMoveOnly();
+    void runJavaScriptSourceCompat();
 #if QT_CONFIG(webengine_printing_and_pdf)
     void printRequestedByFrame();
     void printToPdfFile();
@@ -234,6 +235,17 @@ void tst_QWebEngineFrame::runJavaScriptMoveOnly()
     auto result = spy.waitForResult();
     QVERIFY(DeleteObserver::s_wasDeleted);
     QCOMPARE(result, QString("test-subframe0"));
+}
+
+void tst_QWebEngineFrame::runJavaScriptSourceCompat()
+{
+    QWebEnginePage page;
+    QSignalSpy loadSpy{ &page, SIGNAL(loadFinished(bool)) };
+    page.load(QUrl("qrc:/resources/iframes.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    auto children = page.mainFrame().children();
+    children[0].runJavaScript("window.name", nullptr);
+    children[0].runJavaScript("window.name", 0, {});
 }
 
 #if QT_CONFIG(webengine_printing_and_pdf)
