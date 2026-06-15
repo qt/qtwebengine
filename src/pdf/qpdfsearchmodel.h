@@ -33,7 +33,7 @@ public:
     };
     Q_ENUM(Role)
 
-    enum class Status {
+    enum class Status : int {
         Null,
         Searching,
         Finished
