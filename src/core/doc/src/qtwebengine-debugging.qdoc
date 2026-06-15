@@ -24,8 +24,8 @@
     The \QWE module provides web developer tools that make it easy
     to inspect and debug layout and performance issues of any web content.
 
-    The developer tools are accessed as a local web page using a Chromium or
-    \QWE based browser, such as the Chrome browser.
+    The developer tools are accessed as a local web page using either a Chromium-based web browser
+    (such as Google Chrome), or an application that uses \QWE.
 
     To activate the developer tools, start an application that uses \QWE
     with the command-line argument \c {--remote-debugging-port=<portnumber>}.
@@ -81,7 +81,7 @@
             processes. Keep in mind that disabling the sandbox might present a
             security risk.
         \li \c {--single-process} runs the renderer and plugins in the same
-            process as the browser. This is useful for getting stack traces for
+            process as the main application loop. This is useful for getting stack traces for
             renderer crashes.
         \li \c {--enable-features=NetworkServiceInProcess} runs networking in
             the main process. This may help firewall management, since only the
@@ -100,10 +100,10 @@
 
     Alternatively, the environment variable QTWEBENGINE_CHROMIUM_FLAGS can be
     set. For example, the following value could be set to disable logging while
-    debugging an application called \e mybrowser:
+    debugging an application called \e myapp:
 
     \code
-    QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" mybrowser
+    QTWEBENGINE_CHROMIUM_FLAGS="--disable-logging" myapp
     \endcode
 
     QTWEBENGINE_CHROMIUM_FLAGS can also be set using \c qputenv from within the
