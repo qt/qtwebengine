@@ -27,7 +27,7 @@
     requests a permission, it will be granted to the origin \c{https://www.example.com:12345/}.
 
     The \l permissionType enumeration describes all the permission types Qt WebEngine supports. Only some permission types
-    are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
+    are remembered between sessions; they are \e persistent. Non-persistent permissions query the user every time a
     website requests them. You can check whether a permission type is persistent at runtime
     using the static method WebEnginePermission::isPersistent().
 
