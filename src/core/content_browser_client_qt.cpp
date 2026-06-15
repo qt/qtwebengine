@@ -1147,6 +1147,7 @@ ContentBrowserClientQt::CreateNonNetworkNavigationURLLoaderFactory(
 }
 
 void ContentBrowserClientQt::RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext *browser_context,
+                                                                                    network::mojom::RequestDestination request_destination,
                                                                                     NonNetworkURLLoaderFactoryMap *factories)
 {
     Profile *profile = Profile::FromBrowserContext(browser_context);
