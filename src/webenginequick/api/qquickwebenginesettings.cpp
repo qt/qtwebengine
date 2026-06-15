@@ -18,9 +18,9 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
     //! \nativetype QQuickWebEngineSettings
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
-    \brief Allows configuration of browser properties and attributes.
+    \brief Allows configuration of web engine properties and attributes.
 
-    The WebEngineSettings type can be used to configure browser properties and generic
+    The WebEngineSettings type can be used to configure web properties and generic
     attributes, such as JavaScript support, focus behavior, and access to remote content. This type
     is uncreatable, but the default settings for all web engine views can be accessed by using
     the \l [QML] {WebEngine::settings}{WebEngine.settings} property.
