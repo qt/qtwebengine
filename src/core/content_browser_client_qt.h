@@ -229,6 +229,7 @@ public:
                                                          const std::optional<url::Origin>& request_initiator_origin,
                                                          NonNetworkURLLoaderFactoryMap *factories) override;
     void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(content::BrowserContext* browser_context,
+                                                                network::mojom::RequestDestination request_destination,
                                                                 NonNetworkURLLoaderFactoryMap* factories) override;
     void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(content::BrowserContext* browser_context,
                                                                  NonNetworkURLLoaderFactoryMap* factories) override;
