@@ -106,7 +106,7 @@
     \section1 Changed Behavior
 
     \section2 Default Profile
-    The default profile is now \e{off the record}. To have a standard browser profile with
+    The default profile is now \e{off the record}. To have a standard profile with
     disk-cache and cookies, we recommend creating your own profile and using that explicitly.
 
     \section2 QRC Scheme
