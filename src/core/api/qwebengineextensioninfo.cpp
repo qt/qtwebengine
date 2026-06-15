@@ -18,7 +18,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QWebEngineExtensionInfoPrivate)
 
 /*!
     \class QWebEngineExtensionInfo
-    \brief The QWebEngineExtensionInfo provides information about a browser extension.
+    \brief The QWebEngineExtensionInfo provides information about a web extension.
 
     \since 6.10
     \inmodule QtWebEngineCore
