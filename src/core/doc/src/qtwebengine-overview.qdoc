@@ -6,8 +6,8 @@
     \title Qt WebEngine Overview
     \ingroup explanations-webtechnologies
 
-    The \QWE module provides a web browser engine that makes it easy to embed content from
-    the World Wide Web into your Qt application on platforms that do not have a native web engine.
+    The \QWE module provides APIs for rendering and embedding content from
+    the World Wide Web into Qt-based applications.
 
     \QWE provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
     styled using Cascading Style Sheets (CSS) and scripted with JavaScript. HTML documents can be
@@ -281,7 +281,7 @@
     Internally, the module is powered by \l{https://pdfium.googlesource.com/pdfium/}{PDFium},
     which is also used in Chromium.
 
-    With the \l{Qt WebView} module, you can use the OS-provided browser APIs, on platforms where
+    With the \l{Qt WebView} module, you can use the OS-provided web content APIs, on platforms where
     those are available, to embed web content into your application without needing
     to ship the entire Chromium runtime. On platforms where native APIs are not available,
     it can also act as a wrapper around WebEngine.
