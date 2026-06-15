@@ -95,7 +95,7 @@
     A web page can request through the JavaScript API to be loaded in fullscreen mode. The
     \l fullScreenRequested() signal is emitted when the web page issues the request. The
     FullScreenRequest utility type can be used to toggle fullscreen requests. The
-    \l fullScreenCancelled method can be used to notify the browser engine when the windowing
+    \l fullScreenCancelled method can be used to notify the web engine when the windowing
     system forces the application to leave fullscreen mode.
 
     \section2 Profiles
@@ -130,7 +130,7 @@
 /*!
     \qmlmethod void WebEngineView::goBack()
 
-    Go backward within the browser's session history, if possible.
+    Go backward within the view's session history, if possible.
     This function is equivalent to the \c{window.history.back()} DOM method.
 
     \sa canGoBack
@@ -139,7 +139,7 @@
 /*!
     \qmlmethod void WebEngineView::goForward()
 
-    Go forward within the browser's session history, if possible.
+    Go forward within the view's session history, if possible.
     This function is equivalent to the \c{window.history.forward()} DOM method.
 */
 
@@ -194,7 +194,7 @@
 
     An internal URL for accessing the currently displayed web site icon,
     also known as favicon or shortcut icon.
-    This read-only URL corresponds to the image used within a mobile browser
+    This read-only URL corresponds to the image used within a mobile
     application to represent a bookmarked page on the device's home screen.
 
     The following snippet uses the \c{icon} property to build an \c{Image}
@@ -473,7 +473,7 @@
     \since QtWebEngine 1.1
 
     Immediately sets \c{isFullScreen} property to \c{false}. It can be used to notify the
-    browser engine when the windowing system forces the application to leave fullscreen mode.
+    web engine when the windowing system forces the application to leave fullscreen mode.
 
     \qml
     ApplicationWindow {
@@ -568,7 +568,7 @@
 
 /*!
     \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, string message, int lineNumber, string sourceID)
-    This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
+    This signal is emitted when a JavaScript program tries to print a \a message to the web console.
 
     For example, in case of evaluation errors the source URL may be provided in \a sourceID as well
     as the \a lineNumber.
@@ -654,7 +654,7 @@
     \qmlsignal WebEngineView::windowCloseRequested()
     \since QtWebEngine 1.2
 
-    This signal is emitted whenever the page requests the web browser window to be closed,
+    This signal is emitted whenever the page requests the view's window to be closed,
     for example through the JavaScript \c{window.close()} call.
 */
 
