@@ -571,7 +571,7 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
 /*!
     \qmlproperty string WebEngineProfile::persistentStoragePath
 
-    The path to the location where the persistent data for the browser and web content are
+    The path to the location where the persistent data for web content is
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, the storage is located below
@@ -582,7 +582,7 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
 /*!
     \property QQuickWebEngineProfile::persistentStoragePath
 
-    The path to the location where the persistent data for the browser and web content are
+    The path to the location where the persistent data for web content is
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, the storage is located below
@@ -643,7 +643,7 @@ void QQuickWebEngineProfile::setCachePath(const QString &path)
 /*!
     \qmlproperty string WebEngineProfile::httpUserAgent
 
-    The user-agent string sent with HTTP to identify the browser.
+    The user-agent string sent with HTTP to identify the application.
 
     \note On Windows 8.1 and newer, the default user agent will always report
     "Windows NT 6.2" (Windows 8), unless the application does contain a manifest
@@ -653,7 +653,7 @@ void QQuickWebEngineProfile::setCachePath(const QString &path)
 /*!
     \property QQuickWebEngineProfile::httpUserAgent
 
-    The user-agent string sent with HTTP to identify the browser.
+    The user-agent string sent with HTTP to identify the application.
 */
 
 QString QQuickWebEngineProfile::httpUserAgent() const
@@ -988,7 +988,7 @@ QString QQuickWebEngineProfile::downloadPath() const
 
     Whether the push messaging service is enabled.
     \note By default the push messaging service is disabled.
-    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a browser push service.
+    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a notification push service.
     Therefore, all push messages will go through the Google push service and its respective servers.
 */
 
@@ -998,7 +998,7 @@ QString QQuickWebEngineProfile::downloadPath() const
 
     Whether the push messaging service is enabled.
     \note By default the push messaging service is disabled.
-    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a browser push service.
+    \note \QWE uses the \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)} as a notification push service.
     Therefore, all push messages will go through the Google push service and its respective servers.
 */
 

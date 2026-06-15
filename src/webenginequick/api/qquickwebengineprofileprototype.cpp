@@ -77,7 +77,7 @@ void QQuickWebEngineProfilePrototype::setStorageName(const QString &storageName)
 /*!
     \qmlproperty string WebEngineProfilePrototype::persistentStoragePath
 
-    The path to the location where the persistent data for the browser and web content are
+    The path to the location where the persistent data for web content is
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, the storage is located below
