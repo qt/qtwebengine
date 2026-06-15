@@ -20,7 +20,7 @@ class Q_PDF_EXPORT QPdfSearchModel : public QAbstractListModel
     Q_PROPERTY(QPdfDocument *document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(QString searchString READ searchString WRITE setSearchString NOTIFY searchStringChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged REVISION(6, 8) FINAL)
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged REVISION(6, 12) FINAL)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged REVISION(6, 12))
 
 public:
     enum class Role : int {
