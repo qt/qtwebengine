@@ -899,6 +899,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 #endif
 
 /*!
+    \overload
     Renders the \a page into a QImage of size \a imageSize with the given \a format
     according to the provided \a renderOptions.
 
@@ -912,9 +913,13 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
 
     Returns the rendered page or an empty image in case of an error.
 
-    Note: If the \a imageSize does not match the aspect ratio of the page in the
+    \note If the \a imageSize does not match the aspect ratio of the page in the
     PDF document, the page is rendered scaled, so that it covers the
     complete \a imageSize.
+
+    \note The overload taking \a format and \a fillColor is new in 6.12.
+
+    \since 6.12
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions,
                             QImage::Format format, const QColor &fillColor)
