@@ -1638,7 +1638,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     // Clear certain fields of the drop data to not run into DCHECKs
     // of DropDataToWebDragData in render_view_impl.cc.
     m_currentDropData.reset(new content::DropData(dropData));
-    m_currentDropData->download_metadata.clear();
+    m_currentDropData->download_metadata.reset();
     m_currentDropData->file_contents.clear();
     m_currentDropData->file_contents_content_disposition.clear();
 
