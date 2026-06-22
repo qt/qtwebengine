@@ -117,15 +117,21 @@ function(get_gn_is_mingw result)
 endfunction()
 
 function(get_ios_sysroot result arch)
-    if(NOT CMAKE_APPLE_ARCH_SYSROOTS)
-      message(FATAL_ERROR "CMAKE_APPLE_ARCH_SYSROOTS not set.")
-    endif()
     get_architectures(archs)
     list(FIND archs ${arch} known_arch)
     if (known_arch EQUAL "-1")
         message(FATAL_ERROR "Unknown iOS architecture ${arch}.")
     endif()
-    list(GET CMAKE_APPLE_ARCH_SYSROOTS ${known_arch} sysroot)
+    if(CMAKE_APPLE_ARCH_SYSROOTS)
+        # CMake populates the per-arch sysroot list only when building for
+        # more than one architecture.
+        list(GET CMAKE_APPLE_ARCH_SYSROOTS ${known_arch} sysroot)
+    elseif(CMAKE_OSX_SYSROOT)
+        # For a single architecture CMake only sets CMAKE_OSX_SYSROOT.
+        set(sysroot ${CMAKE_OSX_SYSROOT})
+    else()
+        message(FATAL_ERROR "Neither CMAKE_APPLE_ARCH_SYSROOTS nor CMAKE_OSX_SYSROOT set.")
+    endif()
     set(${result} ${sysroot} PARENT_SCOPE)
 endfunction()
 
