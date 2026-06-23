@@ -19,7 +19,7 @@ QT_BEGIN_NAMESPACE
 
     \inmodule QtWebEngineCore
 
-    QWebEngineClientHints allows configuration of exposing browser and platform information via
+    QWebEngineClientHints allows configuration of exposing application and platform information via
     User-Agent response and request headers, and a JavaScript API.
 
     The information accessed via this API is split into two groups: low entropy and high entropy hints.
@@ -31,7 +31,7 @@ QT_BEGIN_NAMESPACE
     disabled by QWebEngineClientHints::setAllClientHintsEnabled.
 
     Each profile object has its own QWebEngineClientHints object, which configures the
-    Client Hint settings for that browsing context. If a Client Hint is not configured for a web engine
+    Client Hint settings for that profile. If a Client Hint is not configured for a web engine
     profile, its default value is deduced from the system.
 
     \sa QWebEngineProfile::clientHints(), QQuickWebEngineProfile::clientHints()
