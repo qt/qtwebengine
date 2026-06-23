@@ -205,13 +205,13 @@
     This enum describes the types of window that can be created by the createWindow() function:
 
     \value  WebBrowserWindow
-            A complete web browser window.
+            A new view in its own application window.
     \value  WebBrowserTab
-            A web browser tab.
+            A new view in the same window, e.g. a new tab.
     \value  WebDialog
             A window without decoration.
     \value [since 5.7] WebBrowserBackgroundTab
-            A web browser tab without hiding the current visible WebEngineView.
+            Same as \c{WebBrowserTab}, but without hiding the current visible WebEngineView.
 */
 
 /*!
@@ -326,8 +326,8 @@
 
 /*!
     \fn void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
-    This function is called when a JavaScript program tries to print the \a message to the web
-    browser's console.
+    This function is called when a JavaScript program tries to print the \a message to the
+    console.
 
     For example, in case of evaluation errors the source URL may be provided in \a sourceID as well
     as the \a lineNumber.
@@ -604,7 +604,7 @@
 /*!
     \fn void QWebEnginePage::windowCloseRequested()
 
-    This signal is emitted whenever the page requests the web browser window to be closed,
+    This signal is emitted whenever the page requests the current application window to be closed,
     for example through the JavaScript \c{window.close()} call.
 
     \sa RequestClose
