@@ -10,8 +10,8 @@
     \qtvariable webenginewidgets
     \qtcmakepackage WebEngineWidgets
 
-    The \QWE Widgets module provides a web browser engine as well as C++ classes to render
-    and interact with web content.
+    The \QWE Widgets module provides C++ classes for rendering
+    and interacting with web content.
 
     \if !defined(qtforpython)
     To link against the module using build with qmake,
