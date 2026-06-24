@@ -6,10 +6,10 @@
     \title Qt WebEngine Quick Examples
     \brief Examples demonstrating the \QWE usage.
 
+    \QWE provides a component for rendering web content based on Chromium, the popular
+    open source engine.
+
     These examples and demonstrations show a range of different uses for \l{Qt WebEngine},
     from displaying Web pages within a QML user interface to an implementation of
     a basic function Web browser.
-
-    For widget-based applications, Qt provides an integrated Web browser component based on
-    Chromium, the popular open source browser engine.
 */
