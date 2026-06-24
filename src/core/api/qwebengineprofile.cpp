@@ -375,7 +375,7 @@ bool QWebEngineProfile::isOffTheRecord() const
 }
 
 /*!
-    Returns the path used to store persistent data for the browser and web content.
+    Returns the path used to store persistent data for the profile.
 
     Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
@@ -456,7 +456,7 @@ bool QWebEngineProfile::isPushServiceEnabled() const
     Enables the push messaging service if \a enable is \c true, otherwise disables it.
 
     \note \QWE uses \l {https://firebase.google.com}{Firebase Cloud Messaging (FCM)}
-    as a browser push service. Therefore, all push messages will go through the
+    as an HTML5 push notification service. Therefore, all push messages will go through the
     Google push service and its respective servers.
 
     \sa isPushServiceEnabled()
@@ -498,7 +498,7 @@ void QWebEngineProfile::setCachePath(const QString &path)
 }
 
 /*!
-    Returns the user-agent string sent with HTTP to identify the browser.
+    Returns the user-agent string sent with HTTP to identify the application.
 
     \note On Windows 8.1 and newer, the default user agent will always report
     "Windows NT 6.2" (Windows 8), unless the application does contain a manifest
@@ -1092,7 +1092,7 @@ QList<QWebEnginePermission> QWebEngineProfile::listPermissionsForPermissionType(
 }
 
 /*!
-    Return the Client Hints settings associated with this browsing context.
+    Return the Client Hints settings associated with this profile.
 
     \since 6.8
     \sa QWebEngineClientHints
@@ -1104,7 +1104,7 @@ QWebEngineClientHints *QWebEngineProfile::clientHints() const
 }
 
 /*!
-    Returns the extension manager associated with this browsing context.
+    Returns the extension manager associated with this profile.
 
     \since 6.10
     \sa QWebEngineExtensionManager
