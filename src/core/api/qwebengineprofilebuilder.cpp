@@ -45,7 +45,7 @@ QWebEngineProfile *QWebEngineProfileBuilder::createOffTheRecordProfile(QObject *
     The storage name is used to give each disk-based profile, a separate subdirectory for
     persistent data and cache. The storage location must be unique during application life time.
     It is up to the user to prevent the creation of profiles with same storage's location, which can
-    lead to corrupted browser cache.
+    lead to corrupted cache.
 
     A disk-based \l{QWebEngineProfile} should be destroyed before the application exit, otherwise the
     cache and persistent data may not be fully flushed to disk.
@@ -99,7 +99,7 @@ QWebEngineProfile *QWebEngineProfileBuilder::createProfile(const QString &storag
 }
 
 /*!
-    Sets the path used to store persistent data for the browser and web content to \a path.
+    Sets the path used to store persistent data for the application to \a path.
     Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
     By default, this is below QStandardPaths::DataLocation in a QtWebengine/StorageName specific
