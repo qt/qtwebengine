@@ -17,7 +17,7 @@
 
     \inmodule QtWebEngineWidgets
 
-    A \e {web view} is the main widget component of the \QWE web browsing module.
+    A \e {web view} is the main widget component of the \QWE module.
     It can be used in various applications to display web content live from the
     Internet.
 
@@ -50,7 +50,7 @@
     scale factor.
 
     The widget features a context menu that is tailored to the element at
-    hand, and includes actions useful in a browser. For a custom context menu,
+    hand. For a custom context menu,
     or for embedding actions in a menu or toolbar, the individual actions are available
     via \l pageAction(). The web view maintains the state of the returned actions,
     but allows modification of action properties such as \l{QAction::}{text} or
