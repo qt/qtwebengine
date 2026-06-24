@@ -1492,7 +1492,7 @@ void QWebEngineView::printToPdf(const std::function<void(const QByteArray&)> &re
     continue to run in the background for a short while. Users should ensure the printer remains
     valid until its state is no longer active.
 
-    \note Printing runs on the browser process, which is by default not sandboxed.
+    \note Printing runs on the main process, which is by default not sandboxed.
 
     \note The data generation step of printing can be interrupted for a short period of time using
     the \l QWebEnginePage::Stop web action.
