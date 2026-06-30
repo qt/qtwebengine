@@ -21,7 +21,7 @@ static QUrl startupUrl(const QCommandLineParser &parser)
         if (url.isValid())
             return url;
     }
-    return QUrl(QStringLiteral("chrome://qt"));
+    return QUrl(QStringLiteral("chrome://qt?example=Quick Nano Browser"));
 }
 
 int main(int argc, char **argv)

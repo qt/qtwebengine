@@ -18,7 +18,7 @@ QUrl commandLineUrlArgument()
         if (!arg.startsWith(u'-'))
             return QUrl::fromUserInput(arg);
     }
-    return QUrl(u"chrome://qt"_s);
+    return QUrl(u"chrome://qt?example=Simple Browser"_s);
 }
 
 bool isSingleProcessMode()
