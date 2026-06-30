@@ -66,6 +66,7 @@ set_target_properties(multipage PROPERTIES
 target_link_libraries(multipage PUBLIC
     Qt::Gui
     Qt::Qml
+    Qt::PdfQuick
 )
 
 install(TARGETS multipage

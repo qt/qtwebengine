@@ -53,6 +53,7 @@ set_target_properties(singlepage PROPERTIES
 target_link_libraries(singlepage PUBLIC
     Qt::Gui
     Qt::Qml
+    Qt::PdfQuick
 )
 
 install(TARGETS singlepage
