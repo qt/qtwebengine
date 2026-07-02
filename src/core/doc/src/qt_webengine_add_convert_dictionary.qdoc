@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtwebenginecore
 
 \title qt_add_webengine_dictionary
-\keyword qt6_add_webengine_dictionary
+\keyword qt_add_webengine_dictionary()
 
 \summary {Converts the hunspell dictionary format into \e bdict binary format.}
 
