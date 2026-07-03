@@ -356,7 +356,7 @@ bool QQuickWebEngineSettings::showScrollBars() const
   Inhibits playback of media content until the user interacts with
   the page.
 
-  By default, Qt WebEngine uses Chromium settings, as described in
+  By default, \QWE uses Chromium settings, as described in
   \l {Autoplay Policy Changes}. To overwrite the default behavior,
   this property must be set to \c false.
 

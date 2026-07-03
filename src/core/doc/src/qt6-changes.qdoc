@@ -14,7 +14,7 @@
     APIs in each release. But some changes were inevitable in an effort to
     make Qt a better framework
 
-    In this topic we summarize those changes in Qt WebEngine, and provide guidance
+    In this topic we summarize those changes in \QWE, and provide guidance
     to handle them.
 
     \section1 Moved Classes
