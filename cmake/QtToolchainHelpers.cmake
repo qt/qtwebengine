@@ -625,7 +625,17 @@ macro(append_toolchain_setup)
     elseif(IOS)
         get_gn_arch(cpu ${arch})
         get_ios_sysroot(sysroot ${arch})
-        list(APPEND gnArgArg target_cpu="${cpu}" target_sysroot="${sysroot}" target_os="ios")
+        # GN's ios_sdk.gni infers target_environment from target_cpu (arm64 =>
+        # device), so pass it explicitly to match the sysroot we hand it.
+        string(TOLOWER "${sysroot}" sysrootLower)
+        if(sysrootLower MATCHES "simulator")
+            set(environment "simulator")
+        else()
+            set(environment "device")
+        endif()
+        list(APPEND gnArgArg
+            target_cpu="${cpu}" target_sysroot="${sysroot}" target_os="ios"
+            target_environment="${environment}")
     elseif(ANDROID)
         get_gn_arch(cpu ${TEST_architecture_arch})
         list(APPEND gnArgArg target_os="android" target_cpu="${cpu}")
