@@ -54,7 +54,7 @@ QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QW
     \c{https://www.example.com:12345/some/page.html} requests a permission, it will be granted to the origin
     \c{https://www.example.com:12345/}.
 
-    \l QWebEnginePermission::PermissionType describes all the permission types Qt WebEngine supports. Only some permission types
+    \l QWebEnginePermission::PermissionType describes all the permission types \QWE supports. Only some permission types
     are remembered between browsing sessions; they are \e persistent. Non-persistent permissions query the user every time a
     website requests them. You can check whether a permission type is persistent at runtime
     using the static method QWebEnginePermission::isPersistent().

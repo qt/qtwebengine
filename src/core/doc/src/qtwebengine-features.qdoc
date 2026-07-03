@@ -829,7 +829,7 @@
 
     \section1 Web Notifications
 
-    Qt WebEngine supports JavaScript \l{Web Notifications API}.
+    \QWE supports JavaScript \l{Web Notifications API}.
     The application has to explicitly allow the feature by using
     QWebEnginePage::Notifications or \l{WebEngineView::Feature}
     {WebEngineView.Notifications}.
