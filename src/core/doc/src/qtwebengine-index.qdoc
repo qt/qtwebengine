@@ -9,6 +9,11 @@
 
     \QWE provides functionality for rendering regions of dynamic web content.
 
+    Qt Framework, comprising \l{Qt Essentials} and l\{Qt Add-Ons}, is fully
+    functional without \QWE. \QWE is an optional extension module adding
+    capabilities for accessing web content to applications that specifically
+    require it.
+
     \note By default, Qt WebEngine depends on the \l {Qt Positioning} and
     \l {Qt WebChannel} optional modules, but can be built without them. Be sure to
     install these add-ons when using the online installer.
