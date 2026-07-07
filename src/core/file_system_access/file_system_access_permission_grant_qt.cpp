@@ -100,8 +100,12 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
     }
 
     // Drop fullscreen mode so that the user sees the URL bar.
-    base::ScopedClosureRunner fullscreen_block =
-            web_contents->ForSecurityDropFullscreen(display::kInvalidDisplayId);
+    auto blocker = web_contents->ForSecurityDropFullscreen(
+            /*display_id=*/display::kInvalidDisplayId);
+    if (!blocker) {
+        std::move(callback).Run(PermissionRequestOutcome::kRequestAborted);
+        return;
+    }
 
     FileSystemAccessPermissionRequestManagerQt::Access access = m_type == GrantType::kRead
             ? FileSystemAccessPermissionRequestManagerQt::Access::kRead
@@ -116,7 +120,7 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
             { m_origin, m_pathInfo, m_handleType, access },
             base::BindOnce(&FileSystemAccessPermissionGrantQt::OnPermissionRequestResult, this,
                            std::move(callback)),
-            std::move(fullscreen_block));
+            std::move(*blocker));
 }
 
 void FileSystemAccessPermissionGrantQt::SetStatus(blink::mojom::PermissionStatus status)
