@@ -165,7 +165,7 @@ public:
         QWindowList allWindows = QGuiApplication::allWindows();
 
         for (auto *win : allWindows) {
-            if (win->type() == Qt::Popup
+            if (win->type() == Qt::ToolTip
                     && win->transientParent() != nullptr) {
                 return static_cast<QQuickWindow *>(win);
             }
