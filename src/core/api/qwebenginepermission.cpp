@@ -74,10 +74,6 @@ QWebEnginePermissionPrivate::QWebEnginePermissionPrivate(const QUrl &origin_, QW
     \sa QWebEnginePage::permissionRequested(), QWebEngineProfile::queryPermission(), QWebEngineProfile::listAllPermissions()
 */
 
-/*! \fn QWebEnginePermission::QWebEnginePermission()
-    \internal
-*/
-
 /*! \internal */
 QWebEnginePermission::QWebEnginePermission()
     : d_ptr(new QWebEnginePermissionPrivate())
