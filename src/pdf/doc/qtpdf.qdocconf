@@ -3,6 +3,7 @@ include($QT_INSTALL_DOCS/config/exampleurl-qtwebengine.qdocconf)
 
 project                 = QtPdf
 description             = Qt Pdf Reference Documentation
+productname             = "Qt Pdf"
 version                 = $QT_VERSION
 
 qhp.projects            = QtPdf
