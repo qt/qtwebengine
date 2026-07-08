@@ -922,7 +922,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     \since 6.12
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions,
-                            QImage::Format format, const QColor &fillColor)
+                            QImage::Format format, QColor fillColor)
 {
     if (!d->doc || !d->checkPageComplete(page))
         return QImage();
