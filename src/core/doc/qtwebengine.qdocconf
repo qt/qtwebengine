@@ -3,6 +3,7 @@ include($QT_INSTALL_DOCS/config/exampleurl-qtwebengine.qdocconf)
 
 project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
+productname             = "Qt WebEngine"
 version                 = $QT_VERSION
 
 qhp.projects            = QtWebEngine
