@@ -9,6 +9,14 @@ QT_USE_NAMESPACE
 
 #if QT_PDF_REMOVED_SINCE(6, 12)
 
+#include "qpdfdocument.h"
+
+QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
+{
+    return render(page, imageSize, renderOptions, QImage::Format_ARGB32, Qt::transparent);
+}
+
+
 // #include "qotherheader.h"
 // implement removed functions from qotherheader.h
 // order sections alphabetically
