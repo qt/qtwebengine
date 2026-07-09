@@ -890,16 +890,7 @@ int QPdfDocument::pageIndexForLabel(const QString &label)
     return -1;
 }
 
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
-{
-    return render(page, imageSize, renderOptions, QImage::Format_ARGB32, Qt::transparent);
-}
-#endif
-
 /*!
-    \overload
     Renders the \a page into a QImage of size \a imageSize with the given \a format
     according to the provided \a renderOptions.
 
@@ -917,9 +908,7 @@ QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions
     PDF document, the page is rendered scaled, so that it covers the
     complete \a imageSize.
 
-    \note The overload taking \a format and \a fillColor is new in 6.12.
-
-    \since 6.12
+    \note The \a format and \a fillColor arguments were added in 6.12.
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions,
                             QImage::Format format, QColor fillColor)

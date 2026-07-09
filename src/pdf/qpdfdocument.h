@@ -93,15 +93,12 @@ public:
 
     QAbstractListModel *pageModel();
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
-    QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options,
-                  QImage::Format format, QColor fillColor);
-#else
+#if QT_PDF_REMOVED_SINCE(6, 12)
+    QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options);
+#endif
     QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = {},
                   QImage::Format format = QImage::Format_ARGB32,
                   QColor fillColor = Qt::transparent);
-#endif
 
     Q_INVOKABLE QPdfSelection getSelection(int page, QPointF start, QPointF end);
     Q_INVOKABLE QPdfSelection getSelectionAtIndex(int page, int startIndex, int maxLength);
