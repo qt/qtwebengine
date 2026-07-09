@@ -38,7 +38,7 @@ public:
     enum class Status : int {
         Null,
         Searching,
-        Finished
+        Finished,
     };
     Q_ENUM(Status)
 
