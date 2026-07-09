@@ -10,6 +10,8 @@
 #include <QtPdf/qpdfdocument.h>
 #include <QtPdf/qpdflink.h>
 
+#include <QtCore/qhash.h>
+
 QT_BEGIN_NAMESPACE
 
 class QPdfSearchModelPrivate;
