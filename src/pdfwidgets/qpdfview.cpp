@@ -4,6 +4,8 @@
 
 #include "qpdfview.h"
 #include "qpdfview_p.h"
+
+#include <QtPdf/qpdflink.h>
 #include "qpdfpagerenderer.h"
 #include <QtPdf/private/qtpdfglobal_p.h>
 

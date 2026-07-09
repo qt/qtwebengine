@@ -5,13 +5,13 @@
 #ifndef QPDFVIEW_H
 #define QPDFVIEW_H
 
-#include <QtPdf/QPdfLink>
 #include <QtPdfWidgets/qtpdfwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
+class QPdfLink;
 class QPdfPageNavigator;
 class QPdfSearchModel;
 class QPdfViewPrivate;
