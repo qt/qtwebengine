@@ -18,6 +18,7 @@ qt_webengine_set_apple_archiver_flags()
 
 qt_internal_add_module(Pdf
     SOURCES
+        compat/removed_api.cpp
         qpdfbookmarkmodel.cpp qpdfbookmarkmodel.h
         qpdfdocument.cpp qpdfdocument.h qpdfdocument_p.h
         qpdfdocumentrenderoptions.h
@@ -29,6 +30,8 @@ qt_internal_add_module(Pdf
         qpdfsearchmodel.cpp qpdfsearchmodel.h qpdfsearchmodel_p.h
         qpdfselection.cpp qpdfselection.h qpdfselection_p.h
         qtpdfglobal.h qtpdfglobal_p.h
+    NO_PCH_SOURCES
+        compat/removed_api.cpp
     INCLUDE_DIRECTORIES
         ../3rdparty/chromium
     DEFINES
