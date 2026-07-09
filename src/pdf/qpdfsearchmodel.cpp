@@ -57,7 +57,7 @@ static const int ContextChars = 64;
 QPdfSearchModel::QPdfSearchModel(QObject *parent)
     : QAbstractListModel(*(new QPdfSearchModelPrivate()), parent)
 {
-    QMetaEnum rolesMetaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator("Role"));
+    const QMetaEnum rolesMetaEnum = QMetaEnum::fromType<Role>();
     for (int r = Qt::UserRole; r < int(Role::NRoles); ++r) {
         QByteArray roleName = QByteArray(rolesMetaEnum.valueToKey(r));
         if (roleName.isEmpty())
