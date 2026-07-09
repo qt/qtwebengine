@@ -454,6 +454,10 @@ macro(append_compiler_linker_sdk_setup)
                 android_ndk_api_level=${ANDROID_NATIVE_API_LEVEL}
                 clang_use_default_sample_profile=false
             )
+            if(CMAKE_HOST_APPLE)
+                get_darwin_sdk_version(macSdkVersion)
+                list(APPEND gnArgArg mac_sdk_min="${macSdkVersion}")
+            endif()
         endif()
     else()
         if(QT_FEATURE_use_lld_linker OR QT_FEATURE_webengine_rust_build)
