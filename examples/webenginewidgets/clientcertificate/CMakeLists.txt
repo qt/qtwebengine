@@ -14,20 +14,20 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/webenginewidgets/clientcertificat
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui WebEngineWidgets)
 
-qt_add_executable(server
+qt_add_executable(example_cert_server
     server.cpp
 )
 
-qt_add_executable(client
+qt_add_executable(example_cert_client
     client.cpp
 )
 
-set_target_properties(client PROPERTIES
+set_target_properties(example_cert_client PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
 
-qt_add_resources(client "client"
+qt_add_resources(example_cert_client "client"
     PREFIX
         "/"
     FILES
@@ -35,7 +35,7 @@ qt_add_resources(client "client"
        "resources/client.key"
 )
 
-qt_add_resources(server "server"
+qt_add_resources(example_cert_server "server"
     PREFIX
         "/"
     FILES
@@ -44,16 +44,16 @@ qt_add_resources(server "server"
        "resources/ca.pem"
 )
 
-target_link_libraries(client PUBLIC
+target_link_libraries(example_cert_client PUBLIC
     Qt::WebEngineWidgets
 )
 
-target_link_libraries(server PUBLIC
+target_link_libraries(example_cert_server PUBLIC
     Qt::Core
     Qt::Network
 )
 
-install(TARGETS server client
+install(TARGETS example_cert_server example_cert_client
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

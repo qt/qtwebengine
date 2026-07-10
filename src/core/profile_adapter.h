@@ -77,6 +77,9 @@ public:
     void pauseDownload(quint32 downloadId);
     void resumeDownload(quint32 downloadId);
     void removeDownload(quint32 downloadId);
+    void acceptDownload(quint32 downloadId, bool accepted,
+                        bool useDownloadTargetCallback, const QString &path,
+                        int savePageFormat);
 
     ProfileQt *profile();
     bool ensureDataPathExists();

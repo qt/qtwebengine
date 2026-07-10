@@ -12,7 +12,10 @@ endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/pdf/singlepage")
 
-find_package(Qt6 REQUIRED COMPONENTS Gui Qml)
+find_package(Qt6 REQUIRED COMPONENTS Gui Qml OPTIONAL_COMPONENTS Svg)
+if(NOT TARGET Qt::Svg)
+    message(WARNING "QtSvg is required as runtime dependency for qtpdfquick examples.")
+endif()
 
 qt_add_executable(pdfviewerquick
     main.cpp

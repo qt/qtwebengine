@@ -152,8 +152,8 @@ QString subProcessPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 processPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine process path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine process path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -209,8 +209,8 @@ QString localesPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % translationPakFilename)) {
                 potentialLocalesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine locales path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -276,8 +276,8 @@ QString dictionariesPath(bool showWarnings)
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate)) {
                 potentialDictionariesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine dictionaries path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -308,7 +308,11 @@ QString resourcesPath()
     static QString potentialResourcesPath;
     if (potentialResourcesPath.isEmpty()) {
         QStringList candidatePaths;
+#if !defined(QT_USE_DEBUG_RESOURCES)
         const auto resourcesPakFilename = "qtwebengine_resources.pak"_L1;
+#else
+        const auto resourcesPakFilename = "qtwebengine_resources.debug.pak"_L1;
+#endif
         bool includeOverrideMessage = false;
         if (QString fromEnv = qEnvironmentVariable("QTWEBENGINE_RESOURCES_PATH");
             fromEnv.isEmpty()) {
@@ -329,8 +333,8 @@ QString resourcesPath()
         for (const QString &candidate : std::as_const(candidatePaths)) {
             if (QFileInfo::exists(candidate % QDir::separator() % resourcesPakFilename)) {
                 potentialResourcesPath = candidate;
-                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %s",
-                        qPrintable(candidate));
+                qCDebug(webEngineLibraryInfoLog, "Qt WebEngine resources path: %ls",
+                        qUtf16Printable(candidate));
                 break;
             }
         }
@@ -357,6 +361,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key, bool showWarnings)
 {
     QString directory;
     switch (key) {
+#if !defined(QT_USE_DEBUG_RESOURCES)
     case QT_RESOURCES_PAK:
         return toFilePath(resourcesPath() % "/qtwebengine_resources.pak"_L1);
     case QT_RESOURCES_100P_PAK:
@@ -365,6 +370,16 @@ base::FilePath WebEngineLibraryInfo::getPath(int key, bool showWarnings)
         return toFilePath(resourcesPath() % "/qtwebengine_resources_200p.pak"_L1);
     case QT_RESOURCES_DEVTOOLS_PAK:
         return toFilePath(resourcesPath() % "/qtwebengine_devtools_resources.pak"_L1);
+#else
+    case QT_RESOURCES_PAK:
+        return toFilePath(resourcesPath() % "/qtwebengine_resources.debug.pak"_L1);
+    case QT_RESOURCES_100P_PAK:
+        return toFilePath(resourcesPath() % "/qtwebengine_resources_100p.debug.pak"_L1);
+    case QT_RESOURCES_200P_PAK:
+        return toFilePath(resourcesPath() % "/qtwebengine_resources_200p.debug.pak"_L1);
+    case QT_RESOURCES_DEVTOOLS_PAK:
+        return toFilePath(resourcesPath() % "/qtwebengine_devtools_resources.debug.pak"_L1);
+#endif
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
     case QT_FRAMEWORK_BUNDLE:
         return toFilePath(getBundlePath(frameworkBundle()));

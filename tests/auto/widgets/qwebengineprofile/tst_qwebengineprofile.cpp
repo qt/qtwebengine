@@ -862,7 +862,7 @@ void tst_QWebEngineProfile::downloadItem()
     qRegisterMetaType<QWebEngineDownloadRequest *>();
     QWebEngineProfile testProfile;
     QWebEnginePage page(&testProfile);
-    QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadRequest *)));
+    QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadRequest*)));
     page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
     QTRY_COMPARE(downloadSpy.size(), 1);
 }

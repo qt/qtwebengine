@@ -36,6 +36,7 @@ public:
 
     void update(const QtWebEngineCore::ProfileAdapterClient::DownloadItemInfo &info);
     void setFinished();
+    void answer();
 
     bool downloadFinished = false;
     quint32 downloadId = -1;
@@ -56,10 +57,14 @@ public:
     bool isCustomFileName = false;
     qint64 totalBytes = -1;
     qint64 receivedBytes = 0;
+    // The user initiated the download by saving the page
     bool isSavePageDownload = false;
+    // Which type of callback should be called when the request is answered
+    bool useDownloadTargetCallback = true;
     QWebEngineDownloadRequest *q_ptr;
     QPointer<QtWebEngineCore::ProfileAdapter> profileAdapter;
     QtWebEngineCore::WebContentsAdapterClient *adapterClient = nullptr;
+    bool answered = false;
     Q_DECLARE_PUBLIC(QWebEngineDownloadRequest)
 };
 

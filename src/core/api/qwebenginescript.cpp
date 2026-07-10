@@ -168,7 +168,7 @@ void QWebEngineScript::setSourceUrl(const QUrl &url)
     }
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Can't open user script " << url;
+        qWarning("Can't open user script %ls", qUtf16Printable(url.toString()));
         return;
     }
 

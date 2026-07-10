@@ -32,7 +32,7 @@ static inline QPoint getOffset(QQuickItem *item)
     QPointF offset = item->mapFromScene(QPoint(0, 0));
     offset = item->mapToGlobal(offset);
     // get local offset
-    offset -= item->mapToScene(QPoint(0, 0));
+    offset -= item->mapToGlobal(QPoint(0, 0));
     return offset.toPoint();
 }
 
@@ -51,10 +51,11 @@ static inline QPointF transformPoint(const QPointF &point, const QTransform &tra
 
 RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(
         RenderWidgetHostViewQtDelegateItem *realDelegate, QWindow *parent)
-    : QQuickWindow(parent), m_realDelegate(realDelegate), m_virtualParent(nullptr), m_transformed(false)
+    : QQuickWindow(), m_realDelegate(realDelegate), m_virtualParent(nullptr), m_transformed(false)
 {
     setFlags(Qt::Tool | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     realDelegate->setParentItem(contentItem());
+    setTransientParent(parent);
 }
 
 RenderWidgetHostViewQtDelegateQuickWindow::~RenderWidgetHostViewQtDelegateQuickWindow()

@@ -92,13 +92,13 @@
     \b {Qt \WebKit}
     \code
         QWebPage page;
-        connect(page.mainFrame(), SIGNAL(urlChanged(const QUrl&)), SLOT(mySlotName()));
+        connect(page.mainFrame(), SIGNAL(urlChanged(QUrl)), SLOT(mySlotName()));
         page.mainFrame()->load(url);
     \endcode
     \b {\QWE}
     \code
         QWebEnginePage page;
-        connect(&page, SIGNAL(urlChanged(const QUrl&)), SLOT(mySlotName()));
+        connect(&page, SIGNAL(urlChanged(QUrl)), SLOT(mySlotName()));
         page.load(url);
     \endcode
 

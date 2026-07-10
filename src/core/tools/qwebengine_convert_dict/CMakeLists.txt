@@ -7,6 +7,7 @@ if(QT_FEATURE_webengine_spellchecker AND NOT CMAKE_CROSSCOMPILING)
         TARGET_DESCRIPTION "QtWebEngine Dictionary Conversion Tool"
         INSTALL_DIR ${INSTALL_LIBEXECDIR}
         TOOLS_TARGET WebEngineCore
+        DEFINES TOOLKIT_QT
         SOURCES main.cpp
         INCLUDE_DIRECTORIES
             ../../../3rdparty/chromium/third_party/abseil-cpp

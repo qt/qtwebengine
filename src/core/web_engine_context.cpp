@@ -151,7 +151,7 @@ public:
         Qualcomm,
         Samsung,
         Broadcom,
-        VMWare,
+        VMware,
         VirtIO,
 
         // Khronos-registered vendors
@@ -186,7 +186,7 @@ public:
             {0x5143, Qualcomm},
             {0x144D, Samsung},
             {0x14E4, Broadcom},
-            {0x15AD, VMWare},
+            {0x15AD, VMware},
             {0x1AF4, VirtIO},
             {0x10001, Vivante},
             {0x10002, VeriSilicon},
@@ -201,7 +201,7 @@ public:
         if (it != vendorIdMap.end())
             return it->second;
 
-        qWarning() << "Unknown Vendor ID:" << QStringLiteral("0x%1").arg(vendorId, 0, 16);
+        qWarning("Unknown Vendor ID: 0x%llx", vendorId);
         return Unknown;
     }
 
@@ -214,6 +214,8 @@ public:
             return Intel;
         if (deviceName.contains("Nvidia"_L1, Qt::CaseInsensitive))
             return Nvidia;
+        if (deviceName.contains("VMware"_L1, Qt::CaseInsensitive))
+            return VMware;
 
 #if defined(USE_OZONE)
         if (deviceName.contains("Mesa llvmpipe"_L1))
@@ -244,7 +246,7 @@ public:
             {Qualcomm, "Qualcomm"},
             {Samsung, "Samsung"},
             {Broadcom, "Broadcom"},
-            {VMWare, "VMWare"},
+            {VMware, "VMware"},
             {VirtIO, "VirtIO"},
             {Vivante, "Vivante"},
             {VeriSilicon, "VeriSilicon"},
@@ -913,7 +915,7 @@ WebEngineContext::WebEngineContext()
 #endif
     } else {
         parsedCommandLine->AppendSwitch(sandbox::policy::switches::kNoSandbox);
-        qInfo() << "Sandboxing disabled by user.";
+        qInfo("Sandboxing disabled by user.");
     }
 
     // Do not advertise a feature we have removed at compile time
@@ -994,11 +996,10 @@ WebEngineContext::WebEngineContext()
                     found++;
             }
             if (found != requiredDeviceExtensions.size()) {
-                qWarning().nospace()
-                        << "Vulkan rendering may fail because " << deviceExtensionsVar
-                        << " environment variable is already set but it doesn't contain"
-                        << " some of the required Vulkan device extensions:\n"
-                        << qPrintable(requiredDeviceExtensions.join('\n'));
+                qWarning("Vulkan rendering may fail because %s environment variable is already "
+                         "set but it doesn't contain some of the required Vulkan device "
+                         "extensions:\n%s",
+                         deviceExtensionsVar, requiredDeviceExtensions.join('\n').constData());
             }
         } else {
             qputenv(deviceExtensionsVar, requiredDeviceExtensions.join(';'));
@@ -1296,7 +1297,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "134.0.6998.89"; // FIXME: Remember to update
+    return "138.0.7204.96"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE

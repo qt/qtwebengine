@@ -830,21 +830,34 @@ macro(append_build_type_setup)
         enable_rust=false # We do not yet support rust
     )
     if(${config} STREQUAL "Debug")
-        list(APPEND gnArgArg is_debug=true symbol_level=2)
+        list(APPEND gnArgArg
+            is_debug=true
+            symbol_level=2
+            enable_mojom_message_id_scrambling=false
+        )
         if(WIN32)
             list(APPEND gnArgArg enable_iterator_debugging=true)
         endif()
     elseif(${config} STREQUAL "Release")
-        list(APPEND gnArgArg is_debug=false symbol_level=0)
+        list(APPEND gnArgArg
+            is_debug=false
+            symbol_level=0
+            enable_mojom_message_id_scrambling=true
+        )
     elseif(${config} STREQUAL "RelWithDebInfo")
-        list(APPEND gnArgArg is_debug=false)
+        list(APPEND gnArgArg is_debug=false enable_mojom_message_id_scrambling=true)
         if(WIN32 AND NOT CLANG)
             list(APPEND gnArgArg symbol_level=2)
         else()
             list(APPEND gnArgArg symbol_level=1)
         endif()
     elseif(${config} STREQUAL "MinSizeRel")
-        list(APPEND gnArgArg is_debug=false symbol_level=0 optimize_for_size=true)
+        list(APPEND gnArgArg
+            is_debug=false
+            symbol_level=0
+            optimize_for_size=true
+            enable_mojom_message_id_scrambling=true
+        )
     endif()
     if(FEATURE_developer_build OR (${config} STREQUAL "Debug") OR QT_FEATURE_webengine_sanitizer)
         list(APPEND gnArgArg
@@ -1208,12 +1221,16 @@ function(add_gn_build_artifacts_to_target)
         foreach(arch ${archs})
             set(target ${arg_NINJA_TARGET}_${config}_${arch})
             set(stamps ${arg_NINJA_STAMP} ${arg_NINJA_DATA_STAMP})
+            set(data_stamp_option "")
+            if(arg_NINJA_DATA_STAMP)
+                set(data_stamp_option NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP})
+            endif()
             add_ninja_target(
                 TARGET ${target}
                 NINJA_TARGET ${arg_NINJA_TARGET}
                 CMAKE_TARGET ${arg_CMAKE_TARGET}
                 NINJA_STAMP ${arg_NINJA_STAMP}
-                NINJA_DATA_STAMP ${arg_NINJA_DATA_STAMP}
+                ${data_stamp_option}
                 CONFIG ${config}
                 ARCH ${arch}
                 BUILDDIR ${arg_BUILDDIR}
@@ -1348,7 +1365,6 @@ function(addCopyCommand target src dst)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
         COMMAND ${CMAKE_COMMAND} -E copy ${src} ${dst}
         TARGET ${target}
-        DEPENDS ${src}
         USES_TERMINAL
     )
 endfunction()

@@ -70,6 +70,7 @@ headerdirs  += ../../core/api \
 
 sourcedirs  += ../../core/api \
                ../../core/doc \
+               ../../core/tools/webenginedriver \
                ../../webenginequick/api \
                ../../webenginequick/doc \
                ../../webenginewidgets/api \
@@ -96,6 +97,10 @@ navigation.qmltypespage = "Qt WebEngine QML Types"
 
 # \QWE macro expands to 'Qt WebEngine' without auto-linking anywhere.
 macro.QWE    = "Qt \\WebEngine"
+
+# QTBUG-134416: Ignore overwrite warnings, attribution
+# documentation generates many of these
+spurious += "Output file already exists, overwriting .*"
 
 # Enforce zero documentation warnings
 warninglimit = 2

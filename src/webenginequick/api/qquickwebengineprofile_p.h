@@ -50,7 +50,7 @@ public:
 
     void cleanDownloads();
 
-    void downloadRequested(DownloadItemInfo &info) override;
+    void downloadRequested(const DownloadItemInfo &info) override;
     void downloadUpdated(const DownloadItemInfo &info) override;
 
     void showNotification(QSharedPointer<QtWebEngineCore::UserNotificationController> &controller) override;

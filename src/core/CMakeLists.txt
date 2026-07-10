@@ -195,6 +195,11 @@ foreach(arch ${archs})
                 authenticator_request_dialog_controller.cpp authenticator_request_dialog_controller.h authenticator_request_dialog_controller_p.h
         )
 
+        extend_gn_target(${buildGn} CONDITION config STREQUAL "Debug"
+            DEFINES
+                QT_USE_DEBUG_RESOURCES
+        )
+
         extend_gn_target(${buildGn} CONDITION QT_FEATURE_accessibility
             SOURCES
                 accessibility_activation_observer.cpp accessibility_activation_observer.h
@@ -589,8 +594,9 @@ target_include_directories(WebEngineCore PRIVATE
 )
 
 set(stamps QtWebEngineCore.stamp)
+set(dataStampOption "")
 if(QT_FEATURE_webengine_v8_context_snapshot)
-    set(dataStamp obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
+    set(dataStampOption NINJA_DATA_STAMP obj/tools/v8_context_snapshot/v8_context_snapshot.stamp)
 endif()
 
 add_gn_build_artifacts_to_target(
@@ -601,7 +607,7 @@ add_gn_build_artifacts_to_target(
     BUILDDIR ${buildDir}
     COMPLETE_STATIC FALSE
     NINJA_STAMP QtWebEngineCore.stamp
-    NINJA_DATA_STAMP ${dataStamp}
+    ${dataStampOption}
 )
 add_dependencies(WebEngineCore run_core_NinjaDone)
 if(COIN_BUG_699)

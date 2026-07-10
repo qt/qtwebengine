@@ -8,6 +8,7 @@ qt_internal_add_test(tst_qwebengineframe
         tst_qwebengineframe.cpp
     LIBRARIES
         Qt::WebEngineCore
+        Qt::WebEngineCorePrivate
         Qt::WebEngineWidgets
         Test::Util
 )

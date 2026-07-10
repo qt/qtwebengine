@@ -1450,8 +1450,9 @@ QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &i
 {
     Q_Q(QQuickWebEngineView);
     // lifecycle managed by Chromium's TouchHandleDrawable
-    QQuickWebEngineTouchHandle *handle = new QQuickWebEngineTouchHandle();
+    QQuickWebEngineTouchHandle *handle(nullptr);
     if (m_touchHandleDelegate) {
+        handle = new QQuickWebEngineTouchHandle();
         QQmlContext *qmlContext = QQmlEngine::contextForObject(q);
         QQmlContext *context = new QQmlContext(qmlContext, handle);
         context->setContextObject(handle);
@@ -1462,7 +1463,9 @@ QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &i
         handle->setItem(item, false);
     } else {
         QQuickItem *item = ui()->createTouchHandle();
-        Q_ASSERT(item);
+        if (!item) {
+            return nullptr;
+        }
         QQmlEngine *engine = qmlEngine(item);
         Q_ASSERT(engine);
         QQuickWebEngineTouchHandleProvider *touchHandleProvider =
@@ -1470,6 +1473,7 @@ QQuickWebEngineViewPrivate::createTouchHandleDelegate(const QMap<int, QImage> &i
                         engine->imageProvider(QQuickWebEngineTouchHandleProvider::identifier()));
         Q_ASSERT(touchHandleProvider);
         touchHandleProvider->init(images);
+        handle = new QQuickWebEngineTouchHandle();
         handle->setItem(item, true);
     }
     return handle;

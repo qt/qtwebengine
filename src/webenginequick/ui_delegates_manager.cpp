@@ -155,6 +155,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
         }
         return true;
     }
+    qWarning("Default ui delegate %s can not be found.", qPrintable(fileName));
     return false;
 }
 

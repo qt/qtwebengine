@@ -20,12 +20,10 @@ class PermissionDialog : public QDialog, public Ui_PermissionDialog
     Q_OBJECT
 public:
     PermissionDialog(const QWebEngineProfile *profile, QWidget *parent = nullptr);
-    ~PermissionDialog();
-    QWebEnginePermission permission();
+    QWebEnginePermission permission() const;
 
 private:
     const QWebEngineProfile *m_profile;
-    QWebEnginePermission *m_permission;
 };
 
 class PermissionWidget : public QWidget, public Ui_PermissionWidget
@@ -60,7 +58,7 @@ private slots:
     void handleRefreshClicked();
     void handleBackClicked();
     void handleForwardClicked();
-    void handlePolicyComboBoxIndexChanged(int index);
+    void handlePolicyComboBoxIndexChanged(int);
 
 private:
     bool containsPermission(const QWebEnginePermission &permission);
