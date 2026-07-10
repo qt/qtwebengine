@@ -5,6 +5,10 @@ project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
 productname             = "Qt WebEngine"
 version                 = $QT_VERSION
+url                     = https://doc.qt.io/qtwebengine
+
+# Online sidebar config
+HTML.stylesheets       += style/tree_config.xml
 
 qhp.projects            = QtWebEngine
 
@@ -100,7 +104,7 @@ imagedirs += \
              images \
              ../../webenginequick/doc/images
 
-navigation.landingpage = "Qt WebEngine"
+{navigation.homepage,navigation.hometitle} = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes and Namespaces"
 navigation.qmltypespage = "Qt WebEngine QML Types"
 # Auto-generate navigation linking based on "Qt WebEngine module topics":
