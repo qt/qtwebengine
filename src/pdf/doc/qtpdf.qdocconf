@@ -5,6 +5,10 @@ project                 = QtPdf
 description             = Qt Pdf Reference Documentation
 productname             = "Qt Pdf"
 version                 = $QT_VERSION
+url                     = https://doc.qt.io/qtpdf
+
+# Online sidebar config
+HTML.stylesheets       += style/tree_config.xml
 
 qhp.projects            = QtPdf
 
@@ -68,7 +72,7 @@ manifestmeta.thumbnail.names = "QtPdf/PDF Viewer Example"
 
 imagedirs   += images
 
-navigation.landingpage = "Qt PDF"
+{navigation.homepage,navigation.hometitle} = "Qt PDF"
 navigation.cppclassespage = "Qt PDF C++ Classes"
 navigation.qmltypespage = "Qt Quick PDF QML Types"
 # Auto-generate navigation linking based on "Qt PDF module topics":
