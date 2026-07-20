@@ -482,6 +482,7 @@ QT_WARNING_POP
 
     // Used by QWebView. Not callable through QML
     void runJavaScript(const QString &script, const std::function<void(const QVariant &)> &resultCallback);
+    void runJavaScript(const QString &script, QtPrivate::QSlotObjectBase *resultCallback);
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());

@@ -1546,6 +1546,17 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
+void QQuickWebEngineView::runJavaScript(const QString &script, QtPrivate::QSlotObjectBase *resultCallback)
+{
+    Q_D(QQuickWebEngineView);
+    if (resultCallback) {
+        QtPrivate::SlotObjUniquePtr callback(resultCallback);
+        d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, std::move(callback));
+    } else {
+        d->runJavaScript(script, QWebEngineScript::MainWorld, WebContentsAdapter::kUseMainFrameId, nullptr);
+    }
+}
+
 void QQuickWebEngineView::runJavaScript(const QString &script, const std::function<void(const QVariant &)> &resultCallback)
 {
     Q_D(QQuickWebEngineView);
