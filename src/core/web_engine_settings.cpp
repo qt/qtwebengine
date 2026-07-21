@@ -110,6 +110,18 @@ bool WebEngineSettings::testAttribute(QWebEngineSettings::WebAttribute attr) con
     if (it != m_attributes.constEnd())
         return *it;
 
+    // Setting either LocalContentCanAccessFileUrls and LocalContentCanAccessRemoteUrls implies the other default off
+    if (attr == QWebEngineSettings::LocalContentCanAccessFileUrls) {
+        auto it2 = m_attributes.constFind(QWebEngineSettings::LocalContentCanAccessRemoteUrls);
+        if (it2 != m_attributes.constEnd() && *it2)
+            return false;
+    }
+    if (attr == QWebEngineSettings::LocalContentCanAccessRemoteUrls) {
+        auto it2 = m_attributes.constFind(QWebEngineSettings::LocalContentCanAccessFileUrls);
+        if (it2 != m_attributes.constEnd() && *it2)
+            return false;
+    }
+
     if (parentSettings)
         return parentSettings->testAttribute(attr);
 

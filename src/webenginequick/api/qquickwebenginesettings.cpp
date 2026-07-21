@@ -121,6 +121,11 @@ bool QQuickWebEngineSettings::localStorageEnabled() const
 
     Allows locally loaded documents to access remote URLs.
 
+    Mutually exclusive with localContentCanAccessFileUrls, i.e. enabling this will
+    disable localContentCanAccessFileUrls.
+
+    Note dnsPrefetchEnabled below operates independently of this setting.
+
     Disabled by default.
 */
 bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
@@ -150,6 +155,8 @@ bool QQuickWebEngineSettings::spatialNavigationEnabled() const
     \qmlproperty bool WebEngineSettings::localContentCanAccessFileUrls
 
     Allows locally loaded documents to access other local URLs.
+
+    Mutually exclusive with localContentCanAccessRemoteUrls.
 
     Enabled by default.
 */
@@ -411,6 +418,10 @@ bool QQuickWebEngineSettings::javascriptCanPaste() const
 
     Enables speculative prefetching of DNS records for HTML links before
     they are activated.
+
+    Should not be enabled if local content is not meant
+    to access remote content. As it the DNS prefetches will happen
+    independently of whether the fetch is allowed.
 
     Disabled by default.
 */
