@@ -152,16 +152,24 @@
     On Linux, note the following restrictions:
 
     \list
+        \li The kernel has to support the \c seccomp-bpf feature (kernel
+            version 3.5 or later).
         \li The kernel has to support the anonymous namespaces feature
             (kernel version 3.8 or later). However, on Debian, Ubuntu,
             and other Debian-derived distributions, this feature is off
             by default. It can be turned on by setting
             \c /proc/sys/kernel/unprivileged_userns_clone to 1.
-        \li The kernel has to support the \c seccomp-bpf feature (kernel
-            version 3.5 or later).
-        \li Setuid sandboxes are not needed if anonymous namespaces are available.
-            \QWE does not ship with a setuid sandbox, but you can set the environment
-            variable CHROME_DEVEL_SANDBOX to a setuid sandbox binary from a Chrome or
+        \li If using apparmor on Ubuntu, and other Ubuntu-derived
+            distributions, AppArmor can further restrict anonymous namespace
+            usage. This can be disabled by setting
+            \c /proc/sys/kernel/apparmor_restrict_unprivileged_userns to 0, or if
+            you do not want to override Ubuntu default behavior, by installing
+            a custom apparmor configuration for your application in \c{/etc/apparmor.d}. You
+            can find an example AppArmor configuration in \c{examples/apparmor.d}.
+        \li Setuid sandboxes are not needed if anonymous namespaces are available, but can
+            used instead when the instructions above are not possible. \QWE does not ship
+            with a setuid sandbox, but you can set the environment variable
+            CHROME_DEVEL_SANDBOX to a setuid sandbox binary from a Chrome or
             Chromium install, and that can be used if anonymous namespaces are blocked.
     \endlist
 
