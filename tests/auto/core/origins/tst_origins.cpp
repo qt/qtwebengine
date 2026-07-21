@@ -338,6 +338,7 @@ private Q_SLOTS:
     void fetchApiCustomUrl_data();
     void fetchApiCustomUrl();
     void fetchApiHttpUrl();
+    void eitherLocalOrRemoteAccess();
 
 private:
     bool verifyLoad(const QUrl &url)
@@ -549,18 +550,16 @@ public:
     ScopedAttribute(QWebEngineSettings *settings, QWebEngineSettings::WebAttribute attribute, bool newValue)
         : m_settings(settings)
         , m_attribute(attribute)
-        , m_oldValue(m_settings->testAttribute(m_attribute))
     {
         m_settings->setAttribute(m_attribute, newValue);
     }
     ~ScopedAttribute()
     {
-        m_settings->setAttribute(m_attribute, m_oldValue);
+        m_settings->resetAttribute(m_attribute);
     }
 private:
     QWebEngineSettings *m_settings;
     QWebEngineSettings::WebAttribute m_attribute;
-    bool m_oldValue;
 };
 
 // Test same-origin policy of file, qrc and custom schemes.
@@ -1731,6 +1730,56 @@ void tst_Origins::fetchApiHttpUrl()
     QTRY_VERIFY(loadSpy.count() > 0);
     QTRY_VERIFY(jsSpy.count() > 0);
     QVERIFY(httpServer.stop());
+}
+
+void tst_Origins::eitherLocalOrRemoteAccess()
+{
+    // Check standard defaults
+    QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+    QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+
+    {
+        ScopedAttribute sa0(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
+    {
+        ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
+    {
+        // Explicitly set both, override the safety behavior
+        ScopedAttribute sa0(m_page->settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
+
+    QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+    QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+
+    {
+        ScopedAttribute sa0(m_profile.settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
+    {
+        // Explicitly set both, override the safety behavior
+        ScopedAttribute sa0(m_profile.settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        ScopedAttribute sa1(m_profile.settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
+    {
+        // But mixing them across levels does not count as explicitly set to ignore safe defaults.
+        ScopedAttribute sa0(m_profile.settings(), QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        ScopedAttribute sa1(m_page->settings(), QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        QVERIFY(!m_profile.settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(m_profile.settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+        QVERIFY(m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls));
+        QVERIFY(!m_page->settings()->testAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls));
+    }
 }
 
 QTEST_MAIN(tst_Origins)

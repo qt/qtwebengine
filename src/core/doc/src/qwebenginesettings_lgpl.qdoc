@@ -85,7 +85,8 @@
             Enables support for the HTML 5 local storage feature. Enabled by default.
     \value  LocalContentCanAccessRemoteUrls
             Allows local origin documents to access remote resources that would normally be blocked.
-            Disabled by default. Note DnsPrefetchEnabled below operates independently of this setting,
+            Mutually exclusive with LocalContentCanAccessFileUrls. Disabled by default.
+            Note DnsPrefetchEnabled below operates independently of this setting,
             and can if enabled, cause remote accesses from local content.
     \value  XSSAuditingEnabled
             Obsolete and has no effect.
@@ -98,7 +99,8 @@
             Disabled by default.
     \value  LocalContentCanAccessFileUrls
             Allows locally loaded documents to access other local URLs. Disabling this makes QtWebEngine
-            behave more like Chrome and Firefox does by default. Enabled by default.
+            behave more like Chrome and Firefox does by default. Mutually exclusive with
+            LocalContentCanAccessRemoteUrls. Enabled by default.
     \value  HyperlinkAuditingEnabled
             Enables support for the \c ping attribute for hyperlinks. Disabled by default.
     \value  ScrollAnimatorEnabled
@@ -166,7 +168,8 @@
             Disabled by default.
     \value  [since 5.12] DnsPrefetchEnabled
             Specifies whether WebEngine will try to pre-fetch DNS entries.
-            Disabled by default.
+            Disabled by default. Should not be enabled if local content is not meant
+            to access remote content. See LocalContentCanAccessRemoteUrls.
     \value  [since 5.13] PdfViewerEnabled
             Specifies that PDF documents will be opened in the internal PDF viewer
             instead of being downloaded.
