@@ -315,8 +315,8 @@ qt_webengine_configure_check("supported-platform"
 )
 qt_webengine_configure_check("supported-platform"
     MODULES QtPdf
-    CONDITION LINUX OR WIN32 OR MACOS OR IOS OR ANDROID
-    MESSAGE "Build can be done only on Linux, Windows, macO, iOS and Android."
+    CONDITION LINUX OR WIN32 OR MACOS OR IOS OR ANDROID OR OHOS
+    MESSAGE "Build can be done only on Linux, Windows, macO, iOS, Android and OHOS."
 )
 
 if(LINUX AND CMAKE_CROSSCOMPILING)
@@ -446,7 +446,8 @@ qt_webengine_configure_check("compiler"
         (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") OR
         (ANDROID AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
         (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR
-        (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        (MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR
+        (OHOS AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     MESSAGE
         "${CMAKE_CXX_COMPILER_ID} compiler is not supported."
 )
