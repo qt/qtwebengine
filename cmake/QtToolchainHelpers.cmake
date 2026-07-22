@@ -95,6 +95,8 @@ function(get_gn_os result)
         set(${result} "mac" PARENT_SCOPE)
     elseif(IOS)
         set(${result} "ios" PARENT_SCOPE)
+    elseif(OHOS)
+        set(${result} "ohos" PARENT_SCOPE)
     else()
         message(DEBUG "Unrecognized OS")
     endif()
@@ -270,7 +272,9 @@ macro(append_build_type_setup)
         use_custom_libcxx_for_host=false
         enable_constraints=false
     )
-    if (QT_FEATURE_webengine_rust_build)
+    # OHOS has no rust_abi_target in Chromium's build/config/rust.gni (and the
+    # OHOS SDK ships no Rust toolchain), so keep the Rust build off there.
+    if (QT_FEATURE_webengine_rust_build AND NOT OHOS)
       list(APPEND gnArgArg
           toolchain_supports_rust_thin_lto=false # depends on unstable flag -Zsplit-lto-unit
           enable_rust=true
@@ -651,6 +655,11 @@ macro(append_toolchain_setup)
                 v8_snapshot_toolchain="/${buildDir}/v8_toolchain:v8"
             )
         endif()
+    elseif(OHOS)
+        get_gn_arch(cpu ${TEST_architecture_arch})
+        list(APPEND gnArgArg target_os="ohos" target_cpu="${cpu}"
+                target_sysroot="${CMAKE_SYSROOT}"
+                musl_sysroot="${CMAKE_SYSROOT}")
     endif()
     unset(cpu)
 endmacro()

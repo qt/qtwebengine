@@ -195,6 +195,15 @@ foreach(arch ${archs})
               CONDITION QT_FEATURE_pdf_static_runtime
           )
         endif()
+        if(OHOS)
+            # QtPdf uses pdfium directly and needs neither blink nor Chromium's
+            # in-tree PDF viewer. iOS gets these off via the chromium defaults
+            # (!is_ios); OHOS is not, so disable them here.
+            list(APPEND gnArgArg
+                use_blink=false
+                enable_pdf=false
+            )
+        endif()
 
         extend_gn_list(gnArgArg
             ARGS pdf_enable_v8
