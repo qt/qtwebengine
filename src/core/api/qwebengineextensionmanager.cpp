@@ -12,31 +12,25 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineExtensionManager
-    \brief The QWebEngineExtensionManager class allows applications to install and load Chrome
-   extensions from the filesystem.
+    \brief The QWebEngineExtensionManager class allows applications to access Chrome/Firefox
+     extension-compatible interfaces through managed packages.
 
     \since 6.10
     \inmodule QtWebEngineCore
 
-    QWebEngineExtensionManager can load or install Chrome extensions.
-    Extensions can be loaded via \l loadExtension. Extensions loaded this way are not
-    remembered by the associated profile and has to be manually loaded in every new browsing
-    session. To preserve extensions between browsing sessions, applications can install zipped or
-    unpacked extensions via \l installExtension. In this case the manager will unpack the extension
-    to the profile's directory and load it from there. Installed extensions are always loaded at
-    startup, after the profile is initialized.
+    QWebEngineExtensionManager exposes interfaces compatible with the Chrome/Firefox extension platform,
+    letting applications load or install packages built against that format at runtime.
 
-    You can access the loaded extensions with \l extensions() which provides a list of \l
-    QWebEngineExtensionInfo, or connect to the manager's signals to get notified about the state of
-    the load or install processes.
+    Loading via \l loadExtension() is temporary and doesn't persist across sessions, while
+    \l installExtension() stores the package in the profile directory so it loads automatically at startup.
 
-    Each \l QWebEngineProfile has its own \l QWebEngineExtensionManager, so every page that shares
-    the same profile will share the same extensions too.
-    Extensions can't be loaded into off-the-record profiles. However, all profiles, including
-    off-the-record ones, contain two built-in and enabled by default extensions: Google Hangouts and
-    Chromium PDF. These can be disabled and/or unloaded if desired.
+    Loaded packages can be inspected through \l extensions() property, which returns a list of
+    \l QWebEngineExtensionInfo objects, and the manager emits signals when packages are loaded, installed,
+    unloaded, or uninstalled. The \l installPath property indicates where installed packages are persisted.
 
-    \note Only ManifestV3 extensions are supported, other versions won't be loaded nor installed
+    Only the ManifestV3 specification is supported — packages using other manifest versions are rejected outright.
+    This capability is not available for off-the-record profiles. Every profile ships with two built-in components,
+    Google Hangouts and the Chromium PDF Viewer, which can be disabled if not needed.
 
     \sa QWebEngineProfile::extensionManager, QWebEngineExtensionInfo
 */
