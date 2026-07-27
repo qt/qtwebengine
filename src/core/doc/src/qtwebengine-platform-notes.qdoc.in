@@ -159,7 +159,10 @@
             \c /proc/sys/kernel/unprivileged_userns_clone to 1.
         \li The kernel has to support the \c seccomp-bpf feature (kernel
             version 3.5 or later).
-        \li Setuid sandboxes are not supported and are thus disabled.
+        \li Setuid sandboxes are not needed if anonymous namespaces are available.
+            \QWE does not ship with a setuid sandbox, but you can set the environment
+            variable CHROME_DEVEL_SANDBOX to a setuid sandbox binary from a Chrome or
+            Chromium install, and that can be used if anonymous namespaces are blocked.
     \endlist
 
     To explicitly disable sandboxing, use one of the following options:
