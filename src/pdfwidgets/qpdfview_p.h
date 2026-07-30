@@ -24,6 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPdfLink;
 class QPdfPageRenderer;
 
 class QPdfViewPrivate
