@@ -11,7 +11,6 @@
 QT_BEGIN_NAMESPACE
 
 class QPdfDocument;
-class QPdfLink;
 class QPdfPageNavigator;
 class QPdfSearchModel;
 class QPdfViewPrivate;
