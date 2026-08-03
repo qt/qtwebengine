@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Qml Quick)
+find_package(Qt6 ${Qt6BuildInternals_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Qml Quick)
 
 set(qml_files
     "+Material/PdfStyle.qml"
