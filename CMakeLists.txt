@@ -15,7 +15,7 @@ include(cmake/QtConfigureHelpers.cmake)
 include(cmake/QtToolchainHelpers.cmake)
 
 project(QtWebEngineDummy)
-find_package(Qt6 6.5 CONFIG REQUIRED COMPONENTS BuildInternals)
+find_package(Qt6 6.8 CONFIG REQUIRED COMPONENTS BuildInternals)
 
 # Should be after find_package to ensure SBOM functions are available
 include(cmake/QtWebEngineSbomHelpers.cmake)
@@ -27,6 +27,7 @@ if(DEFINED BUILD_ONLY_GN)
 endif()
 
 project(QtWebEngine
+    # TODO: Change this version to QT_REPO_MODULE_VERSION when ready
     VERSION ${Qt6BuildInternals_VERSION}
     DESCRIPTION "QtWebEngine and QtPdf modules"
     HOMEPAGE_URL "https://qt.io/"
@@ -34,8 +35,8 @@ project(QtWebEngine
 )
 qt_internal_project_setup()
 
-find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
-find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
+find_package(Qt6 ${Qt6BuildInternals_VERSION} CONFIG REQUIRED COMPONENTS Core)
+find_package(Qt6 ${Qt6BuildInternals_VERSION} CONFIG QUIET OPTIONAL_COMPONENTS
     Gui Widgets Network OpenGL Quick Qml PrintSupport
     WebChannel WebChannelQuick Positioning QuickControls2
     Test QuickWidgets QuickTest WebSockets Designer

@@ -17,7 +17,7 @@ if(NOT QT_CONFIGURE_RUNNING)
             pkg_check_modules(GIO gio-2.0)
         endif()
     endif()
-    find_package(Qt6 ${PROJECT_VERSION} CONFIG QUIET
+    find_package(Qt6 ${Qt6BuildInternals_VERSION} CONFIG QUIET
         OPTIONAL_COMPONENTS Positioning WebChannel PrintSupport)
 endif()
 
