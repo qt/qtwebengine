@@ -224,14 +224,15 @@ InterceptedRequest::InterceptedRequest(
         const bool toLocal = base::Contains(localSchemes, toScheme);
         bool hasLocalAccess = false;
         local_access_ = toLocal;
-        remote_access_ = !toLocal && (toScheme != "data") && (toScheme != "qrc");
+        remote_access_ = !toLocal && (toScheme != "data");
         if (const url::CustomScheme *cs = url::CustomScheme::FindScheme(fromScheme))
             hasLocalAccess = cs->flags & url::CustomScheme::LocalAccessAllowed;
         if (fromLocal || toLocal) {
             content::WebContents *wc = webContents();
             // local schemes must have universal access, or be accessing something local and have local access.
-            allow_local_ = hasLocalAccess || (fromLocal && wc && wc->GetOrCreateWebPreferences().allow_file_access_from_file_urls);
-            allow_remote_ = !fromLocal || (wc && wc->GetOrCreateWebPreferences().allow_remote_access_from_local_urls);
+            // 'qrc' is universally trusted since it is has to be built into the application.
+            allow_local_ = hasLocalAccess || (fromLocal && wc && wc->GetOrCreateWebPreferences().allow_file_access_from_file_urls) || (fromScheme == "qrc");
+            allow_remote_ = !fromLocal || (wc && wc->GetOrCreateWebPreferences().allow_remote_access_from_local_urls) || (fromScheme == "qrc");
         }
     }
 }

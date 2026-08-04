@@ -86,6 +86,14 @@ namespace QTest {
 }
 QT_END_NAMESPACE
 
+namespace {
+void registerUrlScheme()
+{
+    ResourceHandler::registerUrlScheme();
+}
+}
+Q_CONSTRUCTOR_FUNCTION(registerUrlScheme)
+
 class tst_QWebEngineView : public QObject
 {
     Q_OBJECT
@@ -173,12 +181,18 @@ private Q_SLOTS:
 // It is only called once.
 void tst_QWebEngineView::initTestCase()
 {
+    ResourceHandler* resourceHandler = new ResourceHandler;
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ResourceHandler::schemeName, resourceHandler);
+
 }
 
 // This will be called after the last test function is executed.
 // It is only called once.
 void tst_QWebEngineView::cleanupTestCase()
 {
+    auto* resourceHandler = QWebEngineProfile::defaultProfile()->urlSchemeHandler(ResourceHandler::schemeName);
+    QWebEngineProfile::defaultProfile()->removeAllUrlSchemeHandlers();
+    delete resourceHandler;
 }
 
 // This will be called before each test function is executed.
@@ -346,7 +360,7 @@ void tst_QWebEngineView::getWebKitVersion()
 void tst_QWebEngineView::changePage_data()
 {
     QString html = "<html><head><title>%1</title>"
-                   "<link rel='icon' href='qrc:///resources/image2.png'></head></html>";
+                   "<link rel='icon' href='resources:/image2.png'></head></html>";
     QUrl urlFrom("data:text/html," + html.arg("TitleFrom"));
     QUrl urlTo("data:text/html," + html.arg("TitleTo"));
     QUrl nullPage("data:text/html,<html/>");
@@ -546,7 +560,7 @@ void tst_QWebEngineView::crashTests()
     // Test page should have frames.
     QWebEngineView view;
     WebViewCrashTest tester(&view);
-    QUrl url("qrc:///resources/index.html");
+    QUrl url("resources:///index.html");
     view.load(url);
 
     // If the verification fails, it means that either stopping doesn't work, or the hardware is
@@ -2319,7 +2333,12 @@ void tst_QWebEngineView::navigateOnDrop()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
+    // Ensure a well-defined from state
     QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
+    view.setUrl(QUrl("about:blank"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    loadSpy.clear();
+
     QMimeData mimeData;
     mimeData.setUrls({ url });
 

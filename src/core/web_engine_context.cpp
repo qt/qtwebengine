@@ -666,8 +666,8 @@ WebEngineContext::WebEngineContext()
     if (QWebEngineUrlScheme::schemeByName(QByteArrayLiteral("qrc")) == QWebEngineUrlScheme()) {
         // User might have registered "qrc" already with different options.
         QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
-        qrcScheme.setFlags(QWebEngineUrlScheme::SecureScheme
-                           | QWebEngineUrlScheme::ViewSourceAllowed);
+        qrcScheme.setFlags(QWebEngineUrlScheme::LocalScheme
+                         | QWebEngineUrlScheme::ViewSourceAllowed);
         QWebEngineUrlScheme::registerScheme(qrcScheme);
     }
 

@@ -80,6 +80,14 @@
 
 using namespace Qt::StringLiterals;
 
+namespace {
+void registerUrlScheme()
+{
+    ResourceHandler::registerUrlScheme();
+}
+}
+Q_CONSTRUCTOR_FUNCTION(registerUrlScheme)
+
 static void removeRecursive(const QString& dirname)
 {
     QDir dir(dirname);
@@ -370,11 +378,18 @@ void tst_QWebEnginePage::initTestCase()
     QWebEngineUrlScheme remote("remote");
     remote.setFlags(QWebEngineUrlScheme::CorsEnabled);
     QWebEngineUrlScheme::registerScheme(remote);
+
+    ResourceHandler* resourceHandler = new ResourceHandler;
+    QWebEngineProfile::defaultProfile()->installUrlSchemeHandler(ResourceHandler::schemeName, resourceHandler);
 }
 
 void tst_QWebEnginePage::cleanupTestCase()
 {
     cleanupFiles(); // Be nice
+
+    auto* resourceHandler = QWebEngineProfile::defaultProfile()->urlSchemeHandler(ResourceHandler::schemeName);
+    QWebEngineProfile::defaultProfile()->removeAllUrlSchemeHandlers();
+    delete resourceHandler;
 }
 
 class EchoingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
@@ -462,7 +477,7 @@ void tst_QWebEnginePage::loadFinished()
 
 void tst_QWebEnginePage::actionStates()
 {
-    m_page->load(QUrl("qrc:///resources/script.html"));
+    m_page->load(QUrl("resources:///script.html"));
 
     QAction* reloadAction = m_page->action(QWebEnginePage::Reload);
     QAction* stopAction = m_page->action(QWebEnginePage::Stop);
@@ -509,7 +524,7 @@ void tst_QWebEnginePage::pasteImage()
     clipboard->setImage(origImage);
     QWebEnginePage *page = m_view->page();
     QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
-    page->load(QUrl("qrc:///resources/pasteimage.html"));
+    page->load(QUrl("resources:///pasteimage.html"));
     QTRY_VERIFY_WITH_TIMEOUT(!spyFinished.isEmpty(), 20000);
     page->triggerAction(QWebEnginePage::Paste);
     QTRY_VERIFY(evaluateJavaScriptSync(page,
@@ -953,7 +968,7 @@ void tst_QWebEnginePage::backActionUpdate()
     QAction *action = page->action(QWebEnginePage::Back);
     QVERIFY(!action->isEnabled());
 
-    page->load(QUrl("qrc:///resources/framedindex.html"));
+    page->load(QUrl("resources:/framedindex.html"));
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.size(), 1, 20000);
     QVERIFY(!action->isEnabled());
 
@@ -1564,7 +1579,7 @@ void tst_QWebEnginePage::deleteQWebEngineViewTwice()
         QMainWindow mainWindow;
         QWebEngineView* webView = new QWebEngineView(&mainWindow);
         mainWindow.setCentralWidget(webView);
-        webView->load(QUrl("qrc:///resources/frame_a.html"));
+        webView->load(QUrl("resources:/frame_a.html"));
         mainWindow.show();
         QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
         QVERIFY(spyFinished.wait());
@@ -1616,8 +1631,8 @@ void tst_QWebEnginePage::loadSignalsOrder_data()
 {
     QTest::addColumn<QUrl>("url");
     QTest::newRow("inline data") << QUrl("data:text/html,This is first page");
-    QTest::newRow("simple page") << QUrl("qrc:///resources/content.html");
-    QTest::newRow("frameset page") << QUrl("qrc:///resources/index.html");
+    QTest::newRow("simple page") << QUrl("resources:/content.html");
+    QTest::newRow("frameset page") << QUrl("resources:/index.html");
 }
 
 void tst_QWebEnginePage::loadSignalsOrder()
@@ -1673,7 +1688,7 @@ public:
         });
         profile()->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
         // We need to load content from a resource in order for the securityOrigin to be valid.
-        load(QUrl("qrc:///resources/content.html"));
+        load(QUrl("resources:/content.html"));
     }
 
     void jsGetMedia(const QString &call)
@@ -2093,7 +2108,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
-    page->load(QUrl("qrc:///resources/fullscreen.html"));
+    page->load(QUrl("resources:/fullscreen.html"));
     QTRY_COMPARE(loadSpy.size(), 1);
 
     QTRY_VERIFY(isTrueJavaScriptResult(page, "document.webkitFullscreenEnabled"));
@@ -2141,7 +2156,7 @@ void tst_QWebEnginePage::requestQuota()
     QWebEngineView view;
     view.setPage(&page);
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("qrc:///resources/content.html"));
+    page.load(QUrl("resources:/content.html"));
     QVERIFY(loadFinishedSpy.wait());
 
     evaluateJavaScriptSync(&page, QString(
@@ -2314,20 +2329,20 @@ void tst_QWebEnginePage::setHtml()
 
 void tst_QWebEnginePage::setHtmlWithImageResource()
 {
-    // We allow access to qrc resources from any security origin, including local and anonymous
+    // We allow access to resources from any security origin
 
-    QLatin1String html("<html><body><p>hello world</p><img src='qrc:/resources/image.png'/></body></html>");
+    QLatin1String html("<html><body><p>hello world</p><img src='resources:/image.png'/></body></html>");
     QWebEnginePage page;
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-    page.setHtml(html, QUrl("file:///path/to/file"));
+    page.setHtml(html, QUrl("http://example.com/path/to/file"));
     QTRY_COMPARE_WITH_TIMEOUT(spy.size(), 1, 12000);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
-    // Now we test the opposite: without a baseUrl as a local file, we can still request qrc resources.
+    // Now we test the opposite: without a baseUrl as a local file, we can still request resources.
 
     page.setHtml(html);
     QTRY_COMPARE(spy.size(), 2);
@@ -2341,7 +2356,7 @@ void tst_QWebEnginePage::setHtmlWithStylesheetResource()
     const char* htmlData =
         "<html>"
             "<head>"
-                "<link rel='stylesheet' href='qrc:/resources/style.css' type='text/css' />"
+                "<link rel='stylesheet' href='resources:/style.css' type='text/css' />"
             "</head>"
             "<body>"
                 "<p id='idP'>some text</p>"
@@ -2351,8 +2366,8 @@ void tst_QWebEnginePage::setHtmlWithStylesheetResource()
     QWebEnginePage page;
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
 
-    // We allow access to qrc resources from any security origin, including local and anonymous
-    page.setHtml(html, QUrl("file:///path/to/file"));
+    // We allow access to resources from any non-local security origin
+    page.setHtml(html, QUrl("http://example.com/path/to/file"));
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
 
@@ -2360,7 +2375,7 @@ void tst_QWebEnginePage::setHtmlWithStylesheetResource()
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
 
-    // Now we test the opposite: without a baseUrl as a local file, we can still request qrc resources.
+    // Now we test the opposite: without a baseUrl as a local file, we can still request resources.
     page.setHtml(html);
     QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
@@ -2501,7 +2516,7 @@ void tst_QWebEnginePage::scrollPosition()
 {
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html(
-            "<html><body><img src='qrc:/resources/image.png' height=500 width=500/></body></html>");
+            "<html><body><img src='resources:/image.png' height=500 width=500/></body></html>");
 
     QWebEngineView view;
     view.setFixedSize(200,200);
