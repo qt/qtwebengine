@@ -168,10 +168,10 @@ QString subProcessPath()
                             % qWebEngineProcessName() % ".app/Contents/MacOS/"_L1
                             % qWebEngineProcessName();
 #else
-            candidatePaths << QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
-                              % QLatin1Char('/') % processBinary;
-            candidatePaths << QLibraryInfo::path(QLibraryInfo::BinariesPath)
-                              % QLatin1Char('/') % processBinary;
+            for (auto &p : QLibraryInfo::paths(QLibraryInfo::LibraryExecutablesPath))
+                candidatePaths << p % QLatin1Char('/') % processBinary;
+            for (auto &p : QLibraryInfo::paths(QLibraryInfo::BinariesPath))
+                candidatePaths << p % QLatin1Char('/') % processBinary;
 #endif
             candidatePaths << QCoreApplication::applicationDirPath()
                               % QLatin1Char('/') % processBinary;
@@ -233,8 +233,8 @@ QString localesPath()
             candidatePaths << getResourcesPath(frameworkBundle()) % QDir::separator()
                             % "qtwebengine_locales"_L1;
 #endif
-            candidatePaths << QLibraryInfo::path(QLibraryInfo::TranslationsPath) % QDir::separator()
-                            % "qtwebengine_locales"_L1;
+            for (auto &p : QLibraryInfo::paths(QLibraryInfo::TranslationsPath))
+                candidatePaths << p % QDir::separator() % "qtwebengine_locales"_L1;
             candidatePaths << fallbackDir();
         }
 
@@ -299,10 +299,8 @@ QString dictionariesPath(bool showWarnings)
                     getResourcesPath(frameworkBundle()) % "/qtwebengine_dictionaries"_L1;
             candidatePaths.append(std::move(frameworkDictionariesPath));
 #endif
-
-            QString libraryDictionariesPath = QLibraryInfo::path(QLibraryInfo::DataPath)
-                    % QDir::separator() % "qtwebengine_dictionaries"_L1;
-            candidatePaths.append(std::move(libraryDictionariesPath));
+            for (auto &p : QLibraryInfo::paths(QLibraryInfo::DataPath))
+                candidatePaths.append(p % QDir::separator() % "qtwebengine_dictionaries"_L1);
         }
 
         for (const QString &candidate : std::as_const(candidatePaths)) {
@@ -356,9 +354,11 @@ QString resourcesPath()
 #if defined(Q_OS_DARWIN) && defined(QT_MAC_FRAMEWORK_BUILD)
             candidatePaths << getResourcesPath(frameworkBundle());
 #endif
-            candidatePaths << QLibraryInfo::path(QLibraryInfo::DataPath) % QDir::separator()
-                            % "resources"_L1;
-            candidatePaths << QLibraryInfo::path(QLibraryInfo::DataPath);
+            for (auto &p : QLibraryInfo::paths(QLibraryInfo::DataPath)) {
+                candidatePaths << p % QDir::separator() % "resources"_L1;
+                candidatePaths << p;
+            }
+
             candidatePaths << QCoreApplication::applicationDirPath();
             candidatePaths << fallbackDir();
         }
