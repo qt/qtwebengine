@@ -128,9 +128,8 @@ public:
   \l{https://www.w3.org/TR/powerful-features/#is-origin-trustworthy}{potentially
   trustworthy}. This flag should only be applied to URL schemes which ensure
   data authenticity, confidentiality, and integrity, either through encryption
-  or other means. Examples of secure builtin schemes include \c https
-  (authenticated and encrypted) and \c qrc (local resources only), whereas \c
-  http is an example of an insecure scheme.
+  or other means. An examples of secure builtin schemes is \c https
+  (authenticated and encrypted) whereas \c http is an example of an insecure scheme.
 
   \value LocalScheme
   Indicates that the URL scheme provides access to local resources. The purpose

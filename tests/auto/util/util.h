@@ -1,4 +1,4 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2016-2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef UTIL_H
@@ -11,12 +11,18 @@
 #endif
 
 #include <QEventLoop>
+#include <QFile>
+#include <QMimeDatabase>
+#include <QMimeType>
 #include <QPoint>
 #include <QRect>
 #include <QSignalSpy>
 #include <QTimer>
 #include <qwebenginefindtextresult.h>
 #include <qwebenginepage.h>
+#include <qwebengineurlrequestjob.h>
+#include <qwebengineurlscheme.h>
+#include <qwebengineurlschemehandler.h>
 
 // Disconnect signal on destruction.
 class ScopedConnection
@@ -201,5 +207,45 @@ static inline QPoint elementCenter(QWebEnginePage *page, const QString &id)
 {
     return elementGeometry(page, id).center();
 }
+
+// A qrc resource fetcher
+class ResourceHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        const QByteArray requestMethod = job->requestMethod();
+        if (requestMethod != "GET") {
+            job->fail(QWebEngineUrlRequestJob::RequestDenied);
+            return;
+        }
+
+        const QUrl requestUrl = job->requestUrl();
+        const QString requestPath = requestUrl.path();
+        auto file = std::make_unique<QFile>(u":resources/" + requestPath, job);
+        if (!file->exists() || file->size() == 0) {
+            qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
+            job->fail(QWebEngineUrlRequestJob::UrlNotFound);
+            return;
+        }
+        QFileInfo fileInfo(*file);
+        QMimeDatabase mimeDatabase;
+        QMimeType mimeType = mimeDatabase.mimeTypeForFile(fileInfo);
+        if (mimeType.name() == "application/x-extension-html")
+            job->reply("text/html", file.release());
+        else
+            job->reply(mimeType.name().toUtf8(), file.release());
+    }
+
+    static void registerUrlScheme()
+    {
+        QWebEngineUrlScheme webUiScheme(schemeName);
+        webUiScheme.setSyntax(QWebEngineUrlScheme::Syntax::Path);
+        webUiScheme.setFlags(QWebEngineUrlScheme::CorsEnabled | QWebEngineUrlScheme::SecureScheme);
+        QWebEngineUrlScheme::registerScheme(webUiScheme);
+    }
+
+    const static inline QByteArray schemeName = QByteArrayLiteral("resources");
+};
 
 #endif /* UTIL_H */

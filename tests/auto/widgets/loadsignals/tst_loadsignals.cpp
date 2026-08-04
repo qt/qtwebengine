@@ -23,6 +23,14 @@ static const QList<int> SignalsOrderTwice({ LoadStarted, LoadSucceeded, LoadStar
 static const QList<int> SignalsOrderOnceFailure({ LoadStarted, LoadFailed });
 static const QList<int> SignalsOrderTwiceWithFailure({ LoadStarted, LoadSucceeded, LoadStarted, LoadFailed });
 
+namespace {
+void registerUrlScheme()
+{
+    ResourceHandler::registerUrlScheme();
+}
+}
+Q_CONSTRUCTOR_FUNCTION(registerUrlScheme)
+
 class TestPage : public QWebEnginePage
 {
 public:
@@ -65,6 +73,7 @@ class tst_LoadSignals : public QObject
 public Q_SLOTS:
     void initTestCase();
     void init();
+    void cleanupTestCase();
 
 private Q_SLOTS:
     void monotonicity();
@@ -99,10 +108,20 @@ private:
 
 void tst_LoadSignals::initTestCase()
 {
+    ResourceHandler* resourceHandler = new ResourceHandler;
+    profile.installUrlSchemeHandler(ResourceHandler::schemeName, resourceHandler);
+
     view.setPage(&page);
     view.resize(640, 480);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+}
+
+void tst_LoadSignals::cleanupTestCase()
+{
+    auto* resourceHandler = profile.urlSchemeHandler(ResourceHandler::schemeName);
+    profile.removeAllUrlSchemeHandlers();
+    delete resourceHandler;
 }
 
 void tst_LoadSignals::init()
@@ -380,7 +399,7 @@ void tst_LoadSignals::numberOfStartedAndFinishedSignalsIsSame()
                      ? "" : (imageFromServer ? serverImage.toEncoded() : imageResourceUrl));
 
     auto html = "<html><head><link rel='icon' href='data:,'></head><body>"
-                "%1" "<form method='GET' name='hiddenform' action='qrc:///resources/page1.html' />"
+                "%1" "<form method='GET' name='hiddenform' action='resources:/page1.html' />"
                 "<script language='javascript'>document.forms[0].submit();</script>"
                 "</body></html>";
     view.page()->setHtml(QString(html).arg(imageUrl.isEmpty() ? "" : "<img src='" + imageUrl + "'>"));

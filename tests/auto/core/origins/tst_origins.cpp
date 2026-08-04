@@ -589,7 +589,7 @@ void tst_Origins::subdirWithAccess()
 // a result all file URLs will be considered to have unique/opaque origins, that
 // is, they are not the 'same origin as' any other origin.
 //
-// Note that this applies only to file URLs and not qrc or custom schemes.
+// Note that this applies only to local schemes.
 //
 // See also (in Blink):
 //   - the allow_file_access_from_file_urls option and
@@ -604,8 +604,8 @@ void tst_Origins::subdirWithoutAccess()
     QCOMPARE(eval(QSL("msg[1]")), QVariant());
 
     QVERIFY(verifyLoad(QSL("qrc:/resources/subdir/index.html")));
-    QCOMPARE(eval(QSL("msg[0]")), QVariant(QSL("hello")));
-    QCOMPARE(eval(QSL("msg[1]")), QVariant(QSL("world")));
+    QCOMPARE(eval(QSL("msg[0]")), QVariant());
+    QCOMPARE(eval(QSL("msg[1]")), QVariant());
 
     QVERIFY(verifyLoad(QSL("tst:/resources/subdir/index.html")));
     QCOMPARE(eval(QSL("msg[0]")), QVariant(QSL("hello")));
@@ -747,14 +747,14 @@ void tst_Origins::mixedSchemes_data()
           } },
         { "qrc",
           {
-                  { "file", ERR },
+                  { "file", OK },
                   { "qrc", SLF },
                   { "tst", OK },
           } },
         { "tst",
           {
                   { "file", ERR },
-                  { "qrc", OK },
+                  { "qrc", ERR },
                   { "tst", SLF },
           } },
         { "PathSyntax",
@@ -908,7 +908,7 @@ void tst_Origins::mixedXHR_data()
             std::pair<const char *, std::vector<QVariant>>>>> data = {
         { "file", {
             { "file",               {  OK,  OK, ERR, ERR } },
-            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -916,13 +916,13 @@ void tst_Origins::mixedXHR_data()
             { "local-cors",         {  OK,  OK, ERR, ERR } }, } },
 
         { "qrc",  {
-            { "file",               { ERR, ERR, ERR, ERR } },
+            { "file",               {  OK,  OK,  OK,  OK } },
             { "qrc",                {  OK,  OK,  OK,  OK } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               {  OK,  OK,  OK,  OK } },
-            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
-            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+            { "local-localaccess",  {  OK,  OK,  OK,  OK } },
+            { "local-cors",         {  OK,  OK,  OK,  OK } }, } },
 
         { "tst",  {
             { "file",               { ERR, ERR, ERR, ERR } },
@@ -944,7 +944,7 @@ void tst_Origins::mixedXHR_data()
 
         { "local", {                // +local -cors -local-access
             { "file",               {  OK,  OK, ERR, ERR } },
-            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -953,7 +953,7 @@ void tst_Origins::mixedXHR_data()
 
         { "local-cors", {           // +local +cors -local-access
             { "file",               {  OK,  OK, ERR, ERR } },
-            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -962,7 +962,7 @@ void tst_Origins::mixedXHR_data()
 
         { "local-localaccess", {    // +local -cors +local-access
             { "file",               {  OK,  OK,  OK,  OK } },
-            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -971,7 +971,7 @@ void tst_Origins::mixedXHR_data()
 
         { "localaccess", {          // -local -cors +local-access
             { "file",               {  OK,  OK,  OK,  OK } },
-            { "qrc",                { ERR, ERR, ERR, ERR } },
+            { "qrc",                {  OK,  OK,  OK,  OK } },
             { "tst",                { ERR, ERR, ERR, ERR } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               {  OK,  OK,  OK,  OK } },
@@ -1062,7 +1062,7 @@ void tst_Origins::mixedContent_data()
             std::pair<const char *, std::vector<QVariant>>>>> data = {
         { "file", {
             { "file",               { SLF, SLF, ERR, ERR } },
-            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR,  OK, ERR,  OK } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -1071,17 +1071,17 @@ void tst_Origins::mixedContent_data()
         } },
 
         { "qrc",  {
-            { "file",               { ERR, ERR, ERR, ERR } },
-            { "qrc",                { SLF, SLF, SLF, SLF } },
+            { "file",               {  OK,  OK,  OK,  OK } },
+            { "qrc",                { SLF, SLF,  OK,  OK } },
             { "tst",                {  OK,  OK,  OK,  OK } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               {  OK,  OK,  OK,  OK } },
-            { "local-localaccess",  { ERR, ERR, ERR, ERR } },
-            { "local-cors",         { ERR, ERR, ERR, ERR } }, } },
+            { "local-localaccess",  {  OK,  OK,  OK,  OK } },
+            { "local-cors",         {  OK,  OK,  OK,  OK } }, } },
 
         { "tst",  {
             { "file",               { ERR, ERR, ERR, ERR } },
-            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
             { "tst",                { SLF, SLF, SLF, SLF } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               {  OK,  OK,  OK,  OK } },
@@ -1090,7 +1090,7 @@ void tst_Origins::mixedContent_data()
 
         { "cors", {                 // -local +cors -local-access
             { "file",               { ERR, ERR, ERR, ERR } },
-            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "qrc",                { ERR, ERR, ERR, ERR } },
             { "tst",                {  OK,  OK,  OK,  OK } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { SLF, SLF, SLF, SLF } },
@@ -1099,7 +1099,7 @@ void tst_Origins::mixedContent_data()
 
         { "local", {                // +local -cors -local-access
             { "file",               {  OK,  OK, ERR, ERR } },
-            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR,  OK, ERR,  OK } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -1109,7 +1109,7 @@ void tst_Origins::mixedContent_data()
 
         { "local-cors", {           // +local +cors -local-access
             { "file",               {  OK,  OK, ERR, ERR } },
-            { "qrc",                {  OK,  OK,  OK,  OK } },
+            { "qrc",                {  OK,  OK, ERR, ERR } },
             { "tst",                { ERR,  OK, ERR,  OK } },
             { "data",               {  OK,  OK,  OK,  OK } },
             { "cors",               { ERR,  OK, ERR,  OK } },
@@ -1117,7 +1117,7 @@ void tst_Origins::mixedContent_data()
             { "local-cors",         { SLF, SLF, ERR, ERR } },
         } },
 
-        { "local-localaccess", {    // +local -cors + OK-access
+        { "local-localaccess", {    // +local -cors +local-access
             { "file",               {  OK,  OK,  OK,  OK } },
             { "qrc",                {  OK,  OK,  OK,  OK } },
             { "tst",                { ERR,  OK, ERR,  OK } },
