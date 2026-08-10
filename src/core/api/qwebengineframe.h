@@ -100,15 +100,22 @@ public:
     template<typename Functor, QtWebEnginePrivate::if_callback_with_arg_t<Functor, const QByteArray &> = true>
     void printToPdf(Functor &&resultCallback)
     {
-        auto wrappedCallback = [myCallback = std::forward<Functor>(resultCallback)](QSharedPointer<QByteArray> result) mutable {
+        auto wrappedCallback = [myCallback = std::forward<Functor>(resultCallback)](std::shared_ptr<QByteArray> result) mutable {
             if constexpr (std::is_convertible_v<Functor, bool>) {
-                if (myCallback)
-                    myCallback(result ? *result : QByteArray());
+                if (myCallback) {
+                    if (result)
+                        myCallback(*result);
+                    else
+                        myCallback(QByteArray());
+                }
             } else {
-                myCallback(result ? *result : QByteArray());
+                if (result)
+                    myCallback(*result);
+                else
+                    myCallback(QByteArray());
             }
         };
-        printToPdfImpl(QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
+        printToPdfImpl(QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback)));
     }
 #if QT_DEPRECATED_SINCE(6, 12)
     Q_WEBENGINECORE_EXPORT void printToPdf(std::nullptr_t)

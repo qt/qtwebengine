@@ -266,10 +266,10 @@ void QWebEngineFrame::printToPdfImpl(QtPrivate::QSlotObjectBase *callback)
 void QWebEngineFrame::printToPdf(const QJSValue &callback)
 {
     LOCK_ADAPTER(adapter, );
-    std::function<void(QSharedPointer<QByteArray>)> wrappedCallback;
+    std::function<void(std::shared_ptr<QByteArray>)> wrappedCallback;
     if (!callback.isUndefined()) {
         const QObject *holdingObject = adapter->adapterClient()->holdingQObject();
-        wrappedCallback = [holdingObject, callback](QSharedPointer<QByteArray> result) {
+        wrappedCallback = [holdingObject, callback](std::shared_ptr<QByteArray> result) {
             if (auto engine = qmlEngine(holdingObject)) {
                 QJSValueList args;
                 args.append(engine->toScriptValue(result ? *result : QByteArray()));
@@ -280,7 +280,7 @@ void QWebEngineFrame::printToPdf(const QJSValue &callback)
         };
     }
     QtPrivate::SlotObjUniquePtr slotCallback(
-            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
+            QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback)));
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
     adapter->adapterClient()->printToPdf(std::move(slotCallback), layout, QPageRanges(), m_id);
 }

@@ -43,14 +43,14 @@ namespace {
 
 static const qreal kMicronsToMillimeter = 1000.0f;
 
-static QSharedPointer<QByteArray> GetStdVectorFromHandle(const base::ReadOnlySharedMemoryRegion &handle)
+static std::shared_ptr<QByteArray> GetStdVectorFromHandle(const base::ReadOnlySharedMemoryRegion &handle)
 {
     base::ReadOnlySharedMemoryMapping map = handle.Map();
     if (!map.IsValid())
-        return QSharedPointer<QByteArray>(new QByteArray);
+        return std::shared_ptr<QByteArray>(new QByteArray);
 
     const char* data = static_cast<const char*>(map.memory());
-    return QSharedPointer<QByteArray>(new QByteArray(data, map.size()));
+    return std::shared_ptr<QByteArray>(new QByteArray(data, map.size()));
 }
 
 // Write the PDF file to disk.
@@ -189,14 +189,14 @@ void PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout,
     // If there already is a pending print in progress, don't try starting another one.
     if (!m_printSettings.empty()) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(callback), QSharedPointer<QByteArray>()));
+                       base::BindOnce(std::move(callback), std::shared_ptr<QByteArray>()));
         return;
     }
 
     m_pdfPrintCallback = std::move(callback);
     if (!PrintToPDFInternal(pageLayout, pageRanges, printInColor, frameId)) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));
+                       base::BindOnce(std::move(m_pdfPrintCallback), std::shared_ptr<QByteArray>()));
 
         resetPdfState();
     }
@@ -313,7 +313,7 @@ void PrintViewManagerQt::NavigationStopped()
 {
     if (!m_pdfPrintCallback.is_null()) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));
+                       base::BindOnce(std::move(m_pdfPrintCallback), std::shared_ptr<QByteArray>()));
     }
     resetPdfState();
     PrintViewManagerBaseQt::NavigationStopped();
@@ -324,7 +324,7 @@ void PrintViewManagerQt::PrimaryMainFrameRenderProcessGone(base::TerminationStat
     PrintViewManagerBaseQt::PrimaryMainFrameRenderProcessGone(status);
     if (!m_pdfPrintCallback.is_null()) {
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(m_pdfPrintCallback), QSharedPointer<QByteArray>()));
+                       base::BindOnce(std::move(m_pdfPrintCallback), std::shared_ptr<QByteArray>()));
     }
     resetPdfState();
 }
@@ -421,7 +421,7 @@ void PrintViewManagerQt::MetafileReadyForPrinting(printing::mojom::DidPreviewDoc
     resetPdfState();
 
     if (!pdf_print_callback.is_null()) {
-        QSharedPointer<QByteArray> data_array = GetStdVectorFromHandle(params->content->metafile_data_region);
+        std::shared_ptr<QByteArray> data_array = GetStdVectorFromHandle(params->content->metafile_data_region);
         content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
                        base::BindOnce(std::move(pdf_print_callback), data_array));
     } else {
