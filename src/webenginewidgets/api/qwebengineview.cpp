@@ -849,7 +849,7 @@ QObject *QWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-QThread* QWebEngineViewPrivate::didPrintPage(QPrinter *&currentPrinter, QSharedPointer<QByteArray> result)
+QThread* QWebEngineViewPrivate::didPrintPage(QPrinter *&currentPrinter, std::shared_ptr<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_Q(QWebEngineView);
@@ -1514,11 +1514,11 @@ void QWebEngineView::print(QPrinter *printer)
 
     dPage->currentPrinter = printer;
     dPage->ensureInitialized();
-    auto callback = [dPage](QSharedPointer<QByteArray> result) {
+    auto callback = [dPage](std::shared_ptr<QByteArray> result) {
         dPage->didPrintPage(std::move(result));
     };
     QtPrivate::SlotObjUniquePtr slotCallback(
-            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(callback)));
+            QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(callback)));
 
     dPage->adapter->printToPDFCallbackResult(std::move(slotCallback), printer->pageLayout(),
                                              printer->pageRanges(),

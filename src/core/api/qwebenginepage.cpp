@@ -544,7 +544,7 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
         callback(result);
 }
 
-void QWebEnginePagePrivate::didPrintPage(QSharedPointer<QByteArray> result)
+void QWebEnginePagePrivate::didPrintPage(std::shared_ptr<QByteArray> result)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
     Q_Q(QWebEnginePage);

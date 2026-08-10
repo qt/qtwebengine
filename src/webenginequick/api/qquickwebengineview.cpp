@@ -1671,13 +1671,13 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
         return;
 
     d->ensureContentsAdapter();
-    std::function wrappedCallback = [this, callback](QSharedPointer<QByteArray> result) {
+    std::function wrappedCallback = [this, callback](std::shared_ptr<QByteArray> result) {
         QJSValueList args;
         args.append(qmlEngine(this)->toScriptValue(*result));
         callback.call(args);
     };
     QtPrivate::SlotObjUniquePtr slotCallback(
-            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback)));
+            QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback)));
     d->printToPdf(std::move(slotCallback), pageLayout, ranges,
                   WebContentsAdapter::kUseMainFrameId);
 #else

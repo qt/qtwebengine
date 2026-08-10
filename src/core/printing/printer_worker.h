@@ -31,7 +31,7 @@ class Q_WEBENGINECORE_EXPORT PrinterWorker : public QObject
 {
     Q_OBJECT
 public:
-    PrinterWorker(QSharedPointer<QByteArray> data, QPagedPaintDevice *device);
+    PrinterWorker(std::shared_ptr<QByteArray> data, QPagedPaintDevice *device);
     virtual ~PrinterWorker();
 
     int m_deviceResolution;
@@ -48,7 +48,7 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(PrinterWorker)
 
-    QSharedPointer<QByteArray> m_data;
+    std::shared_ptr<QByteArray> m_data;
     QPagedPaintDevice *m_device;
 };
 

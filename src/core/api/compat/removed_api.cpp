@@ -39,12 +39,12 @@ void QWebEngineFrame::runJavaScript(const QString &scriptSource, quint32 worldId
 void QWebEngineFrame::printToPdf(const std::function<void(const QByteArray&)> &resultCallback)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    std::function wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
+    std::function wrappedCallback = [resultCallback](std::shared_ptr<QByteArray> result) {
         if (resultCallback)
             resultCallback(result ? *result : QByteArray());
     };
     auto *callback =
-            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback));
+            QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback));
 
     printToPdfImpl(callback);
 #else
@@ -71,12 +71,12 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId,
 void QWebEnginePage::printToPdf(const std::function<void(const QByteArray&)> &resultCallback, const QPageLayout &layout, const QPageRanges &ranges)
 {
 #if QT_CONFIG(webengine_printing_and_pdf)
-    auto wrappedCallback = [resultCallback](QSharedPointer<QByteArray> result) {
+    auto wrappedCallback = [resultCallback](std::shared_ptr<QByteArray> result) {
         if (resultCallback)
             resultCallback(result ? *result : QByteArray());
     };
     auto *callback =
-            QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback));
+            QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback));
 
     printToPdfImpl(callback, layout, ranges);
 #else

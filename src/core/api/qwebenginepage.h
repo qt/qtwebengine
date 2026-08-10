@@ -345,16 +345,23 @@ public:
                     const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()),
                     const QPageRanges &ranges = {})
     {
-        auto wrappedCallback = [myCallback = std::forward<Functor>(resultCallback)](QSharedPointer<QByteArray> result) mutable {
+        auto wrappedCallback = [myCallback = std::forward<Functor>(resultCallback)](std::shared_ptr<QByteArray> result) mutable {
             if constexpr (std::is_convertible_v<Functor, bool>) {
-                if (myCallback)
-                    myCallback(result ? *result : QByteArray());
+                if (myCallback) {
+                    if (result)
+                        myCallback(*result);
+                    else
+                        myCallback(QByteArray());
+                }
             } else {
-                myCallback(result ? *result : QByteArray());
+                if (result)
+                    myCallback(*result);
+                else
+                    myCallback(QByteArray());
             }
         };
         auto *callback =
-                QtPrivate::makeCallableObject<void(*)(QSharedPointer<QByteArray>)>(std::move(wrappedCallback));
+                QtPrivate::makeCallableObject<void(*)(std::shared_ptr<QByteArray>)>(std::move(wrappedCallback));
         printToPdfImpl(callback, layout, ranges);
 
     }
