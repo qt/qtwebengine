@@ -185,7 +185,7 @@ static void callbackOnEvaluateJS(WebContentsAdapter *adapter, quint64 requestId,
 
 #if QT_CONFIG(webengine_printing_and_pdf)
 static void callbackOnPrintingFinished(WebContentsAdapter *adapter, quint64 requestId,
-                                       QSharedPointer<QByteArray> result)
+                                       std::shared_ptr<QByteArray> result)
 {
     adapter->didPrintPage(requestId, result);
 }
@@ -1407,7 +1407,7 @@ void WebContentsAdapter::printToPDFCallbackResult(
 #endif // QT_CONFIG(webengine_printing_and_pdf)
 }
 
-void WebContentsAdapter::didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result)
+void WebContentsAdapter::didPrintPage(quint64 requestId, std::shared_ptr<QByteArray> result)
 {
     Q_ASSERT(requestId);
     auto callbackNode = m_printCallbacks.extract(requestId);

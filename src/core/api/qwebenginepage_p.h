@@ -73,7 +73,7 @@ public:
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual bool passOnFocus(bool reverse) = 0;
     virtual QObject *accessibilityParentObject() = 0;
-    virtual QThread *didPrintPage(QPrinter *&printer, QSharedPointer<QByteArray> result) = 0;
+    virtual QThread *didPrintPage(QPrinter *&printer, std::shared_ptr<QByteArray> result) = 0;
     virtual void didPrintPageToPdf(const QString &filePath, bool success) = 0;
     virtual void printRequested() = 0;
     virtual void printRequestedByFrame(QWebEngineFrame frame) = 0;
@@ -193,7 +193,7 @@ public:
     bool adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);
-    void didPrintPage(QSharedPointer<QByteArray> result);
+    void didPrintPage(std::shared_ptr<QByteArray> result);
 
     void setFullScreenMode(bool);
     void ensureInitialized() const;

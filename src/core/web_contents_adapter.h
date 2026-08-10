@@ -214,7 +214,7 @@ public:
     void printToPDFCallbackResult(QtPrivate::SlotObjUniquePtr callback,
                                   const QPageLayout &, const QPageRanges &, bool colorMode,
                                   quint64 frameId);
-    void didPrintPage(quint64 requestId, QSharedPointer<QByteArray> result);
+    void didPrintPage(quint64 requestId, std::shared_ptr<QByteArray> result);
 
     void replaceMisspelling(const QString &word);
     void viewSource();

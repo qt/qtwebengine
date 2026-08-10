@@ -38,7 +38,7 @@ public:
     static void BindPrintManagerHost(mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost> receiver,
                                      content::RenderFrameHost *rfh);
 
-    typedef base::OnceCallback<void(QSharedPointer<QByteArray> result)> PrintToPDFCallback;
+    typedef base::OnceCallback<void(std::shared_ptr<QByteArray> result)> PrintToPDFCallback;
     typedef base::OnceCallback<void(bool success)> PrintToPDFFileCallback;
 
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.

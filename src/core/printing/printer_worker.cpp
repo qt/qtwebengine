@@ -12,7 +12,7 @@
 
 namespace QtWebEngineCore {
 
-PrinterWorker::PrinterWorker(QSharedPointer<QByteArray> data, QPagedPaintDevice *device)
+PrinterWorker::PrinterWorker(std::shared_ptr<QByteArray> data, QPagedPaintDevice *device)
     : m_data(data), m_device(device)
 {
 }
