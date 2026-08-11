@@ -941,7 +941,7 @@ bool WebContentsDelegateQt::IsBackForwardCacheSupported(content::WebContents &we
 }
 
 void WebContentsDelegateQt::ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
-                                                 const content::GlobalRequestID& request_id,
+                                                 const content::GlobalRequestID& request_id, const GURL &,
                                                  const blink::mojom::ResourceLoadInfo& resource_load_info)
 {
     Q_UNUSED(render_frame_host);
