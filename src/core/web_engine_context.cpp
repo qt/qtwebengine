@@ -725,6 +725,7 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
+    disableFeatures.push_back(features::kSanitizeOriginalUrlDuringNavigation.name);
     parsedCommandLine.AppendSwitchASCII(switches::kDisableBlinkFeatures, "DocumentPictureInPictureAPI");
 #if defined(Q_OS_MACOS)
     // Skia Graphite is enabled by default on macOS, but we do not yet support Dawn
@@ -1026,7 +1027,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "150.0.7871.186"; // FIXME: Remember to update
+    return "151.0.7922.71"; // FIXME: Remember to update
 }
 
 QT_END_NAMESPACE
