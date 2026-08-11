@@ -135,7 +135,7 @@ public:
     void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) override;
     void ActivateContents(content::WebContents* contents) override;
     void ResourceLoadComplete(content::RenderFrameHost* render_frame_host,
-                              const content::GlobalRequestID& request_id,
+                              const content::GlobalRequestID& request_id, const GURL &,
                               const blink::mojom::ResourceLoadInfo& resource_load_info) override;
     void InnerWebContentsAttached(content::WebContents *inner_web_contents,
                                   content::RenderFrameHost *render_frame_host) override;
