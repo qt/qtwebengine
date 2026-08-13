@@ -306,11 +306,13 @@ public:
                           QtPrivate::makeCallableObject<void(*)(const QVariant &)>(std::forward<Functor>(resultCallback)));
     }
 
-#if QT_DEPRECATED_SINCE(6, 12)
+#if QT_DEPRECATED_SINCE(6, 15)
+    QT_DEPRECATED_VERSION_X_6_15("Use version without callback instead of a nullptr callback")
     void runJavaScript(const QString &script, std::nullptr_t)
     {
         return runJavaScriptImpl(script, 0, nullptr);
     }
+    QT_DEPRECATED_VERSION_X_6_15("Use version without callback instead of a nullptr callback")
     void runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
     {
         return runJavaScriptImpl(script, worldId, nullptr);
