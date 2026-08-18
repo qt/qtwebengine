@@ -1,0 +1,16 @@
+This directory contains tests to be run with clang's libFuzzer. See qtbase/tests/libfuzzer/README
+for general info about this approach.
+
+In the case of PDFium fuzzing: PDFium's own allocation-size sanity check (FX_OutOfMemoryTerminate)
+can deliberately abort() on a single input that computes an absurd allocation size (e.g. a corrupt
+object/page count) -- that's intentional hardening, not a bug, and matches how PDFium's own upstream
+fuzzing treats this crash class.
+
+Run the fuzzer like this to keep going if it crashes, and to use the AFL dictionary:
+
+$ cd pdf/qpdfdocument/load
+<build it>
+$ ./load -fork=1 -ignore_crashes=1 -ignore_ooms=1 -ignore_timeouts=1 -dict=path/to/afl-x.xxx/dictionaries/pdf.dict
+
+PDFium already gets fuzzing upstream; see
+qtwebengine/src/3rdparty/chromium/third_party/pdfium/testing/fuzzers
