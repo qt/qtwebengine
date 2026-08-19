@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/thread_pool.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print.mojom.h"
@@ -97,7 +98,7 @@ static base::Value::Dict createPrintSettings()
     printSettings.Set(printing::kSettingRasterizePdf, base::Value(false));
     printSettings.Set(printing::kSettingScaleFactor, 100);
     printSettings.Set(printing::kSettingDeviceName, "");
-    printSettings.Set(printing::kPreviewUIID, 12345678);
+    printSettings.Set(printing::kPreviewUIID, base::UnguessableToken::Create().ToString());
 
     return printSettings;
 }
@@ -393,9 +394,8 @@ void PrintViewManagerQt::RequestPrintPreview(printing::mojom::RequestPrintPrevie
     PrintPreviewDone();
 }
 
-void PrintViewManagerQt::CheckForCancel(int32_t preview_ui_id,
-                                        int32_t request_id,
-                                        CheckForCancelCallback callback)
+void PrintViewManagerQt::CheckForCancel(const base::UnguessableToken &preview_ui_id,
+                                        int32_t request_id, CheckForCancelCallback callback)
 {
     Q_UNUSED(preview_ui_id);
     Q_UNUSED(request_id);
