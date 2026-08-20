@@ -158,7 +158,8 @@ public:
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget)
     : content::RenderWidgetHostViewBase::RenderWidgetHostViewBase(widget)
     , m_taskRunner(base::SingleThreadTaskRunner::GetCurrentDefault())
-    , m_gestureProvider(QtGestureProviderConfig(), this)
+    , m_gestureProvider(
+              base::MakeRefCounted<ui::FilteredGestureProvider>(QtGestureProviderConfig(), this))
     , m_frameSinkId(host()->GetFrameSinkId())
     , m_delegateClient(new RenderWidgetHostViewQtDelegateClient(this))
 {
@@ -200,6 +201,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    m_gestureProvider->Shutdown();
+
     m_delegate.reset();
 
     QObject::disconnect(m_adapterClientDestroyedConnection);
@@ -859,13 +862,20 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const input::TouchEventWithL
 {
     const bool eventConsumed = (ack_result == blink::mojom::InputEventResultState::kConsumed);
     const bool isSetBlocking = input::InputEventResultStateIsSetBlocking(ack_result);
-    m_gestureProvider.OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetBlocking);
+    // Keep the gesture provider alive during event dispatch as it can trigger
+    // synchronous view destruction.
+    scoped_refptr<ui::FilteredGestureProvider> protector(m_gestureProvider);
+    protector->OnTouchEventAck(touch.event.unique_touch_event_id, eventConsumed, isSetBlocking);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
 {
-    auto result = m_gestureProvider.OnTouchEvent(motionEvent);
-    if (!result.succeeded)
+    auto weakThis = GetWeakPtr();
+    // Keep the gesture provider alive during event dispatch as it can trigger
+    // synchronous view destruction.
+    scoped_refptr<ui::FilteredGestureProvider> protector(m_gestureProvider);
+    auto result = protector->OnTouchEvent(motionEvent);
+    if (!result.succeeded || !weakThis)
         return;
     blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
                                                                              result.moved_beyond_slop_region,
