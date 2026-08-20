@@ -76,16 +76,19 @@ function(qt_webengine_sbom_project_end)
     qt_internal_sbom_get_project_supplier_url(supplier_url)
     qt_internal_sbom_compute_project_namespace(doc_namespace SUPPLIER_URL ${supplier_url}
         PROJECT_NAME ${chromium_project_name_lower})
-    qt_internal_sbom_compute_project_file_name(output_file_name EXTENSION_JSON
-        PROJECT_NAME ${chromium_project_name_lower})
-    set(output_file_path ${WEBENGINE_ROOT_BUILD_DIR}/qt_sbom/${output_file_name})
 
-    set(generate_sbom_script_path
-        "${CMAKE_CURRENT_BINARY_DIR}/gen_qtwebengine_chromium_sbom_${project_name}-$<CONFIG>.cmake")
     set(chromium_sbom_script
         "${WEBENGINE_ROOT_SOURCE_DIR}/src/3rdparty/chromium/tools/licenses/sbom.py")
-    set(generate_sbom_script_contents "
-message(STATUS \"Generating Chromium SBOM for ${project_name}...\")
+
+    if(QT_SBOM_GENERATE_SPDX_V2)
+        qt_internal_sbom_compute_project_file_name(output_spdx_file_name SPDX_JSON
+            PROJECT_NAME ${chromium_project_name_lower})
+        set(output_spdx_file_path ${WEBENGINE_ROOT_BUILD_DIR}/qt_sbom/${output_spdx_file_name})
+        set(generate_sbom_script_path
+            "${CMAKE_CURRENT_BINARY_DIR}/gen_qtwebengine_chromium_sbom_spdx_${project_name}-$<CONFIG>.cmake")
+
+        set(generate_sbom_script_contents "
+message(STATUS \"Generating Chromium SPDX SBOM for ${project_name}...\")
 execute_process(
     COMMAND \"${CMAKE_COMMAND}\"
         \"-DSCRIPT_PATH=${chromium_sbom_script}\"
@@ -96,42 +99,87 @@ execute_process(
         \"-DQT6_HOST_INFO_BINDIR=${QT6_HOST_INFO_BINDIR}\"
         -DPACKAGE_ID=${project_name}
         -DDOC_NAMESPACE=${doc_namespace}
-        \"-DOUTPUT=${output_file_path}\"
+        \"-DOUTPUT=${output_spdx_file_path}\"
         \"-DPython3_EXECUTABLE=${Python3_EXECUTABLE}\"
+        -DSBOM_FORMAT=SPDX_V2_JSON
         -P \"${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnSbom.cmake\"
     WORKING_DIRECTORY \"${WEBENGINE_ROOT_BUILD_DIR}\"
     COMMAND_ERROR_IS_FATAL ANY
 )
-file(INSTALL \"${output_file_path}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
-message(STATUS \"Done generating Chromium SBOM for ${project_name}.\")
+message(STATUS \"Done generating Chromium SPDX SBOM for ${project_name}.\")
 ")
-    file(GENERATE OUTPUT "${generate_sbom_script_path}" CONTENT "${generate_sbom_script_contents}")
-    qt_internal_sbom_add_cmake_include_step(STEP BEGIN INCLUDE_PATH "${generate_sbom_script_path}")
-    qt_internal_sbom_generate_tag_value_spdx_document(
-        OPERATION_ID ${chromium_project_name_lower}
-        INPUT_JSON_FILE_PATH "${output_file_path}"
-        OUT_VAR_OUTPUT_FILE_NAME external_output_file_name
-    )
-    # Reference to external document.
-    qt_internal_sbom_get_external_document_ref_spdx_id(${chromium_project_name_lower} document_ref_spdx_id)
-    set(external_package_spdx_id "SPDXRef-${chromium_project_name}-Internal-Components")
-    qt_internal_sbom_add_external_reference(
-        EXTERNAL_DOCUMENT_FILE_PATH "${INSTALL_ARCHDATADIR}/sbom/${external_output_file_name}"
-        EXTERNAL_DOCUMENT_SPDX_ID "${document_ref_spdx_id}"
-        EXTERNAL_PACKAGE_SPDX_ID "${external_package_spdx_id}"
-    )
 
-    while(NOT "${cmake_to_gn_dep_pairs}" STREQUAL "")
-        list(POP_FRONT cmake_to_gn_dep_pairs cmake_target gn_target)
-        qt_internal_sbom_get_target_spdx_id("${cmake_target}" cmake_spdx_id)
-        qt_internal_sbom_get_sanitized_spdx_id(gn_spdx_id
-            "SPDXRef-${chromium_project_name}-${gn_target}")
-        set(relationship "${cmake_spdx_id} CONTAINS ${document_ref_spdx_id}:${gn_spdx_id}")
-        qt_internal_extend_target(${cmake_target}
-            SBOM_RELATIONSHIPS
-            "${relationship}"
+        if(QT_SBOM_GENERATE_SPDX_V2_JSON)
+            string(APPEND generate_sbom_script_contents "
+file(INSTALL \"${output_spdx_file_path}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
+")
+        endif()
+
+        while(NOT "${cmake_to_gn_dep_pairs}" STREQUAL "")
+            list(POP_FRONT cmake_to_gn_dep_pairs cmake_target gn_target)
+            qt_internal_sbom_get_target_spdx_id("${cmake_target}" cmake_spdx_id)
+            qt_internal_sbom_get_sanitized_spdx_id(gn_spdx_id
+                "SPDXRef-${chromium_project_name}-${gn_target}")
+            set(relationship "${cmake_spdx_id} CONTAINS ${document_ref_spdx_id}:${gn_spdx_id}")
+            qt_internal_extend_target(${cmake_target}
+                SBOM_RELATIONSHIPS
+                "${relationship}"
+            )
+        endwhile()
+
+        file(GENERATE OUTPUT "${generate_sbom_script_path}" CONTENT "${generate_sbom_script_contents}")
+        qt_internal_sbom_add_cmake_include_step(
+            STEP BEGIN SBOM_FORMAT SPDX_V2 INCLUDE_PATH "${generate_sbom_script_path}")
+
+        qt_internal_sbom_generate_tag_value_spdx_document(
+            OPERATION_ID ${chromium_project_name_lower}
+            INPUT_JSON_FILE_PATH "${output_spdx_file_path}"
+            OUT_VAR_OUTPUT_FILE_NAME external_output_file_name
         )
-    endwhile()
+
+        # Reference to external document. Only in SPDX format.
+        qt_internal_sbom_get_external_document_ref_spdx_id(${chromium_project_name_lower} document_ref_spdx_id)
+        set(external_package_spdx_id "SPDXRef-${chromium_project_name}-Internal-Components")
+        qt_internal_sbom_add_external_reference(
+            EXTERNAL_DOCUMENT_FILE_PATH "${INSTALL_ARCHDATADIR}/sbom/${external_output_file_name}"
+            EXTERNAL_DOCUMENT_SPDX_ID "${document_ref_spdx_id}"
+            EXTERNAL_PACKAGE_SPDX_ID "${external_package_spdx_id}"
+        )
+    endif()
+
+    if(QT_SBOM_GENERATE_CYDX_V1_6)
+        qt_internal_sbom_compute_project_file_name(output_cdx_file_name CYCLONEDX_JSON
+            PROJECT_NAME ${chromium_project_name_lower})
+        set(output_cdx_file_path ${WEBENGINE_ROOT_BUILD_DIR}/qt_sbom/${output_cdx_file_name})
+        set(generate_sbom_script_path
+            "${CMAKE_CURRENT_BINARY_DIR}/gen_qtwebengine_chromium_sbom_cdx_${project_name}-$<CONFIG>.cmake")
+        set(generate_sbom_script_contents "
+message(STATUS \"Generating Chromium CDX SBOM for ${project_name}...\")
+execute_process(
+    COMMAND \"${CMAKE_COMMAND}\"
+        \"-DSCRIPT_PATH=${chromium_sbom_script}\"
+        \"-DGN_TARGET_LIST=${gn_target_list}\"
+        \"-DBUILD_DIR_LIST=${build_dir_list}\"
+        \"-DQT_HOST_PATH=${QT_HOST_PATH}\"
+        \"-DQT6_HOST_INFO_LIBEXECDIR=${QT6_HOST_INFO_LIBEXECDIR}\"
+        \"-DQT6_HOST_INFO_BINDIR=${QT6_HOST_INFO_BINDIR}\"
+        -DPACKAGE_ID=${project_name}
+        -DDOC_NAMESPACE=${doc_namespace}
+        \"-DOUTPUT=${output_cdx_file_path}\"
+        \"-DPython3_EXECUTABLE=${Python3_EXECUTABLE}\"
+        -DSBOM_FORMAT=CYDX_V1_6
+        -P \"${WEBENGINE_ROOT_SOURCE_DIR}/cmake/QtGnSbom.cmake\"
+    WORKING_DIRECTORY \"${WEBENGINE_ROOT_BUILD_DIR}\"
+    COMMAND_ERROR_IS_FATAL ANY
+)
+message(STATUS \"Done generating Chromium SPDX SBOM for ${project_name}.\")
+file(INSTALL \"${output_cdx_file_path}\" DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${INSTALL_SBOMDIR}\")
+")
+        file(GENERATE OUTPUT "${generate_sbom_script_path}" CONTENT "${generate_sbom_script_contents}")
+        qt_internal_sbom_add_cmake_include_step(
+            STEP BEGIN SBOM_FORMAT CYDX_V1_6 INCLUDE_PATH "${generate_sbom_script_path}")
+    endif()
+
 endfunction()
 
 # Shims for SBOM commands that may be missing < 6.9

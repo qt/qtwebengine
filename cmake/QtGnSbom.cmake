@@ -10,7 +10,7 @@ endif()
 
 foreach(variable
         Python3_EXECUTABLE SCRIPT_PATH GN_TARGET_LIST BUILD_DIR_LIST
-        PACKAGE_ID DOC_NAMESPACE OUTPUT)
+        PACKAGE_ID DOC_NAMESPACE SBOM_FORMAT OUTPUT)
     if(NOT DEFINED ${variable} OR "${${variable}}" STREQUAL "")
         message(FATAL_ERROR "\n${variable} not set (${${variable}})\n")
     endif()
@@ -45,6 +45,7 @@ execute_process(
         --gn-version ${Gn_VERSION}
         --package-id ${PACKAGE_ID}
         --namespace "${DOC_NAMESPACE}"
+        --sbom-format "${SBOM_FORMAT}"
         ${SCRIPT_VERBOSE}
         "${OUTPUT}"
     RESULT_VARIABLE gn_result
