@@ -203,7 +203,7 @@ private:
 
     std::unique_ptr<input::CursorManager> m_cursorManager;
 
-    ui::FilteredGestureProvider m_gestureProvider;
+    scoped_refptr<ui::FilteredGestureProvider> m_gestureProvider;
 
     viz::FrameSinkId m_frameSinkId;
     std::unique_ptr<RenderWidgetHostViewQtDelegateClient> m_delegateClient;
