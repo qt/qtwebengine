@@ -697,6 +697,7 @@ macro(qt_webengine_externalproject_add)
                    -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
                    -DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>
                    -DCMAKE_OSX_ARCHITECTURES=${OSX_ARCH_STR}
+                   -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                    -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
                    -DQT_ALLOW_SYMLINK_IN_PATHS=${QT_ALLOW_SYMLINK_IN_PATHS}
                    -DPython3_EXECUTABLE=${Python3_EXECUTABLE}
