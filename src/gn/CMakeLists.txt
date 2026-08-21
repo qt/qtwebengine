@@ -85,6 +85,8 @@ add_custom_command(
         $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_SYSROOT}>>:${CMAKE_OSX_SYSROOT}>
         $<$<PLATFORM_ID:Darwin>:--osx-architectures>
         $<$<PLATFORM_ID:Darwin>:${OSX_ARCH}>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_DEPLOYMENT_TARGET}>>:--osx-deployment-target>
+        $<$<AND:$<PLATFORM_ID:Darwin>,$<BOOL:${CMAKE_OSX_DEPLOYMENT_TARGET}>>:${CMAKE_OSX_DEPLOYMENT_TARGET}>
         ${GN_GCC_LEGACY_SUPPORT}
     COMMAND Ninja::ninja ${ninja_flags} -C ${GN_BINARY_DIR}/$<CONFIG> ${GN_EXECUTABLE}
     VERBATIM
