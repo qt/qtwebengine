@@ -8,7 +8,11 @@
     \brief Renders pages from PDF documents.
 
     The Qt PDF module contains classes and functions for rendering
-    PDF documents. The \l QPdfDocument class loads a PDF document
+    PDF documents in a Qt application. Qt PDF uses
+    \l{https://pdfium.googlesource.com/pdfium/}{PDFium}
+    to parse and render PDF documents.
+
+    The \l QPdfDocument class loads a PDF document
     and renders pages from it according to the options provided by
     the \l QPdfDocumentRenderOptions class. The \l QPdfPageRenderer
     class manages a queue that collects all render requests. The

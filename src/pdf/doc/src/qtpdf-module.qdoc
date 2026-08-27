@@ -11,7 +11,9 @@
     \ingroup modules
 
     The Qt PDF module contains classes and functions for rendering
-    PDF documents.
+    PDF documents. Qt PDF uses
+    \l{https://pdfium.googlesource.com/pdfium/}{PDFium}
+    to parse and render PDF documents.
 
     \if !defined(qtforpython)
     To link against the module, add this line to your qmake project file:
