@@ -1,0 +1,51 @@
+type: Group
+instructions:
+
+  - type: Group
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: MacOS
+
+    instructions:
+    - type: WriteFile
+      filename: "{{.Env.HOME}}/warmup_xcrun_cache.sh"
+      fileMode: 0700
+      fileContents: |
+        #!/bin/bash -x
+
+        # Resolve the Metal tools serially before the build starts, so that
+        # parallel xcrun invocations from ninja hit the xcrun cache instead of
+        # each spawning "xcodebuild -find", which occasionally aborts.
+
+        ret=0
+        for tool in metal metallib
+        do
+            found=no
+            for attempt in 1 2 3
+            do
+                if xcrun -sdk macosx -find "$tool"
+                then
+                    found=yes
+                    break
+                fi
+                sleep 5
+            done
+            if [ "$found" = no ]
+            then
+                echo "WARNING: xcrun could not find $tool"  1>&2
+                ret=1
+            fi
+        done
+
+        echo "=====================BEGIN xcode info======================"
+        xcode-select -p
+        xcodebuild -version
+        echo "=====================END   xcode info======================"
+        exit $ret
+    - type: ExecuteCommand
+      command: "{{.Env.HOME}}/warmup_xcrun_cache.sh"
+      maxTimeInSeconds: 300
+      maxTimeBetweenOutput: 300
+      ignoreExitCode: true
+      userMessageOnFailure: "Failed to warm up xcrun cache"

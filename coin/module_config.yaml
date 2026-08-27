@@ -111,6 +111,7 @@ instructions:
       variableName: BUILD_DOCUMENTATION
       variableValue: "1"
     - !include "{{qt/qtwebengine}}/enable_swap_file.yaml"
+    - !include "{{qt/qtwebengine}}/warmup_xcrun_cache.yaml"
     - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
   Test:
     - type: EnvironmentVariable
