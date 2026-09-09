@@ -4,6 +4,7 @@
         "qtpdf": [
             "**/bin/*Pdf*",
             "**/sbom/qtpdf*",
+            "**/sbom/qtwebengine-chromium-pdf*",
             "**/include/*QtPdf*/**/*",
             "**/lib/cmake/Qt*Gui/*Pdf*",
             "**/lib/cmake/Qt*Pdf*/*",
