@@ -146,7 +146,8 @@ TestWebEngineView {
             webEngineView.clear();
 
             var lastUrl = webEngineView.url;
-            mouseClick(webEngineView, 10, 10, Qt.LeftButton, Qt.NoModifiers, 50);
+            let c = webEngineView.getElementCenter('foo')
+            mouseClick(webEngineView, c.x, c.y, Qt.LeftButton, Qt.NoModifiers, 50);
             tryCompare(loadRequestArray, "length", 2);
 
             loadRequest = loadRequestArray[0];
