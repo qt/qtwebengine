@@ -3,15 +3,15 @@
 
 /*!
     \example webenginequick/quicknanobrowser
-    \title WebEngine Quick Nano Browser
+    \title Qt WebEnginQuick Examples - A example for a WebEngineView in Qt Quick
     \ingroup webengine-examples
-    \brief A web browser implemented using the WebEngineView QML type.
+    \brief This example demonstrates how to use the QtWebEngineQuick module with Qt Quick.
 
     \image quicknanobrowser-demo.jpg {Browser demo}
     \examplecategory {Application Examples}
     \examplecategory {Web Technologies}
 
-    \e {Quick Nano Browser} demonstrates how to use the \l{Qt WebEngine QML Types}
+    \e This example demonstrates how to use the \l{Qt WebEngine QML Types}
     {Qt WebEngine QML types} to develop a small web browser application that consists of a browser
     window with a title bar, toolbar, tab view, and status bar. The web content is loaded in a web
     engine view within the tab view. If certificate errors occur, users are prompted for action in a
