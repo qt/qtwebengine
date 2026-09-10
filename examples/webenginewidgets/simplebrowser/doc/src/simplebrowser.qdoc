@@ -3,14 +3,14 @@
 
 /*!
     \example webenginewidgets/simplebrowser
-    \title WebEngine Widgets Simple Browser Example
+    \title Qt WebEngineWidget Examples - A example for a QWebEngineView in QtWidgets
+    \brief This example demonstrates how to use the QtWebEngineWidgets module with QtWidgets.
     \ingroup webengine-widgetexamples
-    \brief A simple browser based on \QWE Widgets.
     \examplecategory {Web Technologies}
 
     \image simplebrowser.png {Simple browser displaying web page}
 
-    \e {Simple Browser} demonstrates how to use the
+    \e This example demonstrates how to use the
     \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine C++ classes} to develop a
     small Web browser application that contains the following elements:
 
