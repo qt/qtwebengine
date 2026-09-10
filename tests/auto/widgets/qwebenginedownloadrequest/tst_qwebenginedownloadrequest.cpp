@@ -417,7 +417,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
 
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
             QByteArray html;
-            html += QByteArrayLiteral("<html><body><a href=\"");
+            html += QByteArrayLiteral("<html><body><a id=\"link\" href=\"");
             html += fileName;
             html += QByteArrayLiteral("\" ");
             if (anchorHasDownloadAttribute)
@@ -499,7 +499,7 @@ void tst_QWebEngineDownloadRequest::downloadLink()
     QCOMPARE(indexRequestCount, 1);
     QTRY_COMPARE(paintSpy.size(), 1);
 
-    simulateUserAction(QPoint(10, 10), userAction);
+    simulateUserAction(elementCenter(m_page, u"link"_s), userAction);
 
     // If file is expected to be displayed and not downloaded then end test
     if (fileAction == FileIsDisplayed) {
@@ -545,7 +545,9 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
     ScopedConnection sc1 = connect(m_server, &HttpServer::newRequest, [&](HttpReqRep *rr) {
         if (rr->requestMethod() == "GET" && rr->requestPath() == "/") {
             rr->setResponseHeader(QByteArrayLiteral("content-type"), QByteArrayLiteral("text/html"));
-            rr->setResponseBody(QByteArrayLiteral("<html><body><a href=\"file1\" download>Link1</a><br/><a href=\"file2\">Link2</a></body></html>"));
+            rr->setResponseBody(QByteArrayLiteral(
+                    "<html><body><a id=\"link1\" href=\"file1\" download>Link1</a><br/><a "
+                    "id=\"link2\" href=\"file2\">Link2</a></body></html>"));
             rr->sendResponse();
         } else if (rr->requestMethod() == "GET" && rr->requestPath() == "/file1") {
             file1RequestCount++;
@@ -601,8 +603,8 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks()
     QTRY_COMPARE(paintSpy.size(), 1);
 
     // Trigger downloads
-    simulateUserAction(QPoint(10, 10), action1);
-    simulateUserAction(QPoint(10, 30), action2);
+    simulateUserAction(elementCenter(m_page, u"link1"_s), action1);
+    simulateUserAction(elementCenter(m_page, u"link2"_s), action2);
 
     // Wait for downloads
     QTRY_COMPARE(file1RequestCount, 1);
@@ -1347,10 +1349,21 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls_data()
 {
     QTest::addColumn<QByteArray>("htmlData");
     QTest::addColumn<QString>("expectedFileName");
-    QTest::newRow("data url without slash") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzdA==\">data URL without slash</a><br/></body></html>") << QStringLiteral("qwe_download.gz") ;
-    QTest::newRow("data url with slash") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzcnI/dGVzdA==\">data URL with filename</a><br/></body></html>") << QStringLiteral("qwe_download.gz") ;
-    QTest::newRow("data url with download tag") << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a href=\"data:application/gzip;base64,dGVzdA/IHRlc3Q=\" download=\"filename.gz\">data URL with filename</a><br/></body></html>") << QStringLiteral("filename.gz") ;
-
+    QTest::newRow("data url without slash")
+            << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a id=\"link\" "
+                                 "href=\"data:application/gzip;base64,dGVzdA==\">data URL without "
+                                 "slash</a><br/></body></html>")
+            << QStringLiteral("qwe_download.gz");
+    QTest::newRow("data url with slash")
+            << QByteArrayLiteral("<html><head><meta charset=\"utf-8\"></head><body><a id=\"link\" "
+                                 "href=\"data:application/gzip;base64,dGVzcnI/dGVzdA==\">data URL "
+                                 "with filename</a><br/></body></html>")
+            << QStringLiteral("qwe_download.gz");
+    QTest::newRow("data url with download tag") << QByteArrayLiteral(
+            "<html><head><meta charset=\"utf-8\"></head><body><a id=\"link\" "
+            "href=\"data:application/gzip;base64,dGVzdA/IHRlc3Q=\" download=\"filename.gz\">data "
+            "URL with filename</a><br/></body></html>")
+                                                << QStringLiteral("filename.gz");
 }
 
 void tst_QWebEngineDownloadRequest::downloadDataUrls()
@@ -1389,7 +1402,7 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls()
     QTRY_COMPARE(paintSpy.size(), 1);
 
     // Trigger download
-    simulateUserAction(QPoint(10, 10), UserAction::ClickLink);
+    simulateUserAction(elementCenter(m_page, u"link"_s), UserAction::ClickLink);
     QTRY_COMPARE(downloadRequestCount, 1);
 }
 

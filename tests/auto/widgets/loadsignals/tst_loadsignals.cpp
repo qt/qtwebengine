@@ -12,6 +12,8 @@
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
 
+using namespace Qt::StringLiterals;
+
 enum {
     LoadStarted = QWebEngineLoadingInfo::LoadStartedStatus,
     LoadStopped = QWebEngineLoadingInfo::LoadStoppedStatus,
@@ -93,8 +95,6 @@ private Q_SLOTS:
     void errorPageTriggered();
 
 private:
-    void clickLink(QPoint linkPos);
-
     QWebEngineProfile profile;
     TestPage page{&profile};
     QWebEngineView view;
@@ -134,14 +134,6 @@ void tst_LoadSignals::init()
     }
     resetSpies();
     page.reset();
-}
-
-void tst_LoadSignals::clickLink(QPoint linkPos)
-{
-    // Simulate left-clicking on link.
-    QTRY_VERIFY(view.focusProxy());
-    QWidget *renderWidget = view.focusProxy();
-    QTest::mouseClick(renderWidget, Qt::LeftButton, {}, linkPos);
 }
 
 /**
@@ -205,7 +197,9 @@ void tst_LoadSignals::loadStartedAndFinishedCountClick()
     QVERIFY(loadFinishedSpy[0][0].toBool());
     resetSpies();
 
-    clickLink(QPoint(10, 10));
+    QTRY_VERIFY(view.focusProxy());
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, { },
+                      elementCenter(view.page(), u"link"_s));
     if (numberOfSignals > 0) {
         QTRY_COMPARE(loadStartedSpy.size(), numberOfSignals);
         QTRY_COMPARE(loadFinishedSpy.size(), numberOfSignals);
