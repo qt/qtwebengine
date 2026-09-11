@@ -60,6 +60,21 @@ function(transform_cmake_compile_options_for_gn out_var compile_options_var)
     set(${out_var} ${out_flags} PARENT_SCOPE)
 endfunction()
 
+# Extracts the version of the last Chromium security patch level from the CHROMIUM_VERSION
+function(get_chromium_security_patch_version out_var)
+    set(version_file "${WEBENGINE_ROOT_SOURCE_DIR}/CHROMIUM_VERSION")
+    if(NOT EXISTS "${version_file}")
+        message(FATAL_ERROR "\nCould not find ${version_file}.\n")
+    endif()
+    file(READ "${version_file}" version_file_content)
+    if(NOT version_file_content MATCHES
+        "Patched with security patches up to Chromium version:[ \t]*([0-9]+(\\.[0-9]+)+)")
+        message(FATAL_ERROR
+            "\nCould not parse security patch version out of ${version_file}.\n")
+    endif()
+    set(${out_var} ${CMAKE_MATCH_1} PARENT_SCOPE)
+endfunction()
+
 function(configure_gn_target source_dir in_file_path out_file_path path_mode)
 
     # GN_SOURCES GN_HEADERS
@@ -102,6 +117,9 @@ function(configure_gn_target source_dir in_file_path out_file_path path_mode)
 
     # GN_SOURCE_ROOT
     get_filename_component(GN_SOURCE_ROOT "${source_dir}" ${path_mode})
+
+    # CHROMIUM_SECURITY_PATCH_VERSION
+    get_chromium_security_patch_version(CHROMIUM_SECURITY_PATCH_VERSION)
 
     if(APPLE) # this runs in scrpit mode without qt-cmake so no MACOS here
         recover_framework_build(GN_INCLUDE_DIRS GN_CFLAGS_C)

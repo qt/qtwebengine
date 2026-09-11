@@ -589,8 +589,13 @@ ProxyAuthentication WebEngineContext::qProxyNetworkAuthentication(QString host, 
 }
 
 #ifndef CHROMIUM_VERSION
-#error Chromium version should be defined at gyp-time. Something must have gone wrong
+#error Chromium version should be defined at gn-time. Something must have gone wrong
 #define CHROMIUM_VERSION // This is solely to keep Qt Creator happy.
+#endif
+
+#ifndef CHROMIUM_SECURITY_PATCH_VERSION
+#error Chromium security patch version should be defined at gn-time. Something must have gone wrong
+#define CHROMIUM_SECURITY_PATCH_VERSION // This is solely to keep Qt Creator happy.
 #endif
 
 const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
@@ -1027,7 +1032,7 @@ const char *qWebEngineChromiumVersion() noexcept
 
 const char *qWebEngineChromiumSecurityPatchVersion() noexcept
 {
-    return "153.0.8010.73"; // FIXME: Remember to update
+    return STRINGIFY_EXPANDED(CHROMIUM_SECURITY_PATCH_VERSION);
 }
 
 QT_END_NAMESPACE
