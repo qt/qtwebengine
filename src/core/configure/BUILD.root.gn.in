@@ -121,7 +121,10 @@ shared_library("QtWebEngineCore") {
     "//third_party/skia/include/third_party/vulkan"
   ]
   data_deps = []
-  defines = [ "CHROMIUM_VERSION=" + chromium_version[0] ]
+  defines = [
+    "CHROMIUM_VERSION=" + chromium_version[0],
+    "CHROMIUM_SECURITY_PATCH_VERSION=@CHROMIUM_SECURITY_PATCH_VERSION@",
+  ]
   deps = [
     "//base",
     "//components/autofill/content/browser",
