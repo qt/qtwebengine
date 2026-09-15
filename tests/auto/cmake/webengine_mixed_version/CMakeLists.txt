@@ -65,13 +65,21 @@ unset(Qt6_FOUND)
 set(QT_NO_PACKAGE_VERSION_CHECK FALSE)
 
 find_package(Qt6 ${projectVersionMajor}.${projectVersionMinor} COMPONENTS Gui WebEngineCore QUIET)
-assertFalse(Qt6_FOUND)
+assertFalse(Qt6_FOUND) # find_package call tries to override Qt6 with version 6.140.0 for component Gui
 unset(Qt6_FOUND)
 
 find_package(Qt6 ${projectVersionMajor}.${projectVersionMinor} COMPONENTS WebEngineCore Gui QUIET)
-assertFalse(Qt6_FOUND)
+assertFalse(Qt6_FOUND) # find_package call tries to override Qt6 with version 6.140.0 for component Gui
 unset(Qt6_FOUND)
 
+#check if compatible version works
+find_package(Qt6 6.11 COMPONENTS Core WebEngineCore WebEngineWidgets)
+assertTrue(Qt6_FOUND)
+unset(Qt6_FOUND)
+
+find_package(Qt6 6.11 COMPONENTS WebEngineCore WebEngineWidgets Core)
+assertTrue(Qt6_FOUND)
+unset(Qt6_FOUND)
 
 if(failed)
     message(FATAL_ERROR "One or more tests failed")
