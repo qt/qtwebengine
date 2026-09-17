@@ -32,6 +32,9 @@ QT_BEGIN_NAMESPACE
     This capability is not available for off-the-record profiles. Every profile ships with two built-in components,
     Google Hangouts and the Chromium PDF Viewer, which can be disabled if not needed.
 
+    \note If you use this API to develop a system that allows users to install extensions at runtime, you may fall
+    under the CRA EN-304-617 rules on browser extensions.
+
     \sa QWebEngineProfile::extensionManager, QWebEngineExtensionInfo
 */
 
