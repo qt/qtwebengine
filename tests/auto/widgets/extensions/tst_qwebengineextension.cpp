@@ -43,6 +43,7 @@ private Q_SLOTS:
     void loadInstalledExtensions();
     void serviceWorkerMessaging();
     void webAccessibleResource();
+    void serviceWorkerLocalization();
 
 private:
     int installedFiles();
@@ -440,6 +441,23 @@ void tst_QWebEngineExtension::webAccessibleResource()
                            "el.src = \"" + script + "\"; document.head.appendChild(el)");
     QTRY_VERIFY(evaluateJavaScriptSync(m_page, "window.scriptRan !== undefined").toBool());
     QVERIFY(evaluateJavaScriptSync(m_page, "window.scriptRan").toBool());
+}
+
+void tst_QWebEngineExtension::serviceWorkerLocalization()
+{
+    // chrome.i18n.getMessage() is a synchronous call into the browser. A worker that calls it at
+    // its top level cannot finish evaluating, and so never starts, unless the browser answers.
+    QWebEngineExtensionInfo extension =
+            loadExtensionSync(resourcesPath() + "localized_worker_ext"_L1);
+    QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
+    QCOMPARE(extension.name(), "localized worker"_L1);
+    m_manager->setExtensionEnabled(extension, true);
+
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->load(QUrl("qrc:///resources/index.html"));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE(evaluateJavaScriptSync(m_page, "document.getElementById('testNode').textContent"),
+                 "hello from the worker"_L1);
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)

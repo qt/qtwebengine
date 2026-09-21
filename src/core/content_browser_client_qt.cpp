@@ -128,6 +128,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/service_worker/service_worker_host.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/view_type_utils.h"
@@ -520,6 +521,12 @@ void ContentBrowserClientQt::ExposeInterfacesToRenderer(service_manager::BinderR
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     associated_registry->AddInterface<extensions::mojom::EventRouter>(base::BindRepeating(
             &extensions::EventRouter::BindForRenderer, render_process_host->GetDeprecatedID()));
+    // The renderer's extension dispatcher talks back to the browser through RendererHost, and
+    // some of those calls are synchronous: chrome.i18n.getMessage() blocks the calling thread on
+    // GetMessageBundle(). Without a receiver the reply never comes, so an extension that localises
+    // at the top of its service worker never finishes evaluating and never starts.
+    associated_registry->AddInterface<extensions::mojom::RendererHost>(base::BindRepeating(
+            &extensions::RendererStartupHelper::BindForRenderer, render_process_host->GetDeprecatedID()));
 #else
     Q_UNUSED(associated_registry);
 #endif
@@ -583,6 +590,14 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForRenderFrameHos
             &extensions::ExtensionsGuestView::CreateForComponents, rfh.GetGlobalId()));
     associated_registry.AddInterface<extensions::mojom::GuestView>(base::BindRepeating(
             &extensions::ExtensionsGuestView::CreateForExtensions, rfh.GetGlobalId()));
+    // A frame's extension bindings register their event listeners and reach the browser through
+    // the frame's own associated interfaces, so EventRouter and RendererHost are offered a third
+    // time here. Without this a page of an extension never registers a listener, and an event
+    // such as storage.onChanged reaches its worker but never its popup.
+    associated_registry.AddInterface<extensions::mojom::EventRouter>(base::BindRepeating(
+            &extensions::EventRouter::BindForRenderer, rfh.GetProcess()->GetDeprecatedID()));
+    associated_registry.AddInterface<extensions::mojom::RendererHost>(base::BindRepeating(
+            &extensions::RendererStartupHelper::BindForRenderer, rfh.GetProcess()->GetDeprecatedID()));
 #endif
 }
 
@@ -591,6 +606,12 @@ void ContentBrowserClientQt::RegisterAssociatedInterfaceBindersForServiceWorker(
         const content::ServiceWorkerVersionBaseInfo &service_worker_version_info,
         blink::AssociatedInterfaceRegistry &associated_registry)
 {
+    // A worker reaches the browser through its own associated interface provider, not the render
+    // process one above, so the same two interfaces have to be offered here as well.
+    associated_registry.AddInterface<extensions::mojom::EventRouter>(base::BindRepeating(
+            &extensions::EventRouter::BindForRenderer, service_worker_version_info.process_id));
+    associated_registry.AddInterface<extensions::mojom::RendererHost>(base::BindRepeating(
+            &extensions::RendererStartupHelper::BindForRenderer, service_worker_version_info.process_id));
     associated_registry.AddInterface<extensions::mojom::ServiceWorkerHost>(base::BindRepeating(
             &extensions::ServiceWorkerHost::BindReceiver, service_worker_version_info.process_id));
 }

@@ -1,0 +1,19 @@
+{
+    "name": "__MSG_name__",
+    "version": "1.0",
+    "manifest_version": 3,
+    "default_locale": "en",
+    "background": {
+        "service_worker": "service_worker.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content_script.js"
+            ]
+        }
+    ]
+}

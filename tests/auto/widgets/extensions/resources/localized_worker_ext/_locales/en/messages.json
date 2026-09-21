@@ -1,0 +1,4 @@
+{
+    "name": { "message": "localized worker" },
+    "greeting": { "message": "hello from the worker" }
+}
