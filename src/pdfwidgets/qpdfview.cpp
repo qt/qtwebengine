@@ -425,7 +425,8 @@ void QPdfView::setDocument(QPdfDocument *document)
     d->m_pageRenderer->setDocument(d->m_document);
     d->m_linkModel.setDocument(d->m_document);
 
-    d->documentStatusChanged(document->status());
+    const auto docStatus = document ? document->status() : QPdfDocument::Status::Null;
+    d->documentStatusChanged(docStatus);
 }
 
 QPdfDocument *QPdfView::document() const
