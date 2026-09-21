@@ -36,6 +36,7 @@ private Q_SLOTS:
     void uninstallOutsideFromProfileDir();
     void loadFailures();
     void actionPopupUrl();
+    void extensionDocumentClosesItsOwnWindow();
     void usingDefaultConstructedExtensionInfo();
     void listExtensionsOffTheRecord();
     void loadOffTheRecord();
@@ -458,6 +459,32 @@ void tst_QWebEngineExtension::serviceWorkerLocalization()
     QTRY_COMPARE(loadSpy.size(), 1);
     QTRY_COMPARE(evaluateJavaScriptSync(m_page, "document.getElementById('testNode').textContent"),
                  "hello from the worker"_L1);
+}
+
+void tst_QWebEngineExtension::extensionDocumentClosesItsOwnWindow()
+{
+    // An extension page closes itself when its work is done. Blink lets a page close a window it
+    // did not open only while its history is one entry long, and a popup that routes by hash is
+    // past that within a click or two. Chrome exempts extension documents; so does this.
+    QWebEngineExtensionInfo extension = loadExtensionSync(resourcesPath() + "action_popup_ext"_L1);
+    QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
+    m_manager->setExtensionEnabled(extension, true);
+    QVERIFY(extension.actionPopupUrl().isValid());
+
+    QWebEnginePage popup(m_profile);
+    QSignalSpy loadSpy(&popup, SIGNAL(loadFinished(bool)));
+    popup.load(extension.actionPopupUrl());
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    evaluateJavaScriptSync(&popup,
+                           "history.pushState({}, '', '#one');"
+                           "history.pushState({}, '', '#two');"
+                           "history.pushState({}, '', '#three')");
+    QTRY_COMPARE(evaluateJavaScriptSync(&popup, "history.length").toInt(), 4);
+
+    QSignalSpy closeSpy(&popup, SIGNAL(windowCloseRequested()));
+    evaluateJavaScriptSync(&popup, "window.close()");
+    QTRY_COMPARE(closeSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)

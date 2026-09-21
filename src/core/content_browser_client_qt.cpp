@@ -291,6 +291,27 @@ void ContentBrowserClientQt::OverrideWebPreferences(content::WebContents *webCon
     if (guest_view::GuestViewBase::IsGuest(webContents))
         return;
 
+    // A page is not allowed to close a window it did not open, and Blink counts
+    // a hash route as history, so an extension popup that routes by hash cannot
+    // close itself after it has done its work. Chrome exempts extension
+    // documents in extensions/browser/extension_webkit_preferences.cc, with
+    // "Tabs aren't typically allowed to close windows. But extensions shouldn't
+    // be subject to that." That file is not part of the extensions sources
+    // QtWebEngine builds, so the rule is applied here, for the same documents
+    // and no others.
+    const GURL &documentUrl = webContents->GetPrimaryMainFrame()->GetLastCommittedURL();
+    if (documentUrl.SchemeIs(extensions::kExtensionScheme)) {
+        extensions::ExtensionRegistry *registry =
+                extensions::ExtensionRegistry::Get(webContents->GetBrowserContext());
+        const extensions::Extension *extension =
+                registry ? registry->enabled_extensions().GetExtensionOrAppByURL(documentUrl)
+                         : nullptr;
+        // A hosted app is an ordinary web page wearing an extension's name, and
+        // Chrome leaves it under the ordinary rule.
+        if (extension && !extension->is_hosted_app())
+            webPrefs->allow_scripts_to_close_windows = true;
+    }
+
     WebContentsViewQt *view = WebContentsViewQt::from(static_cast<content::WebContentsImpl *>(webContents)->GetView());
     if (!view->client())
         return;
