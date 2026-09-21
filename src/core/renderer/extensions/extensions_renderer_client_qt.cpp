@@ -10,7 +10,6 @@
 #include "extensions_renderer_client_qt.h"
 
 #include "renderer/render_configuration.h"
-#include "resource_request_policy_qt.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -72,7 +71,6 @@ ExtensionsRendererClientQt *ExtensionsRendererClientQt::GetInstance()
 
 void ExtensionsRendererClientQt::FinishInitialization()
 {
-    resource_request_policy_.reset(new extensions::ResourceRequestPolicyQt(dispatcher()));
 }
 
 void ExtensionsRendererClientQt::WebViewCreated(blink::WebView *web_view, const url::Origin *outermost_origin)
@@ -87,21 +85,6 @@ bool ExtensionsRendererClientQt::OverrideCreatePlugin(content::RenderFrame *rend
         return true;
     bool guest_view_api_available = false;
     return !guest_view_api_available;
-}
-
-void ExtensionsRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
-                                                 ui::PageTransition transition_type,
-                                                 const blink::WebURL &url,
-                                                 const net::SiteForCookies &site_for_cookies,
-                                                 const url::Origin *initiator_origin,
-                                                 GURL *new_url)
-{
-    if (url.ProtocolIs(extensions::kExtensionScheme) &&
-            !resource_request_policy_->CanRequestResource(url, frame,
-                                                          transition_type,
-                                                          initiator_origin)) {
-        *new_url = GURL(chrome::kExtensionInvalidRequestURL);
-    }
 }
 
 void ExtensionsRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)

@@ -33,7 +33,6 @@ class Origin;
 }
 
 namespace extensions {
-class ResourceRequestPolicyQt;
 }
 
 namespace QtWebEngineCore {
@@ -54,12 +53,6 @@ public:
                         const url::Origin *outermost_origin);
     bool OverrideCreatePlugin(content::RenderFrame *render_frame,
                               const blink::WebPluginParams &params);
-    void WillSendRequest(blink::WebLocalFrame *frame,
-                         ui::PageTransition transition_type,
-                         const blink::WebURL &url,
-                         const net::SiteForCookies &site_for_cookies,
-                         const url::Origin *initiator_origin,
-                         GURL *new_url);
 
     void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
     void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
@@ -68,7 +61,6 @@ public:
     static ExtensionsRendererClientQt *GetInstance();
 
 private:
-    std::unique_ptr<extensions::ResourceRequestPolicyQt> resource_request_policy_;
 };
 
 } // namespace QtWebEngineCore
