@@ -537,7 +537,11 @@ void ContentRendererClientQt::WillSendRequest(blink::WebLocalFrame *frame,
                                               GURL *new_url)
 {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, target_url, site_for_cookies,
+    // The base class answers this, because it is the one holding the policy that is told which
+    // extensions have loaded. `upstream_url` is passed on rather than dropped: a resource reached
+    // through a redirect is allowed by the extension that redirected to it.
+    ExtensionsRendererClientQt::GetInstance()->WillSendRequest(frame, transition_type, upstream_url,
+                                                               target_url, site_for_cookies,
                                                                initiator_origin, new_url);
     if (!new_url->is_empty())
         return;

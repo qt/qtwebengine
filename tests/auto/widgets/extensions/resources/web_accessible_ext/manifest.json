@@ -1,0 +1,19 @@
+{
+    "name": "web accessible",
+    "version": "1.0",
+    "manifest_version": 3,
+    "background": {
+        "service_worker": "service_worker.js"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "shared.js",
+                "shared.txt"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

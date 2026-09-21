@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 include(../../util/util.cmake)
+include(../../httpserver/httpserver.cmake)
 
 qt_internal_add_test(tst_qwebengineextension
     SOURCES
@@ -9,6 +10,7 @@ qt_internal_add_test(tst_qwebengineextension
     LIBRARIES
         Qt::WebEngineWidgets
         Test::Util
+        Test::HttpServer
 )
 
 set(tst_qwebengineextension_resource_files

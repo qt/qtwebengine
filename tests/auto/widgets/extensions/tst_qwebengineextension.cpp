@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <util.h>
+#include <httpserver.h>
 #include <QtTest/QtTest>
 #include <QTemporaryDir>
 #include <QtWebEngineCore/qwebengineprofile.h>
@@ -41,6 +42,7 @@ private Q_SLOTS:
     void installOffTheRecord();
     void loadInstalledExtensions();
     void serviceWorkerMessaging();
+    void webAccessibleResource();
 
 private:
     int installedFiles();
@@ -402,6 +404,42 @@ void tst_QWebEngineExtension::serviceWorkerMessaging()
     QSignalSpy clearCacheSpy(m_profile, SIGNAL(clearHttpCacheCompleted()));
     m_profile->clearHttpCache();
     QTRY_COMPARE(clearCacheSpy.size(), 1);
+}
+
+void tst_QWebEngineExtension::webAccessibleResource()
+{
+    // A resource an extension declares web accessible can be loaded by an ordinary page. Served
+    // over HTTP because an extension's host permissions cannot match qrc.
+    HttpServer server;
+    server.setResourceDirs({ resourcesPath() });
+    QVERIFY(server.start());
+
+    QWebEngineExtensionInfo extension = loadExtensionSync(resourcesPath() + "web_accessible_ext"_L1);
+    QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
+    m_manager->setExtensionEnabled(extension, true);
+
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->load(server.url("/index.html"_L1));
+    QTRY_COMPARE(loadSpy.size(), 1);
+
+    const QString resource = "chrome-extension://"_L1 + extension.id() + "/shared.txt"_L1;
+    evaluateJavaScriptSync(m_page,
+                           "fetch(\"" + resource
+                                   + "\").then(async r => window.fetched = r.ok ? await r.text() "
+                                     ": \"status \" + r.status).catch(e => window.fetched = "
+                                     "\"threw: \" + e.message)");
+    QTRY_VERIFY(evaluateJavaScriptSync(m_page, "window.fetched !== undefined").toBool());
+    QCOMPARE(evaluateJavaScriptSync(m_page, "window.fetched.trim()"), "shared"_L1);
+
+    // And as a script element, which is how an injected bundle arrives.
+    const QString script = "chrome-extension://"_L1 + extension.id() + "/shared.js"_L1;
+    evaluateJavaScriptSync(m_page,
+                           "const el = document.createElement('script');"
+                           "el.onload = () => window.scriptRan = globalThis.sharedLoaded === true;"
+                           "el.onerror = () => window.scriptRan = false;"
+                           "el.src = \"" + script + "\"; document.head.appendChild(el)");
+    QTRY_VERIFY(evaluateJavaScriptSync(m_page, "window.scriptRan !== undefined").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_page, "window.scriptRan").toBool());
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)
