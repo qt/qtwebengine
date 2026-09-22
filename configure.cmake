@@ -887,6 +887,11 @@ qt_configure_add_report_entry(
     MESSAGE "Building fat libray with device and simulator architectures will disable NEON."
     CONDITION IOS AND simulator AND device AND QT_FEATURE_qtpdf_build
 )
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "QtWebEngine/Chromium is only compatible with specially patched versions of FFMPEG's libavformat"
+    CONDITION QT_FEATURE_webengine_system_ffmpeg AND NOT TEST_libavformat
+)
 if(PRINT_BFD_LINKER_WARNING)
     qt_configure_add_report_entry(
         TYPE WARNING
