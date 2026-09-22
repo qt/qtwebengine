@@ -299,7 +299,6 @@ foreach(arch ${archs})
                 net/plugin_response_interceptor_url_loader_throttle.cpp net/plugin_response_interceptor_url_loader_throttle.h
                 renderer/extensions/extensions_renderer_api_provider_qt.cpp renderer/extensions/extensions_renderer_api_provider_qt.h
                 renderer/extensions/extensions_renderer_client_qt.cpp renderer/extensions/extensions_renderer_client_qt.h
-                renderer/extensions/resource_request_policy_qt.cpp renderer/extensions/resource_request_policy_qt.h
                 renderer/plugins/loadable_plugin_placeholder_qt.cpp renderer/plugins/loadable_plugin_placeholder_qt.h
                 extensions/api/management_api_delegate_qt.cpp extensions/api/management_api_delegate_qt.h
                 extensions/extension_manager.cpp extensions/extension_manager.h
