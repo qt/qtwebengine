@@ -9,5 +9,5 @@ dependencies:
     ref: fe66c70cd022a3000fb06348ad6a2632e60dca6b
     required: false
   ../qtwebchannel:
-    ref: 54c124d948b313540decaeaa141f0622c257d72e
+    ref: 7907bf74eb8cfda79ed631ee2ee2e459816eb6ea
     required: false
