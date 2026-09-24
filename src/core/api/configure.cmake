@@ -188,6 +188,14 @@ qt_feature("webenginedriver" PUBLIC
               AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
     DISABLE CMAKE_BUILD_TYPE STREQUAL Debug
 )
+qt_feature("webengine-v8-d8" PRIVATE
+    SECTION "WebEngine"
+    LABEL "Build v8 d8 shell"
+    PURPOSE "Enables build of the v8 d8 developer shell. Not installed."
+    AUTODETECT OFF
+    CONDITION NOT CMAKE_CROSSCOMPILING
+              AND NOT (CMAKE_OSX_ARCHITECTURES AND osx_arch_count GREATER 1)
+)
 qt_feature("webengine-arm64-udot-support" PRIVATE
     LABEL "Use libyuv on neon64"
     CONDITION UNIX AND TEST_udot
@@ -235,6 +243,7 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(ARGS "webengine-v8-context-snapshot")
 qt_configure_add_summary_entry(ARGS "webenginedriver")
+qt_configure_add_summary_entry(ARGS "webengine-v8-d8")
 qt_configure_end_summary_section() # end of "Qt WebEngineCore" section
 if(CMAKE_CROSSCOMPILING)
     check_thumb(armThumb)

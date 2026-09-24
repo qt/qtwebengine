@@ -729,6 +729,30 @@ if(QT_FEATURE_webenginedriver)
 endif()
 
 ##
+#  V8 D8 SHELL
+##
+# Opt-in developer tool, not installed and not part of the default build.
+
+if(QT_FEATURE_webengine_v8_d8)
+    if(WIN32)
+        set(d8_executable d8.exe)
+        set(d8_output_option OUTPUT ${d8_executable})
+    else()
+        set(d8_executable d8)
+        set(d8_output_option "")
+    endif()
+    add_ninja_command(
+        TARGET d8
+        ${d8_output_option}
+        BUILDDIR ${buildDir}/$<CONFIG>/${arch}
+        MODULE core
+    )
+    add_custom_target(v8_d8
+        DEPENDS ${buildDir}/$<CONFIG>/${arch}/${d8_executable})
+    add_dependencies(run_core_NinjaDone v8_d8)
+endif()
+
+##
 #  CHROMIUM UPDATE
 ##
 
