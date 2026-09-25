@@ -279,6 +279,11 @@ void QPdfSearchModelPrivate::clearResults()
     nextPageToUpdate = 0;
     if (updateTimerId == Qt::TimerId::Invalid)
         updateTimerId = Qt::TimerId(q->startTimer(UpdateTimerInterval));
+    // Go to Searching right away rather than in the first timer event: until the
+    // sweep begins, the status would otherwise still claim that the _previous_
+    // search is Finished, while the results of that search are already gone.
+    if (document && !searchString.isEmpty())
+        setStatus(QPdfSearchModel::Status::Searching);
 }
 
 bool QPdfSearchModelPrivate::doSearch(int page)
