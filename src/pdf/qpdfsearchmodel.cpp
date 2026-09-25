@@ -248,13 +248,13 @@ void QPdfSearchModel::setDocument(QPdfDocument *document)
 void QPdfSearchModel::timerEvent(QTimerEvent *event)
 {
     Q_D(QPdfSearchModel);
-    if (event->timerId() != d->updateTimerId)
+    if (event->id() != d->updateTimerId)
         return;
     if (!d->document || d->nextPageToUpdate >= d->document->pageCount()) {
         if (d->document)
             qCDebug(qLcS) << "done updating search results on" << d->searchResults.size() << "pages";
         killTimer(d->updateTimerId);
-        d->updateTimerId = -1;
+        d->updateTimerId = Qt::TimerId::Invalid;
         d->setStatus(QPdfSearchModel::Status::Finished);
     } else if (!d->searchString.isEmpty()) {
         d->setStatus(QPdfSearchModel::Status::Searching);
@@ -277,7 +277,8 @@ void QPdfSearchModelPrivate::clearResults()
         pagesSearched.resize(document->pageCount());
     }
     nextPageToUpdate = 0;
-    updateTimerId = q->startTimer(UpdateTimerInterval);
+    if (updateTimerId == Qt::TimerId::Invalid)
+        updateTimerId = Qt::TimerId(q->startTimer(UpdateTimerInterval));
 }
 
 bool QPdfSearchModelPrivate::doSearch(int page)

@@ -44,8 +44,8 @@ public:
     QList<bool> pagesSearched;
     QList<QList<QPdfLink>> searchResults;
     int rowCountSoFar = 0;
-    int updateTimerId = -1;
     int nextPageToUpdate = 0;
+    Qt::TimerId updateTimerId = Qt::TimerId::Invalid;
     QPdfSearchModel::Status status = QPdfSearchModel::Status::Null;
 
     QMetaObject::Connection documentConnection;
