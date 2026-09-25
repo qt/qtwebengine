@@ -3,6 +3,7 @@
 
 #include "qpdfdocument_p.h"
 #include "qpdflink.h"
+#include "qpdflink_p.h"
 #include "qpdfsearchmodel.h"
 #include "qpdfsearchmodel_p.h"
 #include "qtpdfglobal_p.h"
@@ -120,9 +121,13 @@ QVariant QPdfSearchModel::data(const QModelIndex &index, int role) const
         break;
     }
     if (role == Qt::DisplayRole) {
-        const QString ret = d->searchResults[pi.page][pi.index].contextBefore() +
-                QLatin1String("<b>") + d->searchString + QLatin1String("</b>") +
-                d->searchResults[pi.page][pi.index].contextAfter();
+        const QPdfLink &result = d->searchResults[pi.page][pi.index];
+        // what was found, which is not always the search string: the case can
+        // differ, and pdfium can match across characters that it skips over
+        const QString found = d->matchedText(pi);
+        const QString ret = result.contextBefore() + QLatin1String("<b>")
+                + (found.isEmpty() ? d->searchString : found) + QLatin1String("</b>")
+                + result.contextAfter();
         return ret;
     }
     return QVariant();
@@ -310,14 +315,14 @@ bool QPdfSearchModelPrivate::doSearch(int page)
     }
     FPDF_SCHHANDLE sh = FPDFText_FindStart(textPage, searchString.utf16(), 0, 0);
     QList<QPdfLink> newSearchResults;
-    constexpr double CharacterHitTolerance = 6.0;
     while (FPDFText_FindNext(sh)) {
-        int idx = FPDFText_GetSchResultIndex(sh);
-        int count = FPDFText_GetSchCount(sh);
-        int rectCount = FPDFText_CountRects(textPage, idx, count);
+        // Where the match begins and ends, in the same character indices that
+        // FPDFText_CountRects() and FPDFText_GetText() below are given.
+        const int startIndex = FPDFText_GetSchResultIndex(sh);
+        const int matchLength = FPDFText_GetSchCount(sh);
+        const int endIndex = startIndex + matchLength - 1;
+        const int rectCount = FPDFText_CountRects(textPage, startIndex, matchLength);
         QList<QRectF> rects;
-        int startIndex = -1;
-        int endIndex = -1;
         for (int r = 0; r < rectCount; ++r) {
             // get bounding box of search result in page coordinates
             double left, top, right, bottom;
@@ -325,19 +330,11 @@ bool QPdfSearchModelPrivate::doSearch(int page)
             // deal with any internal PDF transforms and
             // convert to the 1x (pixels = points) 4th-quadrant coordinate system
             rects << document->d->mapPageToView(pdfPage, left, top, right, bottom);
-            if (r == 0) {
-                startIndex = FPDFText_GetCharIndexAtPos(textPage, left, top,
-                        CharacterHitTolerance, CharacterHitTolerance);
-            }
-            if (r == rectCount - 1) {
-                endIndex = FPDFText_GetCharIndexAtPos(textPage, right, top,
-                        CharacterHitTolerance, CharacterHitTolerance);
-            }
             qCDebug(qLcS) << rects.last() << "char idx" << startIndex << "->" << endIndex
                           << "from page rect" << left << top << right << bottom;
         }
-        QString contextBefore, contextAfter;
-        if (startIndex >= 0 || endIndex >= 0) {
+        QString matchedText, contextBefore, contextAfter;
+        if (startIndex >= 0) {
             int contextStart = qMax(0, startIndex - ContextChars);
             int contextEnd = endIndex + ContextChars;
             int count = contextEnd - contextStart + 1;
@@ -353,14 +350,16 @@ bool QPdfSearchModelPrivate::doSearch(int page)
                     s.remove(QLatin1Char('\r'));
                 };
 
+                matchedText = context.mid(startIndex - contextStart, matchLength);
                 contextBefore = context.mid(0, startIndex - contextStart);
-                contextAfter = context.mid(startIndex - contextStart + searchString.size());
+                contextAfter = context.mid(startIndex - contextStart + matchLength);
+                replaceNewlines(matchedText);
                 replaceNewlines(contextBefore);
                 replaceNewlines(contextAfter);
             }
         }
         if (!rects.isEmpty())
-            newSearchResults << QPdfLink(page, rects, contextBefore, contextAfter);
+            newSearchResults << QPdfLink(page, rects, matchedText, contextBefore, contextAfter);
     }
     FPDFText_FindClose(sh);
     FPDFText_ClosePage(textPage);
@@ -378,6 +377,11 @@ bool QPdfSearchModelPrivate::doSearch(int page)
         q->endInsertRows();
     }
     return true;
+}
+
+QString QPdfSearchModelPrivate::matchedText(const PageAndIndex &pi) const
+{
+    return searchResults[pi.page][pi.index].d->text;
 }
 
 QPdfSearchModelPrivate::PageAndIndex QPdfSearchModelPrivate::pageAndIndexForResult(int resultIndex)

@@ -31,10 +31,12 @@ public:
         : page(page),
           location(location),
           zoom(zoom) { }
-    QPdfLinkPrivate(int page, QList<QRectF> rects, QString contextBefore, QString contextAfter)
+    QPdfLinkPrivate(int page, QList<QRectF> rects, QString text,
+                    QString contextBefore, QString contextAfter)
         : page(page),
           location(rects.first().topLeft()),
           zoom(0),
+          text{std::move(text)},
           contextBefore{std::move(contextBefore)},
           contextAfter{std::move(contextAfter)},
           rects{std::move(rects)} {}
@@ -42,6 +44,7 @@ public:
     int page = -1;
     QPointF location;
     qreal zoom = 1;
+    QString text; // exact text found here
     QString contextBefore;
     QString contextAfter;
     QUrl url;

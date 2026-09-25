@@ -35,6 +35,7 @@ public:
         int page;
         int index;
     };
+    QString matchedText(const PageAndIndex &pi) const;
     PageAndIndex pageAndIndexForResult(int resultIndex);
     int rowsBeforePage(int page);
     void setStatus(QPdfSearchModel::Status s);

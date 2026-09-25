@@ -32,9 +32,9 @@ QPdfLink::QPdfLink(int page, QPointF location, qreal zoom)
 {
 }
 
-QPdfLink::QPdfLink(int page, QList<QRectF> rects,
+QPdfLink::QPdfLink(int page, QList<QRectF> rects, QString text,
                                    QString contextBefore, QString contextAfter)
-    : QPdfLink(new QPdfLinkPrivate(page, std::move(rects),
+    : QPdfLink(new QPdfLinkPrivate(page, std::move(rects), std::move(text),
                                                    std::move(contextBefore),
                                                    std::move(contextAfter)))
 {
