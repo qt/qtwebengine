@@ -320,7 +320,11 @@ Flickable {
     PdfPageNavigator {
         id: pageNavigator
         onJumped: function(current) {
-            root.renderScale = current.zoom
+            const zoomWas = root.renderScale
+            // zoom is 0 when the jump destination does not carry one, as with a
+            // search result: keep the zoom level the user has chosen in that case
+            if (current.zoom > 0)
+                root.renderScale = current.zoom
             const dx = Math.max(0, current.location.x * root.renderScale - root.width / 2) - root.contentX
             const dy = Math.max(0, current.location.y * root.renderScale - root.height / 2) - root.contentY
             // don't jump if location is in the viewport already, i.e. if the "error" between desired and actual contentX/Y is small
@@ -328,7 +332,7 @@ Flickable {
                 root.contentX += dx
             if (Math.abs(dy) > root.height / 3)
                 root.contentY += dy
-            console.log(lcSPV, "going to zoom", current.zoom, "loc", current.location,
+            console.log(lcSPV, "zoom", zoomWas, "->", current.zoom, "loc", current.location,
                         "on page", current.page, "ended up @", root.contentX + ", " + root.contentY)
         }
         onCurrentPageChanged: searchModel.currentPage = currentPage
