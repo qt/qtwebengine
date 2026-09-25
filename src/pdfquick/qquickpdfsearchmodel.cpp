@@ -24,8 +24,14 @@ Q_PDF_LOGGING_CATEGORY(qLcSearch, "qt.pdf.search")
 QQuickPdfSearchModel::QQuickPdfSearchModel(QObject *parent)
     : QPdfSearchModel(parent)
 {
-    connect(this, &QPdfSearchModel::searchStringChanged,
-            this, &QQuickPdfSearchModel::onResultsChanged);
+    connect(this, &QPdfSearchModel::modelReset, this, [this]() {
+        // The previous results are gone, so none of them can be current anymore.
+        if (m_currentResult != 0) {
+            m_currentResult = 0;
+            emit currentResultChanged();
+        }
+        onResultsChanged();
+    });
 }
 
 /*!
@@ -114,7 +120,9 @@ QRectF QQuickPdfSearchModel::currentResultBoundingRect() const
 void QQuickPdfSearchModel::onResultsChanged()
 {
     emit currentPageBoundingPolygonsChanged();
+    emit currentResultLinkChanged();
     emit currentResultBoundingPolygonsChanged();
+    emit currentResultBoundingRectChanged();
 }
 
 /*!
@@ -222,6 +230,10 @@ void QQuickPdfSearchModel::setCurrentPage(int currentPage)
     The result index within the whole set of search results, for which
     \l currentResultBoundingPolygons should provide the regions to highlight
     if currentPage matches \c currentResultLink.page.
+
+    It is initially \c 0, and is reset to \c 0 whenever \l searchString changes.
+    Incrementing it goes to the next result; decrementing it from \c 0
+    wraps around to the last result, so that it changes to a positive number.
 */
 void QQuickPdfSearchModel::setCurrentResult(int currentResult)
 {

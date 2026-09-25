@@ -618,6 +618,6 @@ Item {
     PdfSearchModel {
         id: searchModel
         document: root.document === undefined ? null : root.document
-        onCurrentResultChanged: pageNavigator.jump(currentResultLink)
+        onCurrentResultLinkChanged: if (currentResultLink.valid) pageNavigator.jump(currentResultLink)
     }
 }
