@@ -1,2 +1,3 @@
 add_subdirectory(multipageview)
 add_subdirectory(pdfpageimage)
+add_subdirectory(scrollablepageview)
