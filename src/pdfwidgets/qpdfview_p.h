@@ -42,6 +42,7 @@ public:
     void setViewport(QRect viewport);
     void updateScrollBars();
     void scrollTo(const QPdfLink &link);
+    void jumped(const QPdfLink &link);
 
     void pageRendered(int pageNumber, QSize imageSize, const QImage &image, quint64 requestId);
     void invalidateDocumentLayout();
