@@ -194,10 +194,8 @@ void QPdfSearchModel::setSearchString(const QString &searchString)
         return;
 
     d->searchString = searchString;
-    beginResetModel();
     d->clearResults();
     emit searchStringChanged();
-    endResetModel();
 }
 
 /*!
@@ -274,6 +272,9 @@ QPdfSearchModelPrivate::QPdfSearchModelPrivate() : QAbstractItemModelPrivate()
 void QPdfSearchModelPrivate::clearResults()
 {
     Q_Q(QPdfSearchModel);
+    // This throws away every row, so the model has to be reset: clearResults()
+    // is called when the document changes too, not only from setSearchString().
+    q->beginResetModel();
     rowCountSoFar = 0;
     searchResults.clear();
     pagesSearched.clear();
@@ -282,6 +283,7 @@ void QPdfSearchModelPrivate::clearResults()
         pagesSearched.resize(document->pageCount());
     }
     nextPageToUpdate = 0;
+
     if (updateTimerId == Qt::TimerId::Invalid)
         updateTimerId = Qt::TimerId(q->startTimer(UpdateTimerInterval));
     // Go to Searching right away rather than in the first timer event: until the
@@ -289,6 +291,7 @@ void QPdfSearchModelPrivate::clearResults()
     // search is Finished, while the results of that search are already gone.
     if (document && !searchString.isEmpty())
         setStatus(QPdfSearchModel::Status::Searching);
+    q->endResetModel();
 }
 
 bool QPdfSearchModelPrivate::doSearch(int page)

@@ -26,6 +26,7 @@ private slots:
     void contextComesFromMatchLocation();
     void displayRoleShowsWhatWasFound_data();
     void displayRoleShowsWhatWasFound();
+    void setDocumentResetsModel();
 };
 
 void tst_QPdfSearchModel::findText_data()
@@ -222,6 +223,36 @@ void tst_QPdfSearchModel::displayRoleShowsWhatWasFound()
     QVERIFY2(display.contains(expectedMarkup),
              qPrintable(QString::fromLatin1("\"%1\" does not contain %2")
                                 .arg(display, expectedMarkup)));
+}
+
+void tst_QPdfSearchModel::setDocumentResetsModel()
+{
+    QPdfDocument document;
+    QCOMPARE(document.load(QFINDTESTDATA("test.pdf")), QPdfDocument::Error::None);
+    QPdfDocument another;
+    QCOMPARE(another.load(QFINDTESTDATA("tagged_mcr_multipage.pdf")), QPdfDocument::Error::None);
+
+    QPdfSearchModel model;
+    QSignalSpy aboutToBeResetSpy(&model, &QAbstractItemModel::modelAboutToBeReset);
+    QSignalSpy resetSpy(&model, &QAbstractItemModel::modelReset);
+    QSignalSpy searchStringChangedSpy(&model, &QPdfSearchModel::searchStringChanged);
+    model.setDocument(&document);
+    QCOMPARE(aboutToBeResetSpy.size(), 1);
+    QCOMPARE(resetSpy.size(), 1);
+    QCOMPARE(searchStringChangedSpy.size(), 0);
+    model.setSearchString(QStringLiteral("the"));
+    QCOMPARE(aboutToBeResetSpy.size(), 2);
+    QCOMPARE(resetSpy.size(), 2);
+    QCOMPARE(searchStringChangedSpy.size(), 1);
+    for (int page = 0; page < document.pageCount(); ++page)
+        model.resultsOnPage(page); // searches the page if that has not happened yet
+    QCOMPARE_GT(model.rowCount(QModelIndex()), 0);
+
+    model.setDocument(&another);
+    QCOMPARE(model.rowCount(QModelIndex()), 0);
+    QCOMPARE(aboutToBeResetSpy.size(), 3);
+    QCOMPARE(resetSpy.size(), 3);
+    QCOMPARE(searchStringChangedSpy.size(), 1);
 }
 
 QTEST_MAIN(tst_QPdfSearchModel)
