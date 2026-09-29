@@ -15,7 +15,8 @@ import BrowserUtils
 
 ApplicationWindow {
     id: win
-    property WebEngineView currentWebView: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
+    property BrowserTab currentTab: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] as BrowserTab : null
+    property WebEngineView currentWebView: currentTab?.webView ?? null
     property int previousVisibility: Window.Windowed
     property bool lastTabClosing: false
 
@@ -32,40 +33,30 @@ ApplicationWindow {
     }
 
     Settings {
-        id : appSettings
-        property alias autoLoadImages: navigationBar.loadImagesChecked
-        property alias javaScriptEnabled: navigationBar.javaScriptEnabledChecked
-        property alias errorPageEnabled: navigationBar.errorPageEnabledChecked
-        property alias pluginsEnabled: navigationBar.pluginsEnabledChecked
-        property alias fullScreenSupportEnabled: navigationBar.fullScreenSupportEnabledChecked
-        property alias autoLoadIconsForPage: navigationBar.autoLoadIconsForPageChecked
-        property alias touchIconsEnabled: navigationBar.touchIconsEnabledChecked
-        property alias webRTCPublicInterfacesOnly : navigationBar.webRTCPublicInterfacesOnlyChecked
-        property alias devToolsEnabled: navigationBar.devToolsEnabledChecked
-        property alias pdfViewerEnabled: navigationBar.pdfViewerEnabledChecked
-        property alias javascriptCanAccessClipboard: navigationBar.javascriptCanAccessClipboardChecked
-        property alias javascriptCanPaste: navigationBar.javascriptCanPasteChecked
-        property int imageAnimationPolicy: {
-           return navigationBar.animateImageOnceChecked ? WebEngineSettings.ImageAnimationPolicy.AnimateOnce :
-                  navigationBar.allowImageAnimationChecked ? WebEngineSettings.ImageAnimationPolicy.Allow :
-                  navigationBar.disableImageAnimationChecked ? WebEngineSettings.ImageAnimationPolicy.Disallow :
-                  WebEngineSettings.ImageAnimationPolicy.AnimateOnce
-          }
-        }
+        id: appSettings
+        property bool autoLoadImages: WebEngine.settings.autoLoadImages
+        property bool javaScriptEnabled: WebEngine.settings.javascriptEnabled
+        property bool errorPageEnabled: WebEngine.settings.errorPageEnabled
+        property bool pluginsEnabled: true
+        property bool fullScreenSupportEnabled: WebEngine.settings.fullScreenSupportEnabled
+        property bool autoLoadIconsForPage: WebEngine.settings.autoLoadIconsForPage
+        property bool touchIconsEnabled: WebEngine.settings.touchIconsEnabled
+        property bool webRTCPublicInterfacesOnly: WebEngine.settings.webRTCPublicInterfacesOnly
+        property bool devToolsEnabled: false
+        property bool pdfViewerEnabled: WebEngine.settings.pdfViewerEnabled
+        property bool javascriptCanAccessClipboard: WebEngine.settings.javascriptCanAccessClipboard
+        property bool javascriptCanPaste: WebEngine.settings.javascriptCanPaste
+        property int imageAnimationPolicy: WebEngine.settings.imageAnimationPolicy
+    }
 
     ActionManager {
         browserWindow: win
         webView: win.currentWebView
         downloads: downloadView
-        toolBar: navigationBar
+        toolBar: win.currentTab?.toolBar ?? null
         searchBar: findBar
         fullScreenNotifications: fullScreenNotification
         onNewTabRequested: tabBar.createTab(BrowserManager.defaultProfilePrototype.instance())
-    }
-
-    menuBar: WebToolBar {
-        id: navigationBar
-        currentWebView: win.currentWebView
     }
 
     StackLayout {
@@ -84,7 +75,6 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         viewStack: tabLayout
-        toolBar: navigationBar
         webViewComponent: tabComponent
         onLastTabClosed: {
             win.lastTabClosing = true;
@@ -96,23 +86,31 @@ ApplicationWindow {
         id: tabComponent
         BrowserTab {
             id: webEngineView
-            toolBar: navigationBar
             tabs: tabBar
             searchBar: findBar
             certificateDialog: sslDialog
             permissionPrompt: permissionDialog
             webAuthenticationDialog: webAuthDialog
             imageAnimationPolicy: appSettings.imageAnimationPolicy
-            states: [
-                State {
-                    name: "FullScreen"
-                    PropertyChanges {
-                        tabBar.visible: false
-                        tabBar.height: 0
-                        navigationBar.visible: false
-                    }
-                 }
-            ]
+            toolBar.loadImagesChecked: appSettings.autoLoadImages
+            toolBar.javaScriptEnabledChecked: appSettings.javaScriptEnabled
+            toolBar.errorPageEnabledChecked: appSettings.errorPageEnabled
+            toolBar.pluginsEnabledChecked: appSettings.pluginsEnabled
+            toolBar.fullScreenSupportEnabledChecked: appSettings.fullScreenSupportEnabled
+            toolBar.autoLoadIconsForPageChecked: appSettings.autoLoadIconsForPage
+            toolBar.touchIconsEnabledChecked: appSettings.touchIconsEnabled
+            toolBar.webRTCPublicInterfacesOnlyChecked: appSettings.webRTCPublicInterfacesOnly
+            toolBar.devToolsEnabledChecked: appSettings.devToolsEnabled
+            toolBar.pdfViewerEnabledChecked: appSettings.pdfViewerEnabled
+            toolBar.javascriptCanAccessClipboardChecked: appSettings.javascriptCanAccessClipboard
+            toolBar.javascriptCanPasteChecked: appSettings.javascriptCanPaste
+            toolBar.disableImageAnimationChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Disallow
+            toolBar.allowImageAnimationChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Allow
+            toolBar.animateImageOnceChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.AnimateOnce
+
+            onSettingToggled: function(name, value) {
+                appSettings[name] = value;
+            }
 
             onLinkHovered: function(hoveredUrl) {
                 if (hoveredUrl === "")
@@ -146,9 +144,7 @@ ApplicationWindow {
                 }
             }
 
-
             onFullScreenToggled: function(toggleOn) {
-                webEngineView.state = toggleOn ? "FullScreen" : "";
                 if (toggleOn) {
                     win.previousVisibility = win.visibility;
                     win.showFullScreen();
@@ -164,7 +160,7 @@ ApplicationWindow {
         id: devToolsWebEngineView
         visible: appSettings.devToolsEnabled
         height: visible ? 400 : 0
-        inspectedView: visible && tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] : null
+        inspectedView: visible ? win.currentWebView : null
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
