@@ -25,6 +25,7 @@ ColumnLayout {
     signal linkHovered(url hoveredUrl)
     signal windowCloseRequested()
     signal newWindowRequested(WebEngineNewWindowRequest request)
+    signal devToolsNewWindowRequested(WebEngineNewWindowRequest request)
     signal settingToggled(string name, var value)
 
     spacing: 0
@@ -144,5 +145,19 @@ ColumnLayout {
         onLinkHovered: hoveredUrl => root.linkHovered(hoveredUrl)
         onWindowCloseRequested: root.windowCloseRequested()
         onNewWindowRequested: request => root.newWindowRequested(request)
+    }
+
+    WebEngineView {
+        id: devToolsWebEngineView
+        visible: tabToolBar.devToolsEnabledChecked
+        Layout.fillWidth: true
+        Layout.preferredHeight: 400
+        inspectedView: visible ? tabWebView : null
+        onNewWindowRequested: request => root.devToolsNewWindowRequested(request)
+
+        onWindowCloseRequested: function() {
+            // Delay hiding for keep the inspectedView set to receive the ACK message of close.
+            Qt.callLater(function() { root.settingToggled("devToolsEnabled", false) })
+        }
     }
 }

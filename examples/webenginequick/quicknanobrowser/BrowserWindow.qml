@@ -64,7 +64,7 @@ ApplicationWindow {
         currentIndex: tabBar.currentIndex
 
         anchors.top: tabBar.bottom
-        anchors.bottom: devToolsWebEngineView.top
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
     }
@@ -144,6 +144,11 @@ ApplicationWindow {
                 }
             }
 
+            onDevToolsNewWindowRequested: function(request) {
+                let tab = tabBar.createTab(win.currentWebView.profile);
+                request.openIn(tab);
+            }
+
             onFullScreenToggled: function(toggleOn) {
                 if (toggleOn) {
                     win.previousVisibility = win.visibility;
@@ -154,24 +159,6 @@ ApplicationWindow {
                     fullScreenNotification.hide();
                 }
             }
-        }
-    }
-    WebEngineView {
-        id: devToolsWebEngineView
-        visible: appSettings.devToolsEnabled
-        height: visible ? 400 : 0
-        inspectedView: visible ? win.currentWebView : null
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        onNewWindowRequested: function(request) {
-            var tab = tabBar.createTab(win.currentWebView.profile);
-            request.openIn(tab);
-        }
-
-        onWindowCloseRequested: function() {
-            // Delay hiding for keep the inspectedView set to receive the ACK message of close.
-            Qt.callLater(function() { appSettings.devToolsEnabled = false })
         }
     }
     SslDialog {
