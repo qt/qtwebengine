@@ -27,8 +27,10 @@ Item {
     Action {
         shortcut: "Ctrl+L"
         onTriggered: {
-            root.toolBar.addressBar.forceActiveFocus();
-            root.toolBar.addressBar.selectAll();
+            if (root.toolBar != null) {
+                root.toolBar.addressBar.forceActiveFocus();
+                root.toolBar.addressBar.selectAll();
+            }
         }
     }
     Action {
@@ -42,8 +44,10 @@ Item {
         shortcut: StandardKey.AddTab
         onTriggered: {
             root.newTabRequested();
-            root.toolBar.addressBar.forceActiveFocus();
-            root.toolBar.addressBar.selectAll();
+            if (root.toolBar != null) {
+                root.toolBar.addressBar.forceActiveFocus();
+                root.toolBar.addressBar.selectAll();
+            }
         }
     }
     Action {

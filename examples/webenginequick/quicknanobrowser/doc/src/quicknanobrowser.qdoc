@@ -29,7 +29,7 @@
     \section1 Creating the Main Browser Window
 
     When the browser main window is loaded, it creates an empty tab using the default profile. Each
-    tab is a web engine view that fills the main window.
+    tab has its own tool bar and a web engine view that fills the rest of the main window.
 
     We create the main window in the \e BrowserWindow.qml file using the ApplicationWindow type:
 
@@ -52,13 +52,16 @@
     \printuntil return webview
     \printuntil }
 
-    The tab contains a web engine view that loads web content. We create it in the
-    \e BrowserTab.qml file:
+    Each tab contains its own tool bar and a web engine view that loads web content, arranged in a
+    column layout. We create them in the \e BrowserTab.qml file:
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
-    \skipto WebEngineView {
-    \printuntil root.reload
-    \printuntil /^\ {4}\}/
+    \skipto ColumnLayout {
+    \printuntil id: root
+    \dots
+    \skipto WebToolBar {
+    \printuntil tabWebView.reload
+    \printuntil /^\ {8}\}/
 
     We use the \l Action type to create new tabs:
 
@@ -137,7 +140,7 @@
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserTab.qml
     \skipto onFullScreenRequested
-    \printuntil /^\ {4}\}/
+    \printuntil /^\ {8}\}/
 
     \quotefromfile webenginequick/quicknanobrowser/BrowserWindow.qml
     \skipto onFullScreenToggled

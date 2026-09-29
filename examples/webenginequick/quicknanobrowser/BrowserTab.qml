@@ -5,108 +5,144 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls.Fusion
+import QtQuick.Layouts
 import QtWebEngine
 
-WebEngineView {
+ColumnLayout {
     id: root
-    required property WebToolBar toolBar
     required property TabBar tabs
     required property FindBar searchBar
     required property SslDialog certificateDialog
     required property PermissionDialog permissionPrompt
     required property WebAuthDialog webAuthenticationDialog
+    property alias profile: tabWebView.profile
+    readonly property alias toolBar: tabToolBar
+    readonly property alias webView: tabWebView
     required property int imageAnimationPolicy
     property int index: 0
 
     signal fullScreenToggled(bool toggleOn)
+    signal linkHovered(url hoveredUrl)
+    signal windowCloseRequested()
+    signal newWindowRequested(WebEngineNewWindowRequest request)
+    signal settingToggled(string name, var value)
 
-    focus: true
+    spacing: 0
 
-    settings.localContentCanAccessRemoteUrls: true
-    settings.localContentCanAccessFileUrls: false
-    settings.autoLoadImages: root.toolBar.loadImagesChecked
-    settings.javascriptEnabled: root.toolBar.javaScriptEnabledChecked
-    settings.errorPageEnabled: root.toolBar.errorPageEnabledChecked
-    settings.pluginsEnabled: root.toolBar.pluginsEnabledChecked
-    settings.fullScreenSupportEnabled: root.toolBar.fullScreenSupportEnabledChecked
-    settings.autoLoadIconsForPage: root.toolBar.autoLoadIconsForPageChecked
-    settings.touchIconsEnabled: root.toolBar.touchIconsEnabledChecked
-    settings.webRTCPublicInterfacesOnly: root.toolBar.webRTCPublicInterfacesOnlyChecked
-    settings.pdfViewerEnabled: root.toolBar.pdfViewerEnabledChecked
-    settings.imageAnimationPolicy: root.imageAnimationPolicy
-    settings.screenCaptureEnabled: true
-    settings.javascriptCanAccessClipboard: root.toolBar.javascriptCanAccessClipboardChecked
-    settings.javascriptCanPaste: root.toolBar.javascriptCanPasteChecked
+    WebToolBar {
+        id: tabToolBar
+        Layout.fillWidth: true
+        currentWebView: tabWebView
+        onSettingToggled: (name, value) => root.settingToggled(name, value)
+    }
 
-    onCertificateError: function(error) {
-        if (!error.isMainFrame) {
-            error.rejectCertificate();
-            return;
+    WebEngineView {
+        id: tabWebView
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        focus: true
+
+        states: [
+            State {
+                name: "FullScreen"
+                PropertyChanges {
+                    root.tabs.visible: false
+                    root.tabs.height: 0
+                    tabToolBar.visible: false
+                }
+            }
+        ]
+        settings.localContentCanAccessRemoteUrls: true
+        settings.localContentCanAccessFileUrls: false
+        settings.autoLoadImages: tabToolBar.loadImagesChecked
+        settings.javascriptEnabled: tabToolBar.javaScriptEnabledChecked
+        settings.errorPageEnabled: tabToolBar.errorPageEnabledChecked
+        settings.pluginsEnabled: tabToolBar.pluginsEnabledChecked
+        settings.fullScreenSupportEnabled: tabToolBar.fullScreenSupportEnabledChecked
+        settings.autoLoadIconsForPage: tabToolBar.autoLoadIconsForPageChecked
+        settings.touchIconsEnabled: tabToolBar.touchIconsEnabledChecked
+        settings.webRTCPublicInterfacesOnly: tabToolBar.webRTCPublicInterfacesOnlyChecked
+        settings.pdfViewerEnabled: tabToolBar.pdfViewerEnabledChecked
+        settings.imageAnimationPolicy: root.imageAnimationPolicy
+        settings.screenCaptureEnabled: true
+        settings.javascriptCanAccessClipboard: tabToolBar.javascriptCanAccessClipboardChecked
+        settings.javascriptCanPaste: tabToolBar.javascriptCanPasteChecked
+
+        onCertificateError: function(error) {
+            if (!error.isMainFrame) {
+                error.rejectCertificate();
+                return;
+            }
+
+            error.defer();
+            root.certificateDialog.enqueue(error);
         }
 
-        error.defer();
-        root.certificateDialog.enqueue(error);
-    }
-
-    onFullScreenRequested: function(request) {
-        root.fullScreenToggled(request.toggleOn);
-        request.accept();
-    }
-
-    onRegisterProtocolHandlerRequested: function(request) {
-        console.log("accepting registerProtocolHandler request for "
-                    + request.scheme + " from " + request.origin);
-        request.accept();
-    }
-
-    onDesktopMediaRequested: function(request) {
-        // select the primary screen
-        request.selectScreen(request.screensModel.index(0, 0));
-    }
-
-    onRenderProcessTerminated: function(terminationStatus, exitCode) {
-        var status = "";
-        switch (terminationStatus) {
-        case WebEngineView.NormalTerminationStatus:
-            status = "(normal exit)";
-            break;
-        case WebEngineView.AbnormalTerminationStatus:
-            status = "(abnormal exit)";
-            break;
-        case WebEngineView.CrashedTerminationStatus:
-            status = "(crashed)";
-            break;
-        case WebEngineView.KilledTerminationStatus:
-            status = "(killed)";
-            break;
+        onFullScreenRequested: function(request) {
+            tabWebView.state = request.toggleOn ? "FullScreen" : "";
+            root.fullScreenToggled(request.toggleOn);
+            request.accept();
         }
 
-        print("Render process exited with code " + exitCode + " " + status);
-        Qt.callLater(function() { root.reload() })
-    }
+        onRegisterProtocolHandlerRequested: function(request) {
+            console.log("accepting registerProtocolHandler request for "
+                        + request.scheme + " from " + request.origin);
+            request.accept();
+        }
 
-    onSelectClientCertificate: function(selection) {
-        selection.certificates[0].select();
-    }
+        onDesktopMediaRequested: function(request) {
+            // select the primary screen
+            request.selectScreen(request.screensModel.index(0, 0));
+        }
 
-    onFindTextFinished: function(result) {
-        if (!root.searchBar.visible)
-            root.searchBar.visible = true;
+        onRenderProcessTerminated: function(terminationStatus, exitCode) {
+            var status = "";
+            switch (terminationStatus) {
+            case WebEngineView.NormalTerminationStatus:
+                status = "(normal exit)";
+                break;
+            case WebEngineView.AbnormalTerminationStatus:
+                status = "(abnormal exit)";
+                break;
+            case WebEngineView.CrashedTerminationStatus:
+                status = "(crashed)";
+                break;
+            case WebEngineView.KilledTerminationStatus:
+                status = "(killed)";
+                break;
+            }
 
-        root.searchBar.numberOfMatches = result.numberOfMatches;
-        root.searchBar.activeMatch = result.activeMatch;
-    }
+            print("Render process exited with code " + exitCode + " " + status);
+            Qt.callLater(function() { tabWebView.reload() })
+        }
 
-    onLoadingChanged: function(loadRequest) {
-        if (loadRequest.status === WebEngineView.LoadStartedStatus)
-            root.searchBar.reset();
-    }
+        onSelectClientCertificate: function(selection) {
+            selection.certificates[0].select();
+        }
 
-    onPermissionRequested: function(permission) {
-        root.permissionPrompt.permission = permission;
-        root.permissionPrompt.visible = true;
-    }
-    onWebAuthUxRequested: function(request) {
-        root.webAuthenticationDialog.init(request);
+        onFindTextFinished: function(result) {
+            if (!root.searchBar.visible)
+                root.searchBar.visible = true;
+
+            root.searchBar.numberOfMatches = result.numberOfMatches;
+            root.searchBar.activeMatch = result.activeMatch;
+        }
+
+        onLoadingChanged: function(loadRequest) {
+            if (loadRequest.status === WebEngineView.LoadStartedStatus)
+                root.searchBar.reset();
+        }
+
+        onPermissionRequested: function(permission) {
+            root.permissionPrompt.permission = permission;
+            root.permissionPrompt.visible = true;
+        }
+        onWebAuthUxRequested: function(request) {
+            root.webAuthenticationDialog.init(request);
+        }
+
+        onLinkHovered: hoveredUrl => root.linkHovered(hoveredUrl)
+        onWindowCloseRequested: root.windowCloseRequested()
+        onNewWindowRequested: request => root.newWindowRequested(request)
     }
 }

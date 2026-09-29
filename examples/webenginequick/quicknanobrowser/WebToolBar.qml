@@ -32,6 +32,8 @@ ToolBar {
     property alias animateImageOnceChecked: animateImageOnce.checked
     property alias addressBar: addressBar
 
+    signal settingToggled(string name, var value)
+
     RowLayout {
         anchors.fill: parent
         ToolButton {
@@ -157,30 +159,35 @@ ToolBar {
                     text: "Autoload images"
                     checkable: true
                     checked: WebEngine.settings.autoLoadImages
+                    onToggled: root.settingToggled("autoLoadImages", checked)
                 }
                 MenuItem {
                     id: javaScriptEnabledMenuItem
                     text: "JavaScript On"
                     checkable: true
                     checked: WebEngine.settings.javascriptEnabled
+                    onToggled: root.settingToggled("javaScriptEnabled", checked)
                 }
                 MenuItem {
                     id: errorPageEnabledMenuItem
                     text: "ErrorPage On"
                     checkable: true
                     checked: WebEngine.settings.errorPageEnabled
+                    onToggled: root.settingToggled("errorPageEnabled", checked)
                 }
                 MenuItem {
                     id: pluginsEnabledMenuItem
                     text: "Plugins On"
                     checkable: true
                     checked: true
+                    onToggled: root.settingToggled("pluginsEnabled", checked)
                 }
                 MenuItem {
                     id: fullScreenSupportEnabledMenuItem
                     text: "FullScreen On"
                     checkable: true
                     checked: WebEngine.settings.fullScreenSupportEnabled
+                    onToggled: root.settingToggled("fullScreenSupportEnabled", checked)
                 }
                 MenuItem {
                     id: offTheRecordEnabled
@@ -209,12 +216,14 @@ ToolBar {
                     text: "Icons On"
                     checkable: true
                     checked: WebEngine.settings.autoLoadIconsForPage
+                    onToggled: root.settingToggled("autoLoadIconsForPage", checked)
                 }
                 MenuItem {
                     id: touchIconsEnabledMenuItem
                     text: "Touch Icons On"
                     checkable: true
                     checked: WebEngine.settings.touchIconsEnabled
+                    onToggled: root.settingToggled("touchIconsEnabled", checked)
                     enabled: autoLoadIconsForPageMenuItem.checked
                 }
                 MenuItem {
@@ -222,18 +231,21 @@ ToolBar {
                     text: "WebRTC Public Interfaces Only"
                     checkable: true
                     checked: WebEngine.settings.webRTCPublicInterfacesOnly
+                    onToggled: root.settingToggled("webRTCPublicInterfacesOnly", checked)
                 }
                 MenuItem {
                     id: devToolsEnabledMenuItem
                     text: "Open DevTools"
                     checkable: true
                     checked: false
+                    onToggled: root.settingToggled("devToolsEnabled", checked)
                 }
                 MenuItem {
                     id: pdfViewerEnabledMenuItem
                     text: "PDF Viewer Enabled"
                     checkable: true
                     checked: WebEngine.settings.pdfViewerEnabled
+                    onToggled: root.settingToggled("pdfViewerEnabled", checked)
                 }
                 Menu {
                     id: imageAnimationPolicyMenu
@@ -245,6 +257,7 @@ ToolBar {
                         checkable: true
                         autoExclusive: true
                         checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Disallow
+                        onToggled: if (checked) root.settingToggled("imageAnimationPolicy", WebEngineSettings.ImageAnimationPolicy.Disallow)
                     }
 
                     MenuItem {
@@ -253,6 +266,7 @@ ToolBar {
                         checkable: true
                         autoExclusive: true
                         checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Allow
+                        onToggled: if (checked) root.settingToggled("imageAnimationPolicy", WebEngineSettings.ImageAnimationPolicy.Allow)
                     }
 
                     MenuItem {
@@ -261,6 +275,7 @@ ToolBar {
                         checkable: true
                         autoExclusive: true
                         checked: WebEngine.settings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.AnimateOnce
+                        onToggled: if (checked) root.settingToggled("imageAnimationPolicy", WebEngineSettings.ImageAnimationPolicy.AnimateOnce)
                     }
                 }
 
@@ -269,12 +284,14 @@ ToolBar {
                     text: "JavaScript can access clipboard"
                     checkable: true
                     checked: WebEngine.settings.javascriptCanAccessClipboard
+                    onToggled: root.settingToggled("javascriptCanAccessClipboard", checked)
                 }
                 MenuItem {
                     id: javascriptCanPasteMenuItem
                     text: "JavaScript can paste"
                     checkable: true
                     checked: WebEngine.settings.javascriptCanPaste
+                    onToggled: root.settingToggled("javascriptCanPaste", checked)
                 }
             }
         }

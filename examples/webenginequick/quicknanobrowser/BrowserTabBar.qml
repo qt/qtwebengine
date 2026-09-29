@@ -11,7 +11,6 @@ import QtWebEngine
 TabBar {
     id: root
     required property StackLayout viewStack
-    required property WebToolBar toolBar
     required property Component webViewComponent
 
     signal lastTabClosed()
@@ -19,9 +18,10 @@ TabBar {
     Component.onCompleted: createTab(BrowserManager.defaultProfilePrototype.instance())
 
     function createTab(profile, focusOnNewTab = true, url = undefined) {
-        var webview = root.webViewComponent.createObject(root.viewStack, {profile: profile});
+        var tab = root.webViewComponent.createObject(root.viewStack, {profile: profile}) as BrowserTab;
+        var webview = tab.webView;
         var newTabButton = tabButtonComponent.createObject(root, {tabTitle: Qt.binding(function () { return webview.title; })});
-        webview.index = Qt.binding(function () { return newTabButton.TabBar.index; })
+        tab.index = Qt.binding(function () { return newTabButton.TabBar.index; })
         root.addItem(newTabButton);
         if (focusOnNewTab) {
             root.setCurrentIndex(root.count - 1);
@@ -33,7 +33,7 @@ TabBar {
     }
 
     function tryCloseView(index) {
-        (root.viewStack.children[index] as WebEngineView).triggerWebAction(WebEngineView.RequestClose);
+        (root.viewStack.children[index] as BrowserTab).webView.triggerWebAction(WebEngineView.RequestClose);
     }
 
     function removeView(index) {
@@ -91,7 +91,6 @@ TabBar {
                 }
             }
 
-            onClicked: root.toolBar.addressBar.text = (root.viewStack.itemAt(TabBar.index) as WebEngineView).url;
             function closeTab() {
                 root.tryCloseView(TabBar.index);
             }
