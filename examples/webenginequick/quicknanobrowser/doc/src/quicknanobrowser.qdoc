@@ -45,10 +45,15 @@
     \skipto BrowserTabBar {
     \printuntil /^\ {4}\}/
 
-    We implement the tab bar in the \e BrowserTabBar.qml file, where we also create a new, empty tab:
+    We implement the tab bar in the \e BrowserTabBar.qml file. The tabs themselves are kept in a
+    StackLayout that we implement in the \e BrowserStackLayout.qml file, where we also create a new,
+    empty tab:
 
-    \quotefromfile webenginequick/quicknanobrowser/BrowserTabBar.qml
-    \skipto TabBar {
+    \quotefromfile webenginequick/quicknanobrowser/BrowserStackLayout.qml
+    \skipto StackLayout {
+    \printuntil id: root
+    \dots
+    \skipto currentIndex:
     \printuntil return webview
     \printuntil }
 

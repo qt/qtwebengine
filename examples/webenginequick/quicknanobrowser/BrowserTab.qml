@@ -23,12 +23,16 @@ ColumnLayout {
 
     signal fullScreenToggled(bool toggleOn)
     signal linkHovered(url hoveredUrl)
-    signal windowCloseRequested()
+    signal tabViewCloseRequested()
     signal newWindowRequested(WebEngineNewWindowRequest request)
     signal devToolsNewWindowRequested(WebEngineNewWindowRequest request)
     signal settingToggled(string name, var value)
 
     spacing: 0
+
+    function tryCloseTab() {
+        tabWebView.triggerWebAction(WebEngineView.RequestClose);
+    }
 
     WebToolBar {
         id: tabToolBar
@@ -143,7 +147,7 @@ ColumnLayout {
         }
 
         onLinkHovered: hoveredUrl => root.linkHovered(hoveredUrl)
-        onWindowCloseRequested: root.windowCloseRequested()
+        onWindowCloseRequested: root.tabViewCloseRequested()
         onNewWindowRequested: request => root.newWindowRequested(request)
     }
 
