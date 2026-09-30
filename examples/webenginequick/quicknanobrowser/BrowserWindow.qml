@@ -8,14 +8,13 @@ import QtQml
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Dialogs
-import QtQuick.Layouts
 import QtQuick.Window
 import QtWebEngine
 import BrowserUtils
 
 ApplicationWindow {
     id: win
-    property BrowserTab currentTab: tabBar.currentIndex < tabBar.count ? tabLayout.children[tabBar.currentIndex] as BrowserTab : null
+    property BrowserTab currentTab: tabLayout.currentTab
     property WebEngineView currentWebView: currentTab?.webView ?? null
     property int previousVisibility: Window.Windowed
     property bool lastTabClosing: false
@@ -24,6 +23,12 @@ ApplicationWindow {
     height: 900
     visible: true
     title: win.currentWebView?.title ?? ""
+
+
+    header: BrowserTabBar {
+        id: tabBar
+        onTabCloseRequested: index => tabLayout.tryCloseTab(index)
+    }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
@@ -56,111 +61,46 @@ ApplicationWindow {
         toolBar: win.currentTab?.toolBar ?? null
         searchBar: findBar
         fullScreenNotifications: fullScreenNotification
-        onNewTabRequested: tabBar.createTab(BrowserManager.defaultProfilePrototype.instance())
+        onNewTabRequested: tabLayout.createTab(BrowserManager.defaultProfilePrototype.instance())
     }
 
-    StackLayout {
+    BrowserStackLayout {
         id: tabLayout
-        currentIndex: tabBar.currentIndex
+        anchors.fill: parent
+        tabs: tabBar
+        searchBar: findBar
+        certificateDialog: sslDialog
+        permissionPrompt: permissionDialog
+        webAuthenticationDialog: webAuthDialog
+        browserSettings: appSettings
 
-        anchors.top: tabBar.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-    }
+        onLinkHovered: function(hoveredUrl) {
+            if (hoveredUrl === "")
+                hideStatusText.start();
+            else {
+                statusText.text = hoveredUrl;
+                statusBubble.visible = true;
+                hideStatusText.stop();
+            }
+        }
 
-    BrowserTabBar {
-        id: tabBar
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        viewStack: tabLayout
-        webViewComponent: tabComponent
+        onFullScreenToggled: function(toggleOn) {
+            if (toggleOn) {
+                win.previousVisibility = win.visibility;
+                win.showFullScreen();
+                fullScreenNotification.show();
+            } else {
+                win.visibility = win.previousVisibility;
+                fullScreenNotification.hide();
+            }
+        }
+
         onLastTabClosed: {
             win.lastTabClosing = true;
             win.close();
         }
     }
 
-    Component {
-        id: tabComponent
-        BrowserTab {
-            id: webEngineView
-            tabs: tabBar
-            searchBar: findBar
-            certificateDialog: sslDialog
-            permissionPrompt: permissionDialog
-            webAuthenticationDialog: webAuthDialog
-            imageAnimationPolicy: appSettings.imageAnimationPolicy
-            toolBar.loadImagesChecked: appSettings.autoLoadImages
-            toolBar.javaScriptEnabledChecked: appSettings.javaScriptEnabled
-            toolBar.errorPageEnabledChecked: appSettings.errorPageEnabled
-            toolBar.pluginsEnabledChecked: appSettings.pluginsEnabled
-            toolBar.fullScreenSupportEnabledChecked: appSettings.fullScreenSupportEnabled
-            toolBar.autoLoadIconsForPageChecked: appSettings.autoLoadIconsForPage
-            toolBar.touchIconsEnabledChecked: appSettings.touchIconsEnabled
-            toolBar.webRTCPublicInterfacesOnlyChecked: appSettings.webRTCPublicInterfacesOnly
-            toolBar.devToolsEnabledChecked: appSettings.devToolsEnabled
-            toolBar.pdfViewerEnabledChecked: appSettings.pdfViewerEnabled
-            toolBar.javascriptCanAccessClipboardChecked: appSettings.javascriptCanAccessClipboard
-            toolBar.javascriptCanPasteChecked: appSettings.javascriptCanPaste
-            toolBar.disableImageAnimationChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Disallow
-            toolBar.allowImageAnimationChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.Allow
-            toolBar.animateImageOnceChecked: appSettings.imageAnimationPolicy === WebEngineSettings.ImageAnimationPolicy.AnimateOnce
-
-            onSettingToggled: function(name, value) {
-                appSettings[name] = value;
-            }
-
-            onLinkHovered: function(hoveredUrl) {
-                if (hoveredUrl === "")
-                    hideStatusText.start();
-                else {
-                    statusText.text = hoveredUrl;
-                    statusBubble.visible = true;
-                    hideStatusText.stop();
-                }
-            }
-
-            onWindowCloseRequested: function() {
-                tabBar.removeView(webEngineView.index);
-            }
-
-            onNewWindowRequested: function(request) {
-                if (!request.userInitiated)
-                    console.warn("Blocked a popup window.");
-                else if (request.destination === WebEngineNewWindowRequest.InNewTab) {
-                    let tab = tabBar.createTab(win.currentWebView.profile, true, request.requestedUrl);
-                    tab.acceptAsNewWindow(request);
-                } else if (request.destination === WebEngineNewWindowRequest.InNewBackgroundTab) {
-                    let backgroundTab = tabBar.createTab(win.currentWebView.profile, false);
-                    backgroundTab.acceptAsNewWindow(request);
-                } else if (request.destination === WebEngineNewWindowRequest.InNewDialog) {
-                    let dialog = BrowserManager.createDialog(win.currentWebView.profile);
-                    dialog.currentWebView.acceptAsNewWindow(request);
-                } else {
-                    let window = BrowserManager.createWindow(win.currentWebView.profile);
-                    window.currentWebView.acceptAsNewWindow(request);
-                }
-            }
-
-            onDevToolsNewWindowRequested: function(request) {
-                let tab = tabBar.createTab(win.currentWebView.profile);
-                request.openIn(tab);
-            }
-
-            onFullScreenToggled: function(toggleOn) {
-                if (toggleOn) {
-                    win.previousVisibility = win.visibility;
-                    win.showFullScreen();
-                    fullScreenNotification.show();
-                } else {
-                    win.visibility = win.previousVisibility;
-                    fullScreenNotification.hide();
-                }
-            }
-        }
-    }
     SslDialog {
         id: sslDialog
         anchors.centerIn: parent
@@ -267,7 +207,7 @@ ApplicationWindow {
        }
        closeEvent.accepted = false
        for (let i = 0; i < tabBar.count; i++)  {
-           tabBar.tryCloseView(i);
+           tabLayout.tryCloseTab(i);
        }
     }
 }

@@ -5,44 +5,17 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls.Fusion
-import QtQuick.Layouts
-import QtWebEngine
 
 TabBar {
     id: root
-    required property StackLayout viewStack
-    required property Component webViewComponent
 
-    signal lastTabClosed()
+    signal tabCloseRequested(int index)
 
-    Component.onCompleted: createTab(BrowserManager.defaultProfilePrototype.instance())
-
-    function createTab(profile, focusOnNewTab = true, url = undefined) {
-        var tab = root.webViewComponent.createObject(root.viewStack, {profile: profile}) as BrowserTab;
-        var webview = tab.webView;
-        var newTabButton = tabButtonComponent.createObject(root, {tabTitle: Qt.binding(function () { return webview.title; })});
+    function addTabButton(tab) {
+        var newTabButton = tabButtonComponent.createObject(root, {tabTitle: Qt.binding(function () { return tab.webView.title; })});
         tab.index = Qt.binding(function () { return newTabButton.TabBar.index; })
         root.addItem(newTabButton);
-        if (focusOnNewTab) {
-            root.setCurrentIndex(root.count - 1);
-        }
-        if (url !== undefined) {
-            webview.url = url;
-        }
-        return webview;
-    }
-
-    function tryCloseView(index) {
-        (root.viewStack.children[index] as BrowserTab).webView.triggerWebAction(WebEngineView.RequestClose);
-    }
-
-    function removeView(index) {
-        if (root.count > 1) {
-            root.removeItem(root.itemAt(index));
-            root.viewStack.children[index].destroy();
-        } else {
-            root.lastTabClosed();
-        }
+        return newTabButton;
     }
 
     Component {
@@ -92,7 +65,7 @@ TabBar {
             }
 
             function closeTab() {
-                root.tryCloseView(TabBar.index);
+                root.tabCloseRequested(TabBar.index);
             }
         }
     }
