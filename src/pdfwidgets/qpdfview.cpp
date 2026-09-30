@@ -397,6 +397,9 @@ QPdfView::QPdfView(QWidget *parent)
 */
 QPdfView::~QPdfView()
 {
+    Q_D(QPdfView);
+    if (d->m_document)
+        disconnect(d->m_documentStatusChangedConnection);
 }
 
 /*!
