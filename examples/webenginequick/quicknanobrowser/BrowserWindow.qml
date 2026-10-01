@@ -28,6 +28,13 @@ ApplicationWindow {
     header: BrowserTabBar {
         id: tabBar
         onTabCloseRequested: index => tabLayout.tryCloseTab(index)
+        onNewTabRequested: {
+            tabLayout.createTab(win.currentWebView?.profile
+                                ?? BrowserManager.defaultProfilePrototype.instance(),
+                                true, tabLayout.newTabUrl);
+            win.currentTab.toolBar.addressBar.forceActiveFocus();
+            win.currentTab.toolBar.addressBar.selectAll();
+        }
     }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
@@ -61,7 +68,7 @@ ApplicationWindow {
         toolBar: win.currentTab?.toolBar ?? null
         searchBar: findBar
         fullScreenNotifications: fullScreenNotification
-        onNewTabRequested: tabLayout.createTab(BrowserManager.defaultProfilePrototype.instance())
+        onNewTabRequested: tabLayout.createTab(BrowserManager.defaultProfilePrototype.instance(), true, tabLayout.newTabUrl)
     }
 
     BrowserStackLayout {

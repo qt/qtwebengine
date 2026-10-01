@@ -7,20 +7,54 @@ import QtQuick
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 
-TabBar {
+Pane {
     id: root
+    property alias currentIndex: tabBar.currentIndex
+    readonly property alias count: tabBar.count
+    padding: 0
 
+    signal newTabRequested()
     signal tabCloseRequested(int index)
 
     function addTabButton(tab) {
-        var newTabButton = tabButtonComponent.createObject(root, {tabTitle: Qt.binding(function () { return tab.webView.title; })});
+        var newTabButton = tabButtonFactory.createObject(tabBar, {tabTitle: Qt.binding(function () { return tab.webView.title; })});
         tab.index = Qt.binding(function () { return newTabButton.TabBar.index; })
-        root.addItem(newTabButton);
+        tabBar.addItem(newTabButton);
         return newTabButton;
     }
 
+    function removeTabButton(index) {
+        tabBar.removeItem(tabBar.itemAt(index));
+    }
+
+    function setCurrentIndex(index) {
+        tabBar.setCurrentIndex(index);
+    }
+
+    RowLayout {
+        spacing: 0
+        anchors.fill: parent
+
+        ToolButton {
+            Layout.bottomMargin: 2
+            font.pointSize: 12
+            font.bold: true
+            implicitWidth: 32
+            implicitHeight: 32
+            text: "+"
+            onClicked: root.newTabRequested()
+        }
+
+        TabBar {
+            id: tabBar
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
+
+    }
+
     Component {
-        id: tabButtonComponent
+        id: tabButtonFactory
 
         TabButton {
             id: tabButton
@@ -38,6 +72,7 @@ TabBar {
                 ToolButton {
                     id: button
                     font.pointSize: 12
+                    font.bold: true
                     implicitWidth: 32
                     implicitHeight: 32
                     text: "x"
