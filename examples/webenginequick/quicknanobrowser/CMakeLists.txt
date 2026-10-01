@@ -68,11 +68,12 @@ qt_add_qml_module(quicknanobrowser
         icons/3rdparty/view-refresh.png
 )
 
-if(TARGET Qt::Widgets)
-    target_link_libraries(quicknanobrowser PUBLIC
-        Qt::Widgets
-    )
-endif()
+qt_add_resources(quicknanobrowser "resources"
+    PREFIX
+        "/"
+    FILES
+        qtquickcontrols2.conf
+)
 
 if (APPLE)
     set_target_properties(quicknanobrowser PROPERTIES

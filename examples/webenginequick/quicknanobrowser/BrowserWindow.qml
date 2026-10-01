@@ -6,7 +6,7 @@ pragma ComponentBehavior: Bound
 import QtCore
 import QtQml
 import QtQuick
-import QtQuick.Controls.Fusion
+import QtQuick.Controls.Material
 import QtQuick.Dialogs
 import QtQuick.Window
 import QtWebEngine
@@ -19,8 +19,8 @@ ApplicationWindow {
     property int previousVisibility: Window.Windowed
     property bool lastTabClosing: false
 
-    width: 1300
-    height: 900
+    width: 900
+    height: 600
     visible: true
     title: win.currentWebView?.title ?? ""
 
