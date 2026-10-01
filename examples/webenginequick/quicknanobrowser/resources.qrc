@@ -21,4 +21,7 @@
         <file>icons/3rdparty/process-stop.png</file>
         <file>icons/3rdparty/view-refresh.png</file>
     </qresource>
+     <qresource prefix="/">
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
 </RCC>

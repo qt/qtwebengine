@@ -4,7 +4,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Fusion
+import QtQuick.Controls.Material
 import QtWebEngine
 
 Item {

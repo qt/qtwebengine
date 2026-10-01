@@ -4,7 +4,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Fusion
+import QtQuick.Controls.Material
+import QtQuick.Layouts
 
 TabBar {
     id: root
@@ -23,43 +24,23 @@ TabBar {
 
         TabButton {
             id: tabButton
-            property color frameColor: "#999999"
-            property color fillColor: "#eeeeee"
-            property color nonSelectedColor: "#dddddd"
             property string tabTitle: "New Tab"
 
-            contentItem: Rectangle {
-                id: tabRectangle
-                color: tabButton.down ? tabButton.fillColor : tabButton.nonSelectedColor
-                border.width: 1
-                border.color: tabButton.frameColor
-                implicitWidth: Math.max(tabText.implicitWidth + 30, 80)
-                implicitHeight: Math.max(tabText.implicitHeight + 10, 20)
-                Rectangle { height: 1 ; width: parent.width ; color: tabButton.frameColor}
-                Rectangle { height: parent.height ; width: 1; color: tabButton.frameColor}
-                Rectangle { x: parent.width - 2; height: parent.height ; width: 1; color: tabButton.frameColor}
-                Text {
+            contentItem: RowLayout {
+                Label {
                     id: tabText
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: 6
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 4
+                    Layout.rightMargin: 4
                     text: tabButton.tabTitle
                     elide: Text.ElideRight
-                    color: tabButton.down ? "black" : tabButton.frameColor
-                    width: parent.width - button.background.width
                 }
-                Button {
+                ToolButton {
                     id: button
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.rightMargin: 4
-                    height: 12
-                    background: Rectangle {
-                        implicitWidth: 12
-                        implicitHeight: 12
-                        color: button.hovered ? "#cccccc" : tabRectangle.color
-                        Text {text: "x"; anchors.centerIn: parent; color: "gray"}
-                    }
+                    font.pointSize: 12
+                    implicitWidth: 32
+                    implicitHeight: 32
+                    text: "x"
                     onClicked: tabButton.closeTab()
                 }
             }
