@@ -17,6 +17,7 @@ StackLayout {
     // appSettings from BrowserWindow, which declares the custom properties.
     required property var browserSettings
     readonly property BrowserTab currentTab: root.currentIndex < root.count ? root.children[root.currentIndex] as BrowserTab : null
+    readonly property url newTabUrl: "chrome://qt?example=Quick Nano Browser"
 
     signal linkHovered(url hoveredUrl)
     signal fullScreenToggled(bool toggleOn)
@@ -45,7 +46,7 @@ StackLayout {
 
     function closeTab(index) {
         if (root.tabs.count > 1) {
-            root.tabs.removeItem(root.tabs.itemAt(index));
+            root.tabs.removeTabButton(index);
             root.children[index].destroy();
         } else {
             root.lastTabClosed();
