@@ -1,0 +1,26 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qwemodules.html
+    \title All Qt WebEngine and Qt Pdf modules
+    \brief A list of all modules in Qt WebEngine and Qt Pdf.
+
+    \ingroup classlists
+
+    \section1 Extension Modules
+
+    All modules here are extensions to Qt, with separate platform and compiler support requirements, but
+    released together due a close reliance on a shared Chromium third-party module.
+
+    \grid
+        \griditem {qtpdf-index.html}{Qt PDF} {
+            Classes and functions for rendering PDF documents on desktop platforms.
+        }
+        \griditem {qtwebengine-index.html}{Qt WebEngine} {
+            Classes and functions for embedding web content in applications using the
+            Chromium browser project.
+        }
+    \endgrid
+
+*/
