@@ -29,6 +29,83 @@ namespace QtWebEngineCore {
 // the struct below.
 constexpr const int kNoBasePathKey = -1;
 
+// Essentially copies of the same functions from
+// chrome/browser/file_system_access/chrome_file_system_access_permission_context.cc
+// Windows and the WSL seem to have special requirements when trying to access local files.
+#if BUILDFLAG(IS_WIN)
+bool ContainsInvalidDNSCharacter(base::FilePath::StringType hostname) {
+    for (base::FilePath::CharType c : hostname) {
+        if (!((c >= L'A' && c <= L'Z') || (c >= L'a' && c <= L'z') ||
+              (c >= L'0' && c <= L'9') || (c == L'.') || (c == L'-') ||
+              (c == L'_'))) {
+            return true;
+        }
+    }
+  return false;
+}
+
+// Returns true if the path is a Universal Naming Convention (UNC) path pointing
+// to a local system path, device namespace, or WSL loopback redirector.
+bool MaybeIsLocalUNCPath(const base::FilePath& path) {
+    if (!path.IsNetwork()) {
+        return false;
+    }
+
+    const std::vector<base::FilePath::StringType> components =
+        path.GetComponents();
+
+    // Check for server name that could represent a local system. We only
+    // check for a very short list, as it is impossible to cover all different
+    // variants on Windows.
+    if (components.size() >= 2 &&
+        (base::FilePath::CompareEqualIgnoreCase(components[1],
+                                                FILE_PATH_LITERAL("localhost")) ||
+         base::FilePath::CompareEqualIgnoreCase(
+             components[1], FILE_PATH_LITERAL("wsl.localhost")) ||
+         base::FilePath::CompareEqualIgnoreCase(
+             components[1], FILE_PATH_LITERAL("wsl.localhost.")) ||
+         components[1] == FILE_PATH_LITERAL("127.0.0.1") ||
+         components[1] == FILE_PATH_LITERAL(".") ||
+         components[1] == FILE_PATH_LITERAL("?") ||
+         ContainsInvalidDNSCharacter(components[1]))) {
+        return true;
+    }
+
+    // Check *admin* shares only (drive admin like "C$" and named admin).
+    // Note: the share component is typically components[2], but we scan all
+    // components defensively in case the structure changes.
+    for (size_t i = 2; i < components.size(); ++i) {
+        const auto& component = components[i];
+
+        // component ends with "$"
+        if (!component.empty() && component.back() == L'$') {
+            // Drive admin share: "C$".."Z$" (case-insensitive on the letter).
+            if (component.size() == 2 &&
+                ((component[0] >= L'A' && component[0] <= L'Z') ||
+                 (component[0] >= L'a' && component[0] <= L'z'))) {
+                return true;
+            }
+
+            // Named admin shares: "ADMIN$", "IPC$", "PRINT$", and "FAX$"
+            if (base::FilePath::CompareEqualIgnoreCase(component,
+                                                       FILE_PATH_LITERAL("ADMIN$")) ||
+                base::FilePath::CompareEqualIgnoreCase(component,
+                                                       FILE_PATH_LITERAL("IPC$")) ||
+                base::FilePath::CompareEqualIgnoreCase(component,
+                                                       FILE_PATH_LITERAL("PRINT$")) ||
+                base::FilePath::CompareEqualIgnoreCase(component,
+                                                       FILE_PATH_LITERAL("FAX$"))) {
+                return true;
+            }
+
+            // Otherwise, it is just a hidden share (e.g. "Share$")—do not block.
+        }
+    }
+
+    return false;
+}
+#endif
+
 enum BlockType { kBlockAllChildren, kBlockNestedDirectories, kDontBlockChildren, kDontBlockAppFolder };
 
 const struct
@@ -124,6 +201,15 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
 {
     DCHECK(!check_path.empty());
     DCHECK(check_path.IsAbsolute());
+
+#if BUILDFLAG(IS_WIN)
+    // On Windows, local UNC paths are rejected, as UNC path can be written in a
+    // way that can bypass the blocklist.
+    // Copied from chrome/browser/file_system_access/chrome_file_system_access_permission_context.cc
+    if (MaybeIsLocalUNCPath(check_path)) {
+        return true;
+    }
+#endif
 
     base::FilePath nearest_ancestor;
     int nearest_ancestor_path_key = kNoBasePathKey;
