@@ -90,7 +90,7 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
     will be saved (see \l downloadDirectory() and \l downloadFileName()), can
     only be changed before calling accept().
 
-    \section2 Object Life Cycle
+    \section1 Object Life Cycle
 
     In each and every case, the QWebEngineProfile takes the ownership of the item.
     However, it is safe for the application to delete the item at any time, except
@@ -101,7 +101,7 @@ static inline QWebEngineDownloadRequest::DownloadInterruptReason toDownloadInter
     \note Deleting an item will also automatically cancel a download since 5.12.2,
     but it is recommended to cancel manually before deleting for portability.
 
-    \section2 Web Page Downloads
+    \section1 Web Page Downloads
 
     In addition to normal file downloads, which consist simply of retrieving
     some raw bytes from the network and writing them to disk, \QWE also
