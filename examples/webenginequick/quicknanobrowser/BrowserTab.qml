@@ -4,13 +4,11 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import QtWebEngine
 
 ColumnLayout {
     id: root
-    required property TabBar tabs
     required property FindBar searchBar
     required property SslDialog certificateDialog
     required property PermissionDialog permissionPrompt
@@ -47,16 +45,6 @@ ColumnLayout {
         Layout.fillHeight: true
         focus: true
 
-        states: [
-            State {
-                name: "FullScreen"
-                PropertyChanges {
-                    root.tabs.visible: false
-                    root.tabs.height: 0
-                    tabToolBar.visible: false
-                }
-            }
-        ]
         settings.localContentCanAccessRemoteUrls: true
         settings.localContentCanAccessFileUrls: false
         settings.autoLoadImages: tabToolBar.loadImagesChecked
@@ -84,7 +72,7 @@ ColumnLayout {
         }
 
         onFullScreenRequested: function(request) {
-            tabWebView.state = request.toggleOn ? "FullScreen" : "";
+            tabToolBar.visible = request.toggleOn;
             root.fullScreenToggled(request.toggleOn);
             request.accept();
         }

@@ -86,10 +86,12 @@ ApplicationWindow {
 
         onFullScreenToggled: function(toggleOn) {
             if (toggleOn) {
+                tabs.visible =  false;
                 win.previousVisibility = win.visibility;
                 win.showFullScreen();
                 fullScreenNotification.show();
             } else {
+                tabs.visible =  true;
                 win.visibility = win.previousVisibility;
                 fullScreenNotification.hide();
             }
