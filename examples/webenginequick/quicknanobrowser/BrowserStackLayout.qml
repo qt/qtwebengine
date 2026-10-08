@@ -56,7 +56,6 @@ StackLayout {
         id: tabFactory
         BrowserTab {
             id: tab
-            tabs: root.tabs
             searchBar: root.searchBar
             certificateDialog: root.certificateDialog
             permissionPrompt: root.permissionPrompt
