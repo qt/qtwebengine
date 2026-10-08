@@ -108,8 +108,8 @@ void WebAuthDialog::setupDiscoveryUI()
 void WebAuthDialog::setupSelectAccountUI()
 {
     uiWebAuthDialog->m_headingLabel->setText(tr("Choose a Passkey"));
-    uiWebAuthDialog->m_description->setText(tr("Which passkey do you want to use for ")
-                                            + uxRequest->relyingPartyId() + tr("?"));
+    const QString &id = uxRequest->relyingPartyId();
+    uiWebAuthDialog->m_description->setText(tr("Which passkey do you want to use for %1?").arg(id));
     uiWebAuthDialog->m_pinGroupBox->setVisible(false);
     uiWebAuthDialog->m_mainVerticalLayout->removeWidget(uiWebAuthDialog->m_pinGroupBox);
     uiWebAuthDialog->buttonBox->button(QDialogButtonBox::Retry)->setVisible(false);
@@ -134,8 +134,8 @@ void WebAuthDialog::setupSelectAccountUI()
 void WebAuthDialog::setupFinishCollectTokenUI()
 {
     clearSelectAccountButtons();
-    uiWebAuthDialog->m_headingLabel->setText(tr("Use your security key with ")
-                                             + uxRequest->relyingPartyId());
+    const QString &id = uxRequest->relyingPartyId();
+    uiWebAuthDialog->m_headingLabel->setText(tr("Use your security key with %1").arg(id));
     uiWebAuthDialog->m_description->setText(
             tr("Touch your security key again to complete the request."));
     uiWebAuthDialog->m_pinGroupBox->setVisible(false);
@@ -195,10 +195,9 @@ void WebAuthDialog::setupCollectPinUI()
         errorDetails = tr("Same as current PIN");
         break;
     }
-    if (!errorDetails.isEmpty()) {
-        errorDetails += tr(". ") + QString::number(pinRequestInfo.remainingAttempts)
-                + tr(" attempts remaining");
-    }
+    if (!errorDetails.isEmpty())
+        errorDetails += tr(". %n attempts remaining", nullptr, pinRequestInfo.remainingAttempts);
+
     uiWebAuthDialog->m_pinEntryErrorLabel->setText(errorDetails);
 }
 
