@@ -10,6 +10,7 @@
 #include "file_system_access_permission_context_qt.h"
 
 #include "base/base_paths.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -179,6 +180,7 @@ const struct
     { base::DIR_HOME, FILE_PATH_LITERAL("Library"), kBlockAllChildren },
     // Allow access to iCloud files.
     { base::DIR_HOME, FILE_PATH_LITERAL("Library/Mobile Documents"), kDontBlockChildren },
+    { kNoBasePathKey, FILE_PATH_LITERAL("/System/Volumes"), kBlockAllChildren },
 #endif
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // On Linux also block access to devices via /dev, as well as security
@@ -197,6 +199,71 @@ const struct
     // XDG_CONFIG_HOME when it is not set ~/.config?
 };
 
+#if defined(OS_MAC)
+// Returns a file path with the "/System/Volumes/Data" firmlink prefix stripped,
+// mapping paths on the macOS Data volume back to the root "/" namespace.
+//
+// On macOS 10.15+, storage is split into a read-only System volume mounted at
+// "/" and a read-write Data volume mounted at "/System/Volumes/Data". APFS
+// firmlinks map system directories (e.g., "/Users", "/Applications",
+// "/Library") between the two volumes without modifying standard POSIX
+// `realpath` representations. Stripping this prefix allows blocklist rules
+// defined against root-relative paths to match targets accessed through the
+// Data volume firmlink path.
+base::FilePath MaybeStripMacDataVolumePrefix(const base::FilePath& path) {
+  static constexpr base::FilePath::CharType kDataVolumePrefix[] =
+      FILE_PATH_LITERAL("/System/Volumes/Data");
+  base::FilePath data_volume_prefix(kDataVolumePrefix);
+  if (path == data_volume_prefix) {
+    return base::FilePath(FILE_PATH_LITERAL("/"));
+  }
+  base::FilePath stripped_path(FILE_PATH_LITERAL("/"));
+  if (data_volume_prefix.AppendRelativePath(path, &stripped_path)) {
+    return stripped_path;
+  }
+  return path;
+}
+#endif
+
+// A wrapper around `base::NormalizeFilePath` that returns its result instead of
+// using an out parameter.
+base::FilePath NormalizeFilePath(const base::FilePath& path) {
+  base::FilePath absolute_path = path;
+  if (!absolute_path.IsAbsolute()) {
+    absolute_path = base::MakeAbsoluteFilePath(absolute_path);
+  }
+
+  if (absolute_path.empty()) {
+    return absolute_path;
+  }
+
+  // TODO(crbug.com/368130513O): On Windows, this call will fail if the target
+  // file path is greater than MAX_PATH. We should decide how to handle this
+  // scenario.
+  // If the path is invalid, the `base::NormalizeFilePath` will also return
+  // false, so we return the empty path.
+  base::FilePath normalized_path;
+  if (!base::NormalizeFilePath(absolute_path, &normalized_path)) {
+    return absolute_path;
+  }
+  CHECK_EQ(path.empty(), normalized_path.empty());
+  return normalized_path;
+}
+
+// Normalizes `path` for sensitive directory blocklist checking. Resolves
+// symbolic links and canonicalizes the path when `should_normalize_file_path`
+// is true. On macOS, additionally strips the "/System/Volumes/Data" firmlink
+// prefix so paths on the Data volume map onto the root "/" blocklist namespace.
+base::FilePath NormalizeFilePathForBlocklist(const base::FilePath& path,
+                                             bool should_normalize_file_path = true) {
+  base::FilePath normalized_path =
+      should_normalize_file_path ? NormalizeFilePath(path) : path;
+#if BUILDFLAG(IS_MAC)
+  normalized_path = MaybeStripMacDataVolumePrefix(normalized_path);
+#endif
+  return normalized_path;
+}
+
 bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle_type)
 {
     DCHECK(!check_path.empty());
@@ -214,6 +281,8 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
     base::FilePath nearest_ancestor;
     int nearest_ancestor_path_key = kNoBasePathKey;
     BlockType nearest_ancestor_block_type = kDontBlockChildren;
+
+    base::FilePath checked_path = check_path;
     for (const auto &block : kBlockedPaths) {
         base::FilePath blocked_path;
         if (block.base_path_key != kNoBasePathKey) {
@@ -226,13 +295,16 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
             blocked_path = base::FilePath(block.path);
         }
 
-        if (check_path == blocked_path || check_path.IsParent(blocked_path)) {
-            VLOG(1) << "Blocking access to " << check_path << " because it is a parent of "
+       blocked_path = NormalizeFilePathForBlocklist(blocked_path);
+       checked_path = NormalizeFilePathForBlocklist(checked_path);
+
+        if (checked_path == blocked_path || checked_path.IsParent(blocked_path)) {
+            VLOG(1) << "Blocking access to " << checked_path << " because it is a parent of "
                     << blocked_path << " (" << block.base_path_key << ")";
             return true;
         }
 
-        if (blocked_path.IsParent(check_path)
+        if (blocked_path.IsParent(checked_path)
             && (nearest_ancestor.empty() || nearest_ancestor.IsParent(blocked_path))) {
             nearest_ancestor = blocked_path;
             nearest_ancestor_path_key = block.base_path_key;
@@ -253,7 +325,7 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
     if (nearest_ancestor_block_type == kDontBlockAppFolder) {
         // Relative path from the nearest blocklisted ancestor
         base::FilePath diff;
-        nearest_ancestor.AppendRelativePath(check_path, &diff);
+        nearest_ancestor.AppendRelativePath(checked_path, &diff);
 
         auto diff_components = diff.GetComponents();
         if (diff_components.size() > 0 && toQt(diff_components[0]).contains(QCoreApplication::applicationName())) {
@@ -263,7 +335,7 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
     }
 
     // The nearest ancestor blocks access to its children, so block access.
-    VLOG(1) << "Blocking access to " << check_path << " because it is inside " << nearest_ancestor
+    VLOG(1) << "Blocking access to " << checked_path << " because it is inside " << nearest_ancestor
             << " (" << nearest_ancestor_path_key << ")";
     return true;
 }
