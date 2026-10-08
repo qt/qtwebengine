@@ -387,16 +387,19 @@ void RenderWidgetHostViewQt::ShowWithVisibility(content::PageVisibilityState pag
 
 void RenderWidgetHostViewQt::Hide()
 {
-    Q_ASSERT(m_delegate);
     if (isPopup())
         m_isPopupInitializing = false;
-    m_delegate->hide();
+    // A view in contents the extension system created, such as an offscreen document, has no
+    // delegate, and Chromium hides the view of every speculative main frame it creates.
+    if (m_delegate)
+        m_delegate->hide();
+    else
+        m_deferredShow = false;
 }
 
 bool RenderWidgetHostViewQt::IsShowing()
 {
-    Q_ASSERT(m_delegate);
-    return m_delegate->isVisible();
+    return m_delegate && m_delegate->isVisible();
 }
 
 // Retrieve the bounds of the View, in screen coordinates.
