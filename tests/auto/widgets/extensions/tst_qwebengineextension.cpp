@@ -41,6 +41,7 @@ private Q_SLOTS:
     void installOffTheRecord();
     void loadInstalledExtensions();
     void serviceWorkerMessaging();
+    void anOffscreenDocumentCanBeCreated();
 
 private:
     int installedFiles();
@@ -402,6 +403,21 @@ void tst_QWebEngineExtension::serviceWorkerMessaging()
     QSignalSpy clearCacheSpy(m_profile, SIGNAL(clearHttpCacheCompleted()));
     m_profile->clearHttpCache();
     QTRY_COMPARE(clearCacheSpy.size(), 1);
+}
+
+void tst_QWebEngineExtension::anOffscreenDocumentCanBeCreated()
+{
+    // An offscreen document lives in contents the extension system creates itself, so its view
+    // has no delegate. Its first navigation creates a speculative main frame, whose view Chromium
+    // hides, and hiding a view without a delegate took the browser down.
+    QWebEngineExtensionInfo extension = loadExtensionSync(resourcesPath() + "offscreen_ext"_L1);
+    QVERIFY2(extension.isLoaded(), qPrintable(extension.error()));
+    m_manager->setExtensionEnabled(extension, true);
+
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->load(QUrl("chrome-extension://"_L1 + extension.id() + "/page.html"_L1));
+    QTRY_COMPARE(loadSpy.size(), 1);
+    QTRY_COMPARE(m_page->title(), "offscreen ready"_L1);
 }
 
 QTEST_MAIN(tst_QWebEngineExtension)
