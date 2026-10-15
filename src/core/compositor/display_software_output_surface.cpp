@@ -96,21 +96,28 @@ void DisplaySoftwareOutputSurface::Device::swapFrame()
     if (!m_swapCompletionCallback)
         return;
 
+    // The surface can be missing, e.g. if it could not be allocated in Resize().
+    // Keep the previous frame then, but still acknowledge the swap so that
+    // viz does not wait for it forever.
     SkPixmap skPixmap;
-    surface_->peekPixels(&skPixmap);
-    QImage image(reinterpret_cast<const uchar *>(skPixmap.addr()), viewport_pixel_size_.width(),
-                 viewport_pixel_size_.height(), skPixmap.rowBytes(),
-                 imageFormat(skPixmap.colorType()));
-    if (m_image.size() == image.size()) {
-        QRect damageRect = toQt(damage_rect_);
-        QPainter painter(&m_image);
-        painter.setCompositionMode(QPainter::CompositionMode_Source);
-        painter.drawImage(damageRect, image, damageRect);
-    } else {
-        m_image = image;
-        m_image.detach();
+    if (surface_ && surface_->peekPixels(&skPixmap) && skPixmap.addr()) {
+        QImage image(reinterpret_cast<const uchar *>(skPixmap.addr()), skPixmap.width(),
+                     skPixmap.height(), skPixmap.rowBytes(), imageFormat(skPixmap.colorType()));
+        if (m_image.size() == image.size()) {
+            QRect damageRect = toQt(damage_rect_);
+            QPainter painter(&m_image);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            painter.drawImage(damageRect, image, damageRect);
+        } else {
+            m_image = image;
+            m_image.detach();
+        }
+        m_imageDevicePixelRatio = m_devicePixelRatio;
+    } else if (!viewport_pixel_size_.IsEmpty()) {
+        // An empty size is expected to have no surface, only warn about real
+        // allocation failures.
+        qCWarning(lcWebEngineCompositor, "Software output surface is not available, skipping frame");
     }
-    m_imageDevicePixelRatio = m_devicePixelRatio;
     m_taskRunner->PostTask(
             FROM_HERE, base::BindOnce(std::move(m_swapCompletionCallback), toGfx(m_image.size())));
     m_taskRunner.reset();
