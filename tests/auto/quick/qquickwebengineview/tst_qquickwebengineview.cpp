@@ -81,6 +81,7 @@ private Q_SLOTS:
     void accessibilityRect();
 #endif
     void htmlSelectPopup();
+    void htmlSelectPopupInScrolledFlickable();
     void savePage_data();
     void savePage();
     void javaScriptConsoleMessage();
@@ -1333,6 +1334,15 @@ void tst_QQuickWebEngineView::accessibilityRect()
 
 #endif // QT_CONFIG(accessibility)
 
+static QQuickWindow *findPopup(QQuickView *view)
+{
+    for (auto *w : QGuiApplication::topLevelWindows()) {
+        if (w->transientParent() == view)
+            return qobject_cast<QQuickWindow *>(w);
+    }
+    return nullptr;
+};
+
 void tst_QQuickWebEngineView::htmlSelectPopup()
 {
     m_window->show();
@@ -1352,13 +1362,6 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
 
     makeTouch(view.window(), elementCenter(&view, "select"));
     QPointer<QQuickWindow> popup;
-    auto findPopup = [](QQuickView *view) -> QQuickWindow * {
-        for (auto window : QApplication::topLevelWindows()) {
-            if (window->transientParent() == view)
-                return dynamic_cast<QQuickWindow *>(window);
-        }
-        return nullptr;
-    };
     QTRY_VERIFY((popup = findPopup(m_window.get())));
     QCOMPARE(activeElementId(&view), QStringLiteral("select"));
 
@@ -1367,6 +1370,75 @@ void tst_QQuickWebEngineView::htmlSelectPopup()
     makeTouch(popup, QPoint(popup->width() / 2, popup->height() / 2));
     QTRY_VERIFY(!popup);
     QCOMPARE(evaluateJavaScriptSync(&view, "document.getElementById('select').value").toString(), QStringLiteral("O2"));
+}
+
+void tst_QQuickWebEngineView::htmlSelectPopupInScrolledFlickable()
+{
+    QQmlEngine engine;
+    QQmlComponent component(&engine);
+    component.setData(QByteArrayLiteral("import QtQuick\n"
+                                        "import QtWebEngine\n"
+                                        "Flickable {\n"
+                                        "    width: 400; height: 300\n"
+                                        "    contentWidth: 800; contentHeight: 600\n"
+                                        "    Item {\n"
+                                        "        anchors.fill: parent\n"
+                                        "        WebEngineView {\n"
+                                        "            objectName: 'webEngineView'\n"
+                                        "            x: 100; y: 100; width: 300; height: 200\n"
+                                        "        }\n"
+                                        "    }\n"
+                                        "}\n"),
+                      QUrl());
+    QQuickView window;
+    std::unique_ptr<QQuickItem> flickable(qobject_cast<QQuickItem *>(component.create()));
+    QVERIFY2(flickable, qPrintable(component.errorString()));
+    flickable->setParentItem(window.contentItem());
+    window.resize(400, 300);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    auto *view = flickable->findChild<QQuickWebEngineView *>("webEngineView");
+    QVERIFY(view);
+    view->loadHtml("<html><body style='margin:0'>"
+                   "<select id='select'>"
+                   "<option value='O1'>O1</option><option value='O2'>O2</option></select>"
+                   "</body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    QSignalSpy frameSwappedSpy(&window, &QQuickWindow::frameSwapped);
+    flickable->setProperty("contentX", 60);
+    flickable->setProperty("contentY", 80);
+    QCOMPARE(view->mapToScene(QPointF(0, 0)), QPointF(40, 20)); // x: 100 - 60 , y: 100 - 80
+    QVERIFY(frameSwappedSpy.wait());
+
+    // we need bounidng box of selcet instead of just 'elementCenter'
+    const QVariantList rect =
+            evaluateJavaScriptSync(
+                    view,
+                    "(function() {"
+                    "   var rect = document.getElementById('select').getBoundingClientRect();"
+                    "   return [rect.left, rect.top, rect.width, rect.height];"
+                    "})()")
+                    .toList();
+    QCOMPARE(rect.size(), 4);
+    const QRectF selectRect(rect[0].toReal(), rect[1].toReal(), rect[2].toReal(), rect[3].toReal());
+    const QPoint selectCenter = view->mapToScene(selectRect.center()).toPoint();
+    QTest::touchEvent(&window, touchDevice()).press(1, selectCenter);
+    QTest::touchEvent(&window, touchDevice()).release(1, selectCenter);
+
+    QPointer<QQuickWindow> popup;
+    QTRY_VERIFY(popup = findPopup(&window));
+    QTRY_VERIFY(popup->isVisible() && popup->width() > 0);
+
+    // check if popup opens below the select element, allow roughly 2 px rounding errro on each axis
+    const QPoint expected = window.mapToGlobal(view->mapToScene(selectRect.bottomLeft()).toPoint());
+    QVERIFY2((popup->position() - expected).manhattanLength() <= 4,
+             qPrintable(QString("popup at %1,%2, expected at %3,%4")
+                                .arg(popup->x())
+                                .arg(popup->y())
+                                .arg(expected.x())
+                                .arg(expected.y())));
 }
 
 void tst_QQuickWebEngineView::savePage_data()
