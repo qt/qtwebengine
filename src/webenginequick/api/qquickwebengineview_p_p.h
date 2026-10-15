@@ -150,6 +150,7 @@ public:
     static void bindViewAndDelegateItem(QQuickWebEngineViewPrivate *viewPrivate, QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem);
     void delegateItemChanged(QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *oldDelegateItem,
                              QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *newDelegateItem);
+    void trackAncestors();
 
     QQuickWebEngineProfile *m_profile;
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
@@ -171,6 +172,7 @@ public:
     bool m_isBeingAdopted;
     mutable QQuickWebEngineAction *actions[QQuickWebEngineView::WebActionCount];
     QtWebEngineCore::RenderWidgetHostViewQtDelegateItem *delegateItem = nullptr;
+    QList<QMetaObject::Connection> m_ancestorConnections;
 
     bool profileInitialized() const;
     QQuickWebEngineScriptCollection *getUserScripts();

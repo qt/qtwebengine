@@ -1117,6 +1117,35 @@ void QQuickWebEngineViewPrivate::delegateItemChanged(QtWebEngineCore::RenderWidg
     }
 }
 
+void QQuickWebEngineViewPrivate::trackAncestors()
+{
+    Q_Q(QQuickWebEngineView);
+
+    for (const QMetaObject::Connection &connection : std::as_const(m_ancestorConnections))
+        QObject::disconnect(connection);
+    m_ancestorConnections.clear();
+
+    const auto polishDelegate = [q]() {
+        if (q->d_ptr && q->d_ptr->delegateItem)
+            q->d_ptr->delegateItem->polish();
+    };
+    const auto ancestorReparented = [q, polishDelegate]() {
+        if (!q->d_ptr)
+            return;
+        q->d_ptr->trackAncestors();
+        polishDelegate();
+    };
+
+    for (QQuickItem *item = q->parentItem(); item; item = item->parentItem()) {
+        m_ancestorConnections.append(
+                QObject::connect(item, &QQuickItem::xChanged, q, polishDelegate));
+        m_ancestorConnections.append(
+                QObject::connect(item, &QQuickItem::yChanged, q, polishDelegate));
+        m_ancestorConnections.append(
+                QObject::connect(item, &QQuickItem::parentChanged, q, ancestorReparented));
+    }
+}
+
 void QQuickWebEngineViewPrivate::updateAction(QQuickWebEngineView::WebAction action) const
 {
     QQuickWebEngineAction *a = actions[action];
@@ -1910,26 +1939,7 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
             d_ptr->adapter->setVisible(isVisible());
     }
     if (change == ItemParentHasChanged) {
-        // track global offset changes
-        QQuickItem *item = value.item;
-        // detach
-        while (item) {
-            disconnect(item, nullptr, this, nullptr);
-            item = item->parentItem();
-        }
-        // attach
-        item = parentItem();
-        while (item) {
-            connect(item, &QQuickItem::xChanged, this, [this]() {
-                if (d_ptr && d_ptr->delegateItem)
-                    d_ptr->delegateItem->polish();
-            });
-            connect(item, &QQuickItem::yChanged, this, [this]() {
-                if (d_ptr && d_ptr->delegateItem)
-                    d_ptr->delegateItem->polish();
-            });
-            item = item->parentItem();
-        }
+        d_ptr->trackAncestors();
         if (d_ptr->delegateItem)
             d_ptr->delegateItem->polish();
     }
