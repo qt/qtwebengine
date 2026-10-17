@@ -1,5 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef FILE_SYSTEM_ACCESS_PERMISSION_CONTEXT_FACTORY_QT_H
 #define FILE_SYSTEM_ACCESS_PERMISSION_CONTEXT_FACTORY_QT_H

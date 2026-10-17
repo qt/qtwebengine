@@ -1,5 +1,6 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "native_skia_output_device_direct3d11.h"
 
@@ -82,7 +83,7 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
     hr = device1->OpenSharedResource1(sharedHandle, IID_PPV_ARGS(&qtTexture));
     if (FAILED(hr)) {
         qWarning("D3D: Failed to share D3D11 texture (%ls). This will result in failed rendering. "
-                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu",
                  qUtf16Printable(QSystemError::windowsComString(hr)));
         ::CloseHandle(sharedHandle);
         return nullptr;

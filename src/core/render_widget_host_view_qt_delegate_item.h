@@ -95,6 +95,7 @@ protected:
     void inputMethodEvent(QInputMethodEvent *event) override;
     void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     void itemChange(ItemChange change, const ItemChangeData &value) override;
+    void releaseResources() override;
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
     void adapterClientChanged(WebContentsAdapterClient *client) override;
@@ -104,7 +105,6 @@ private Q_SLOTS:
     void onBeforeRendering();
     void onAfterFrameEnd();
     void onWindowPosChanged();
-    void releaseTextureResources();
     void onHide();
 
 private:

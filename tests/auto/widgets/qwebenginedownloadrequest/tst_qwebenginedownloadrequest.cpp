@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <util.h>
+#include <visualutil.h>
 
 #include <QCoreApplication>
 #include <QSignalSpy>
@@ -131,6 +132,7 @@ void tst_QWebEngineDownloadRequest::initTestCase()
     m_view->setPage(m_page);
     m_view->resize(640, 480);
     m_view->show();
+    m_view->window()->windowHandle()->requestActivate();
 }
 
 void tst_QWebEngineDownloadRequest::init()
@@ -392,6 +394,8 @@ void tst_QWebEngineDownloadRequest::downloadLink_data()
 
 void tst_QWebEngineDownloadRequest::downloadLink()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QFETCH(UserAction, userAction);
     QFETCH(bool, anchorHasDownloadAttribute);
     QFETCH(QByteArray, fileName);
@@ -529,6 +533,8 @@ void tst_QWebEngineDownloadRequest::downloadTwoLinks_data()
 
 void tst_QWebEngineDownloadRequest::downloadTwoLinks()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QFETCH(UserAction, action1);
     QFETCH(UserAction, action2);
 
@@ -1348,6 +1354,8 @@ void tst_QWebEngineDownloadRequest::downloadDataUrls_data()
 
 void tst_QWebEngineDownloadRequest::downloadDataUrls()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     QFETCH(QByteArray, htmlData);
     QFETCH(QString, expectedFileName);
     // Set up HTTP server

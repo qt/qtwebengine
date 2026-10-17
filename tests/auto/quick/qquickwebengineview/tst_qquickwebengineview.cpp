@@ -5,6 +5,7 @@
 #include "testwindow.h"
 #include "quickutil.h"
 #include "util.h"
+#include "visualutil.h"
 
 #include <QScopedPointer>
 #include <QtCore/qelapsedtimer.h>
@@ -448,7 +449,11 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
 
 void tst_QQuickWebEngineView::inputMethod()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();
@@ -550,8 +555,11 @@ void tst_QQuickWebEngineView::interruptImeTextComposition_data()
 
 void tst_QQuickWebEngineView::interruptImeTextComposition()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();
@@ -600,8 +608,11 @@ void tst_QQuickWebEngineView::interruptImeTextComposition()
 
 void tst_QQuickWebEngineView::inputContextQueryInput()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     TestInputContext testContext;
 
     QQuickWebEngineView *view = webEngineView();
@@ -745,8 +756,11 @@ void tst_QQuickWebEngineView::inputContextQueryInput()
 
 void tst_QQuickWebEngineView::inputMethodHints()
 {
+    SKIP_IF_NO_WINDOW_ACTIVATION();
+
     m_window->show();
-    QTRY_VERIFY(qApp->focusObject());
+    m_window->requestActivate();
+    QVERIFY(QTest::qWaitForWindowActive(m_window.get()));
     QQuickItem *input;
 
     QQuickWebEngineView *view = webEngineView();

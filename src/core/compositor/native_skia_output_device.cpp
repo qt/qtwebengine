@@ -1,5 +1,6 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "native_skia_output_device.h"
 
@@ -170,6 +171,11 @@ void NativeSkiaOutputDevice::releaseTexture()
     }
 }
 
+bool NativeSkiaOutputDevice::hasResources()
+{
+    return m_frontBuffer && m_frontBuffer->textureCleanupCallback;
+}
+
 void NativeSkiaOutputDevice::releaseResources()
 {
     if (m_frontBuffer)
@@ -215,7 +221,10 @@ NativeSkiaOutputDevice::Buffer::Buffer(NativeSkiaOutputDevice *parent)
 
 NativeSkiaOutputDevice::Buffer::~Buffer()
 {
-    DCHECK(!textureCleanupCallback);
+    // FIXME: Can't be called in case of threaded rendering with unexposed window.
+    //DCHECK(!textureCleanupCallback);
+    if (textureCleanupCallback)
+        qWarning("NativeSkiaOutputDevice: Leaking graphics resources.");
 
     if (m_scopedSkiaWriteAccess)
         endWriteSkia(false);
