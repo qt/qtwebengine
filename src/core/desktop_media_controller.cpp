@@ -117,7 +117,8 @@ void DesktopMediaListQtPrivate::init()
         base::OnceCallback<void()> onComplete = base::BindOnce(
                 [](DesktopMediaListQtPrivate *observer) {
                     Q_EMIT observer->q_ptr->initialized();
-                    observer->startUpdating();
+                    if (!observer->mediaList->IsSourceListDelegated())
+                        observer->startUpdating();
                 },
                 this);
         mediaList->Update(std::move(onComplete));
