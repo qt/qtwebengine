@@ -25,6 +25,7 @@ qt_webengine_set_version(libpng 1.6.0)
 qt_webengine_set_version(libtiff 4.5.0)
 qt_webengine_set_version(re2 11.0.0)
 qt_webengine_set_version(icu 70)
+qt_webengine_set_version(libxml2 2.13.0)
 qt_webengine_set_version(opus 1.3.1)
 qt_webengine_set_version(vpx 1.10.0)
 qt_webengine_set_version(libavutil 58.29.100)
@@ -98,7 +99,7 @@ if(PkgConfig_FOUND)
     pkg_check_modules(WEBP libwebp libwebpmux libwebpdemux)
     pkg_check_modules(LCMS2 lcms2)
     pkg_check_modules(FREETYPE freetype2 IMPORTED_TARGET)
-    pkg_check_modules(LIBXML2 libxml-2.0 libxslt IMPORTED_TARGET)
+    pkg_check_modules(LIBXML2 libxml-2.0>=${QT_CONFIGURE_CHECK_libxml2_version} libxslt IMPORTED_TARGET)
     pkg_check_modules(FFMPEG libavcodec>=${QT_CONFIGURE_CHECK_libavcodec_version}
                              libavformat>=${QT_CONFIGURE_CHECK_libavformat_version}
                              libavutil>=${QT_CONFIGURE_CHECK_libavutil_version}
