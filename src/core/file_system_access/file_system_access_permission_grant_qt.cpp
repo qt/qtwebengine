@@ -18,10 +18,46 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/disallow_activation_reason.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/display/types/display_constants.h"
 #include "url/origin.h"
 
 namespace QtWebEngineCore {
+
+// Validates that the requesting frame is authorized to access the File System
+// Access API before checking or granting permissions.
+//
+// Returns a failure outcome if `rfh` is null, embedded within a fenced frame,
+// or executing in a cross-origin or third-party context. Returns base::ok()
+// when the frame context is authorized.
+base::expected<void, PermissionRequestOutcome> FileSystemAccessPermissionGrantQt::ValidateRequestingFrame(
+    content::RenderFrameHost* rfh) {
+  if (!rfh) {
+    return base::unexpected(PermissionRequestOutcome::kInvalidFrame);
+  }
+
+  // Fenced frames must not access local file system data or prompt the user.
+  if (rfh->IsNestedWithinFencedFrame()) {
+    return base::unexpected(PermissionRequestOutcome::kInvalidFrame);
+  }
+
+  content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents) {
+    // Requested from a worker, or a no longer existing tab.
+    return base::unexpected(PermissionRequestOutcome::kInvalidFrame);
+  }
+
+  // Reject third-party iframes and partitioned contexts before checking
+  // existing grants. This prevents cross-origin frames from inheriting or
+  // upgrading permissions granted to the top-level origin.
+  url::Origin embedding_origin = url::Origin::Create(web_contents->GetLastCommittedURL());
+  if (embedding_origin != m_origin ||
+      rfh->GetStorageKey().IsThirdPartyContext()) {
+    return base::unexpected(PermissionRequestOutcome::kThirdPartyContext);
+  }
+
+  return base::ok();
+}
 
 FileSystemAccessPermissionGrantQt::FileSystemAccessPermissionGrantQt(
         base::WeakPtr<FileSystemAccessPermissionContextQt> context, const url::Origin &origin,
@@ -38,6 +74,18 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
         content::GlobalRenderFrameHostId frame_id, UserActivationState user_activation_state,
         base::OnceCallback<void(PermissionRequestOutcome)> callback)
 {
+    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
+
+    // Validate the security context of the calling frame before evaluating
+    // grants. Cross-origin frames must be rejected even if the target origin
+    // already holds an active or persisted grant.
+    if (auto validation_result = ValidateRequestingFrame(rfh);
+        !validation_result.has_value()) {
+      std::move(callback).Run(validation_result.error());
+      return;
+    }
+
+
     // Check if a permission request has already been processed previously. This
     // check is done first because we don't want to reset the status of a
     // permission if it has already been granted.
@@ -49,13 +97,6 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
     }
 
     // Otherwise, perform checks and ask the user for permission.
-
-    content::RenderFrameHost *rfh = content::RenderFrameHost::FromID(frame_id);
-    if (!rfh) {
-        // Requested from a no longer valid render frame host.
-        std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame);
-        return;
-    }
 
     // Don't show request permission UI for an inactive RenderFrameHost as the
     // page might not distinguish properly between user denying the permission
@@ -80,15 +121,7 @@ void FileSystemAccessPermissionGrantQt::RequestPermission(
 
     content::WebContents *web_contents = content::WebContents::FromRenderFrameHost(rfh);
     if (!web_contents) {
-        // Requested from a worker, or a no longer existing tab.
         std::move(callback).Run(PermissionRequestOutcome::kInvalidFrame);
-        return;
-    }
-
-    url::Origin embedding_origin = url::Origin::Create(web_contents->GetLastCommittedURL());
-    if (embedding_origin != m_origin) {
-        // Third party iframes are not allowed to request more permissions.
-        std::move(callback).Run(PermissionRequestOutcome::kThirdPartyContext);
         return;
     }
 
