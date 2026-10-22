@@ -6,6 +6,8 @@
 #define FILE_SYSTEM_ACCESS_PERMISSION_GRANT_QT_H
 
 #include "content/public/browser/file_system_access_permission_grant.h"
+
+#include "base/types/expected.h"
 #include "url/origin.h"
 #include "file_system_access_permission_context_qt.h"
 #include "content/public/browser/global_routing_id.h"
@@ -15,6 +17,7 @@ namespace QtWebEngineCore {
 
 using HandleType = content::FileSystemAccessPermissionContext::HandleType;
 using GrantType = FileSystemAccessPermissionContextQt::GrantType;
+using PermissionRequestOutcome = content::FileSystemAccessPermissionGrant::PermissionRequestOutcome;
 
 class FileSystemAccessPermissionGrantQt : public content::FileSystemAccessPermissionGrant
 {
@@ -45,6 +48,9 @@ protected:
 private:
     void OnPermissionRequestResult(base::OnceCallback<void(PermissionRequestOutcome)> callback,
                                    permissions::PermissionAction result);
+    base::expected<void, PermissionRequestOutcome>
+        ValidateRequestingFrame(content::RenderFrameHost* rfh);
+
 
     base::WeakPtr<FileSystemAccessPermissionContextQt> const m_context;
     const url::Origin m_origin;
