@@ -1,5 +1,5 @@
 version: 2
-tags: [git]
+tags: ["git", "documentation"]
 accept_configuration:
   condition: property
   property: features
