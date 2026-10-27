@@ -727,6 +727,7 @@ WebEngineContext::WebEngineContext()
     disableFeatures.push_back(features::kBackgroundFetch.name);
     disableFeatures.push_back(features::kInstalledApp.name);
     parsedCommandLine.AppendSwitchASCII(switches::kDisableBlinkFeatures, "WebOTP");
+    disableFeatures.push_back(features::kWebGPUService.name);
     disableFeatures.push_back(features::kWebOTP.name);
     disableFeatures.push_back(features::kWebPayments.name);
     disableFeatures.push_back(features::kWebUsb.name);
