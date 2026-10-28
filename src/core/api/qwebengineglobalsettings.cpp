@@ -83,7 +83,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode)
+    \fn bool QWebEngineGlobalSettings::setDnsMode(DnsMode dnsMode)
 
     Sets \a dnsMode for DNS-over-HTTPS host resolution.
 
