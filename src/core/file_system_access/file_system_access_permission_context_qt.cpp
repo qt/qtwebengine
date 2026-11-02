@@ -107,7 +107,13 @@ bool MaybeIsLocalUNCPath(const base::FilePath& path) {
 }
 #endif
 
-enum BlockType { kBlockAllChildren, kBlockNestedDirectories, kDontBlockChildren, kDontBlockAppFolder };
+enum BlockType {
+    kBlockAllChildren,
+    kBlockNestedDirectories,
+    kDontBlockChildren,
+    kDontBlockAppFolder,
+    kBlockWrite
+};
 
 const struct
 {
@@ -220,6 +226,34 @@ const struct
     // XDG_CONFIG_HOME when it is not set ~/.config?
 };
 
+const struct
+{
+    // Explicit path to block instead of using |base_path_key|. Set to nullptr to
+    // use |base_path_key| on its own. If both |base_path_key| and |path| are set,
+    // |path| is treated relative to the path |base_path_key| resolves to.
+    const base::FilePath::CharType *path;
+
+    // If this is set to kDontBlockChildren, only the given path and its parents
+    // are blocked. If this is set to kBlockAllChildren, all children of the given
+    // path are blocked as well. Finally if this is set to kBlockNestedDirectories
+    // access is allowed to individual files in the directory, but nested
+    // directories are still blocked.
+    // The BlockType of the nearest ancestor of a path to check is what ultimately
+    // determines if a path is blocked or not. If a blocked path is a descendent
+    // of another blocked path, then it may override the child-blocking policy of
+    // its ancestor. For example, if /home blocks all children, but
+    // /home/downloads does not, then /home/downloads/file.ext will *not* be
+    // blocked.
+    BlockType type;
+} kBlockedSuffixes[] = {
+    { FILE_PATH_LITERAL(".git/hooks"), kBlockWrite },
+    // Block write access to the repository config and to submodule git
+    // directories, which have their own hooks and config, see
+    // crbug.com/572269631 and crbug.com/571913154.
+    { FILE_PATH_LITERAL(".git/config"), kBlockWrite },
+    { FILE_PATH_LITERAL(".git/modules"), kBlockWrite },
+};
+
 #if defined(OS_MAC)
 // Returns a file path with the "/System/Volumes/Data" firmlink prefix stripped,
 // mapping paths on the macOS Data volume back to the root "/" namespace.
@@ -285,7 +319,9 @@ base::FilePath NormalizeFilePathForBlocklist(const base::FilePath& path,
   return normalized_path;
 }
 
-bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle_type)
+bool ShouldBlockAccessToPath(const base::FilePath &check_path,
+                             HandleType handle_type,
+                             FileSystemAccessPermissionContextQt::UserAction user_action)
 {
     DCHECK(!check_path.empty());
     DCHECK(check_path.IsAbsolute());
@@ -331,6 +367,62 @@ bool ShouldBlockAccessToPath(const base::FilePath &check_path, HandleType handle
             nearest_ancestor_path_key = block.base_path_key;
             nearest_ancestor_block_type = block.type;
         }
+    }
+
+    std::vector<base::FilePath::StringType> check_path_components =
+        check_path.GetComponents();
+
+    // Checks if the path components contain the components of the suffix rule.
+    // For example, if the rule is `.git/hooks`, it will block paths like
+    // `/foo/bar/.git/hooks`. The `std::search` identifies the matching subrange
+    // using case-insensitive comparison and constructs a `current_path` from the
+    // root up to the end of the matched subrange (e.g., `/foo/bar/.git/hooks`).
+    // This path is then evaluated against the regular block rules.
+    for (const auto& suffix : kBlockedSuffixes) {
+      base::FilePath suffix_path(suffix.path);
+      std::vector<base::FilePath::StringType> suffix_components =
+          suffix_path.GetComponents();
+      if (suffix_components.empty()) {
+        continue;
+      }
+
+      auto suffix_it = check_path_components.begin();
+      while (true) {
+        suffix_it = std::search(suffix_it, check_path_components.end(), suffix_components.begin(),
+                         suffix_components.end(),
+                         base::FilePath::CompareEqualIgnoreCase);
+        if (suffix_it == check_path_components.end()) {
+          break;
+        }
+
+        base::FilePath current_path = base::FilePath(check_path_components[0]);
+        for (auto path_it = check_path_components.begin() + 1;
+             path_it != suffix_it + suffix_components.size(); ++path_it) {
+          current_path = current_path.Append(*path_it);
+        }
+
+        if (suffix.type == BlockType::kBlockWrite &&
+            user_action != FileSystemAccessPermissionContextQt::UserAction::kSave &&
+            user_action != FileSystemAccessPermissionContextQt::UserAction::kDragAndDrop) {
+          ++suffix_it;
+          continue;
+        }
+
+        if (check_path == current_path || check_path.IsParent(current_path)) {
+          LOG(ERROR) << "Blocking access to " << check_path
+                   << " because it is a parent of " << current_path;
+          return true;
+        }
+
+        if (current_path.IsParent(check_path) &&
+            (nearest_ancestor.empty() || nearest_ancestor.IsParent(current_path))) {
+          nearest_ancestor = current_path;
+          nearest_ancestor_block_type = suffix.type;
+        }
+        return false;
+
+        ++suffix_it;
+      }
     }
 
     // The path we're checking is not in a potentially blocked directory, or the
@@ -487,7 +579,7 @@ void FileSystemAccessPermissionContextQt::ConfirmSensitiveEntryAccess(
 
     base::ThreadPool::PostTaskAndReplyWithResult(
             FROM_HERE, { base::MayBlock(), base::TaskPriority::USER_VISIBLE },
-            base::BindOnce(&ShouldBlockAccessToPath, info.path, handle_type),
+            base::BindOnce(&ShouldBlockAccessToPath, info.path, handle_type, user_action),
             base::BindOnce(&FileSystemAccessPermissionContextQt::DidConfirmSensitiveDirectoryAccess,
                            m_weakFactory.GetWeakPtr(), origin, info.path, handle_type, user_action, frame_id,
                            std::move(callback)));
