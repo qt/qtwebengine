@@ -155,6 +155,19 @@ const struct
     { base::DIR_HOME, FILE_PATH_LITERAL(".ssh"), kBlockAllChildren },
     // And limit access to ~/.gnupg as well.
     { base::DIR_HOME, FILE_PATH_LITERAL(".gnupg"), kBlockAllChildren },
+    // ~/.config holds configuration for many cross-platform tools, so block
+    // it on all platforms, see crbug.com/569012015.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".config"), kBlockAllChildren },
+      // Shell startup files in the home directory, including the ones read by
+      // Git Bash on Windows, see crbug.com/558362029.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".bash_profile"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".bash_login"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".bashrc"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".profile"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".zshenv"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".zprofile"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".zshrc"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".zlogin"), kBlockAllChildren },
 #if defined(OS_WIN)
     // Some Windows specific directories to block, basically all apps, the
     // operating system itself, as well as configuration data for apps.
@@ -181,6 +194,9 @@ const struct
     // Allow access to iCloud files.
     { base::DIR_HOME, FILE_PATH_LITERAL("Library/Mobile Documents"), kDontBlockChildren },
     { kNoBasePathKey, FILE_PATH_LITERAL("/System/Volumes"), kBlockAllChildren },
+    // Block access to devices via /dev, matching Linux, see
+    // crbug.com/569012543.
+    { kNoBasePathKey, FILE_PATH_LITERAL("/dev"),kBlockAllChildren },
 #endif
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // On Linux also block access to devices via /dev, as well as security
@@ -188,12 +204,17 @@ const struct
     { kNoBasePathKey, FILE_PATH_LITERAL("/dev"), kBlockAllChildren },
     { kNoBasePathKey, FILE_PATH_LITERAL("/sys"), kBlockAllChildren },
     { kNoBasePathKey, FILE_PATH_LITERAL("/proc"), kBlockAllChildren },
-    // And block all of ~/.config, matching the similar restrictions on mac
-    // and windows.
-    { base::DIR_HOME, FILE_PATH_LITERAL(".config"), kBlockAllChildren },
     // Block ~/.dbus as well, just in case, although there probably isn't much a
     // website can do with access to that directory and its contents.
     { base::DIR_HOME, FILE_PATH_LITERAL(".dbus"), kBlockAllChildren },
+    // Block per-user application data, see crbug.com/561996724.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".local/share"), kBlockAllChildren },
+    // Block the legacy per-user fontconfig configuration, see
+    // crbug.com/559780982. The current location is under ~/.config.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".fonts.conf"), kBlockAllChildren },
+    { base::DIR_HOME, FILE_PATH_LITERAL(".fonts.conf.d"), kBlockAllChildren },
+      // Block the per-user NSS database, see crbug.com/557367241.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".pki"), kBlockAllChildren },
 #endif
     // TODO(https://crbug.com/984641): Refine this list, for example add
     // XDG_CONFIG_HOME when it is not set ~/.config?
