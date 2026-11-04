@@ -3,13 +3,12 @@
 // Qt-Security score:significant reason:default
 
 #include "qtwebenginecoreglobal.h"
+#include "browser_accessibility_manager_qt.h"
 
 #include <QtCore/qdebug.h>
-#include <QtGui/qtguiglobal.h>
 
 #if QT_CONFIG(accessibility)
 #include "browser_accessibility_qt.h"
-#include "browser_accessibility_manager_qt.h"
 #include "render_widget_host_view_qt.h" // WebContentsAccessibilityQt
 
 #include "ui/accessibility/ax_enums.mojom.h"
