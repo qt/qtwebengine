@@ -8,7 +8,9 @@
 #include "ui/accessibility/platform/browser_accessibility_manager.h"
 
 #include <QtCore/qtclasshelpermacros.h>
-#include <QtCore/qtconfigmacros.h>
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(accessibility)
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface)
 QT_FORWARD_DECLARE_CLASS(QWebEngineSettings)
@@ -45,4 +47,5 @@ private:
 
 }
 
+#endif // QT_CONFIG(accessibility)
 #endif // BROWSER_ACCESSIBILITY_MANAGER_QT_H
