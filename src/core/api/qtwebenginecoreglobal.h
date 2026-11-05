@@ -22,6 +22,10 @@ Q_WEBENGINECORE_EXPORT Q_DECL_CONST_FUNCTION const char *qWebEngineChromiumSecur
 
 Q_WEBENGINECORE_EXPORT QString qWebEngineGetDomainAndRegistry(const QUrl &url);
 
+#ifndef QT_DEPRECATED_VERSION_X_6_15
+#define QT_DEPRECATED_VERSION_X_6_15(x)
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QTWEBENGINECOREGLOBAL_H
