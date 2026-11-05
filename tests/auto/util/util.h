@@ -228,7 +228,7 @@ public:
 
         const QUrl requestUrl = job->requestUrl();
         const QString requestPath = requestUrl.path();
-        auto file = std::make_unique<QFile>(u":resources/" + requestPath, job);
+        auto file = std::make_unique<QFile>(QString(u":resources/") + requestPath, job);
         if (!file->exists() || file->size() == 0) {
             qWarning("QResource '%s' not found or is empty", qUtf8Printable(requestPath));
             job->fail(QWebEngineUrlRequestJob::UrlNotFound);
