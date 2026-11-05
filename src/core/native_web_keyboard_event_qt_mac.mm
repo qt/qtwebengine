@@ -15,6 +15,7 @@
 #include "native_web_keyboard_event_qt.h"
 
 #include <AppKit/AppKit.h>
+#include <Carbon/Carbon.h>
 
 #include "base/apple/owned_objc.h"
 
@@ -102,7 +103,16 @@ QKeyEvent *ToKeyEvent(base::apple::OwnedNSEvent event)
         key = QAppleKeyMapper::fromCocoaKey(character);
     }
 
-    const QString text = QString::fromNSString(characters);
+    QString text = QString::fromNSString(characters);
+
+    // A lock key would otherwise end up as key 0 with a "\0" text. As the forwarded event
+    // is not spontaneous, it goes through shortcut lookup, which may cause the next key
+    // press to be swallowed.
+    if (nativeVirtualKey == kVK_CapsLock) {
+        key = Qt::Key_CapsLock;
+        text.clear();
+    }
+
     bool autorep = nsevent.ARepeat;
 
     return new QKeyEvent(type, key, modifiers, nativeScanCode, nativeVirtualKey, nativeModifiers,
