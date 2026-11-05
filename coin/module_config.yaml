@@ -104,9 +104,14 @@ instructions:
       variableName: QTWEBENGINE_GN_THREADS
       variableValue: "1"
       enable_if:
-        condition: property
-        property: host.os
-        equals_value: MacOS
+        condition: or
+        conditions:
+          - condition: property
+            property: host.os
+            equals_value: MacOS
+          - condition: property
+            property: host.os
+            equals_value: Windows
     - type: EnvironmentVariable
       variableName: BUILD_DOCUMENTATION
       variableValue: "1"
