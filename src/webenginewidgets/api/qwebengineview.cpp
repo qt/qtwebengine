@@ -650,8 +650,10 @@ void QWebEngineViewPrivate::focusContainer()
 void QWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
 {
     Q_Q(QWebEngineView);
-    if (q->parentWidget())
-        QGuiApplication::sendEvent(q->parentWidget(), event);
+    if (q->parentWidget()) {
+        QSpontaneKeyEvent::makeSpontaneous(event);
+        qApp->notify(q->parentWidget(), event);
+    }
 }
 
 bool QWebEngineViewPrivate::passOnFocus(bool reverse)
