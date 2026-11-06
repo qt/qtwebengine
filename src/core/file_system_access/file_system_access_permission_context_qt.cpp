@@ -252,6 +252,10 @@ const struct
     // crbug.com/572269631 and crbug.com/571913154.
     { FILE_PATH_LITERAL(".git/config"), kBlockWrite },
     { FILE_PATH_LITERAL(".git/modules"), kBlockWrite },
+    // Block write access to */.mvn, which holds Maven project and JVM
+    // configuration (such as jvm.config, maven.config, and extensions.xml),
+    // see crbug.com/578500839.
+    { FILE_PATH_LITERAL(".mvn"), kBlockWrite },
 };
 
 #if defined(OS_MAC)
