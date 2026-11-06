@@ -104,6 +104,8 @@ path = ["**/doc/images/**",
         "config_help.txt",
         "src/core/doc/style/tree_config.xml",
         "src/pdf/doc/style/tree_config.xml",
+        "SECURITY.md",
+        "CODE_OF_CONDUCT.md",
         "CONTRIBUTING.md",
         "**/README", "**/README.md", "**/README.txt"]
 comment = "documentation"

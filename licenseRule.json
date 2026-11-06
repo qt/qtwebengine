@@ -63,6 +63,7 @@
         "file_pattern_ending": [".qdoc", ".qdoc.in", ".qdocinc", ".qdocconf",
                                 "qt_attribution.json", "config_help.txt",
                                 "tree_config.xml", "CONTRIBUTING.md",
+                                "SECURITY.md", "CODE_OF_CONDUCT.md",
                                 "README", "README.md", "README.txt"],
         "location":{
             "": {
