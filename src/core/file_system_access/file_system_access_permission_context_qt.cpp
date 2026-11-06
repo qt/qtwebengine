@@ -183,8 +183,11 @@ const struct
     // ~/.config holds configuration for many cross-platform tools, so block
     // it on all platforms, see crbug.com/569012015.
     { base::DIR_HOME, FILE_PATH_LITERAL(".config"), kBlockAllChildren },
-      // Shell startup files in the home directory, including the ones read by
-      // Git Bash on Windows, see crbug.com/558362029.
+    // Shell startup files in the home directory, including the ones read by
+    // Git Bash on Windows, see crbug.com/558362029.
+    // ~/.cache holds caches and virtual environments for cross-platform
+    // tools, so block it on all platforms, see crbug.com/577400245.
+    { base::DIR_HOME, FILE_PATH_LITERAL(".cache"), kBlockAllChildren },
     { base::DIR_HOME, FILE_PATH_LITERAL(".bash_profile"), kBlockAllChildren },
     { base::DIR_HOME, FILE_PATH_LITERAL(".bash_login"), kBlockAllChildren },
     { base::DIR_HOME, FILE_PATH_LITERAL(".bashrc"), kBlockAllChildren },
