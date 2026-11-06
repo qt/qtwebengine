@@ -60,6 +60,7 @@ public:
     QString deviceName() const { return m_deviceName; }
     bool isNouveau() const;
     QString getAdapterLuid() const { return m_adapterLuid; }
+    bool isCpuDevice() const { return m_isCpuDevice; }
 
 private:
     struct VendorEntry
@@ -106,6 +107,7 @@ private:
     Vendor m_vendor = Unknown;
     QString m_deviceName;
     QString m_adapterLuid;
+    bool m_isCpuDevice = false;
 };
 
 } // namespace QtWebEngineCore
