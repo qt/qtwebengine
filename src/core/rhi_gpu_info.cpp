@@ -178,6 +178,7 @@ RhiGpuInfo::RhiGpuInfo()
     const QRhiDriverInfo &driverInfo = rhi.driverInfo();
     m_deviceName = QString::fromUtf8(driverInfo.deviceName);
     m_vendor = determineVendor(driverInfo.vendorId);
+    m_isCpuDevice = driverInfo.deviceType == QRhiDriverInfo::CpuDevice;
 
 #if BUILDFLAG(IS_OZONE)
     m_isGbmSupported = determineGbmSupport();

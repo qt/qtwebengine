@@ -184,6 +184,14 @@ static std::string getGLType(const base::CommandLine &cmd)
     if (!usingSupportedSGBackend() || cmd.HasSwitch(switches::kDisableGpu))
         return gl::kGLImplementationDisabledName;
 
+#if defined(Q_OS_WIN)
+    // Qt Quick runs on a software adapter (WARP), e.g. because the D3D11 smoke
+    // test failed on an old GPU. GPU compositing in Chromium fails there and
+    // the in-process GPU cannot fall back to software, see QTBUG-152094.
+    if (RhiGpuInfo::instance()->isCpuDevice())
+        return gl::kGLImplementationDisabledName;
+#endif
+
     return gl::kGLImplementationANGLEName;
 }
 
