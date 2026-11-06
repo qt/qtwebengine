@@ -1,0 +1,36 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qwe-releases.html
+
+    \title Qt WebEngine and Qt Pdf Releases
+    \brief Information about Qt WebEngine and Qt Pdf versioning and release schedules.
+
+    The Qt WebEngine and Qt Pdf, henceforth called QWE consists of a handful
+    of \l{All Modules}{modules} and tools released under a common version number.
+    In the following, we explain the versioning scheme and the related compatibility
+    promises.
+
+    \section1 Versioning and Compatibility
+
+    QWE like Qt uses \l{https://semver.org/}{semantic versioning}. For more details see
+    \l{https://doc.qt.io/qt-6/qt-releases.html}. Similarly QWE offers the same compatibility
+    promises of source and backwards binary compatibility as Qt.
+
+    The QWE versioning scheme consist of major version to match the major Qt version, it
+    is compatible with, and a minor version that states the Chromium version the QWE codebase
+    was originally based on.
+
+    \section1 Release schedules
+
+    \e{Major} releases of Qt happen rarely---Qt 4.0.0 was released in 2005, Qt 5.0.0
+    in 2012, and Qt 6.0.0 in 2020.
+
+    \e{Minor} releases of QWE happen two or three times a year.
+
+    For each minor release, we typically provide a \e{patch} release every four weeks ---
+    until the next minor release of QWE is out. With releases breaking schedule if new critical
+    issues actively exploit are discovered.
+
+*/
