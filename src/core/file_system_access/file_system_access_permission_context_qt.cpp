@@ -45,8 +45,32 @@ bool ContainsInvalidDNSCharacter(base::FilePath::StringType hostname) {
   return false;
 }
 
+bool IsLocalUNCServer(base::FilePath::StringViewType server) {
+  if (server.size() > 1 && server.back() == FILE_PATH_LITERAL('.')) {
+    server.remove_suffix(1);
+  }
+  static constexpr base::FilePath::StringViewType kLocalServers[] = {
+      FILE_PATH_LITERAL("localhost"),
+      FILE_PATH_LITERAL("wsl.localhost"),
+      // Hypervisor host-share redirectors (Parallels, VMware, VirtualBox).
+      FILE_PATH_LITERAL("mac"),
+      FILE_PATH_LITERAL("psf"),
+      FILE_PATH_LITERAL("vmware-host"),
+      FILE_PATH_LITERAL(".host"),
+      FILE_PATH_LITERAL("vboxsvr"),
+      FILE_PATH_LITERAL("vboxsrv"),
+  };
+  for (const auto& candidate : kLocalServers) {
+    if (base::FilePath::CompareEqualIgnoreCase(server, candidate)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns true if the path is a Universal Naming Convention (UNC) path pointing
-// to a local system path, device namespace, or WSL loopback redirector.
+// to a local system path, device namespace, WSL loopback redirector, or
+// hypervisor host-share namespac
 bool MaybeIsLocalUNCPath(const base::FilePath& path) {
     if (!path.IsNetwork()) {
         return false;
@@ -59,12 +83,7 @@ bool MaybeIsLocalUNCPath(const base::FilePath& path) {
     // check for a very short list, as it is impossible to cover all different
     // variants on Windows.
     if (components.size() >= 2 &&
-        (base::FilePath::CompareEqualIgnoreCase(components[1],
-                                                FILE_PATH_LITERAL("localhost")) ||
-         base::FilePath::CompareEqualIgnoreCase(
-             components[1], FILE_PATH_LITERAL("wsl.localhost")) ||
-         base::FilePath::CompareEqualIgnoreCase(
-             components[1], FILE_PATH_LITERAL("wsl.localhost.")) ||
+        (IsLocalUNCServer(components[1]) ||
          components[1] == FILE_PATH_LITERAL("127.0.0.1") ||
          components[1] == FILE_PATH_LITERAL(".") ||
          components[1] == FILE_PATH_LITERAL("?") ||
