@@ -104,6 +104,9 @@ path = ["**/doc/images/**",
         "config_help.txt",
         "src/core/doc/style/tree_config.xml",
         "src/pdf/doc/style/tree_config.xml",
+        "README.md",
+        "SECURITY.md",
+        "CODE_OF_CONDUCT.md",
         "CONTRIBUTING.md"]
 comment = "documentation"
 precedence = "closest"
