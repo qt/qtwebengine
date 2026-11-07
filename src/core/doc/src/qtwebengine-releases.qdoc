@@ -7,30 +7,133 @@
     \title Qt WebEngine and Qt Pdf Releases
     \brief Information about Qt WebEngine and Qt Pdf versioning and release schedules.
 
-    The Qt WebEngine and Qt Pdf, henceforth called QWE consists of a handful
-    of \l{All Modules}{modules} and tools released under a common version number.
-    In the following, we explain the versioning scheme and the related compatibility
-    promises.
+    \section1 Qt and Chromium combined
 
-    \section1 Versioning and Compatibility
+    Qt WebEngine and Qt Pdf, also abbreviated as "QWE", consists of the API layer and
+    adaptation layer for the Qt framework surrounding a specific version of Chromium.
 
-    QWE like Qt uses \l{https://semver.org/}{semantic versioning}. For more details see
-    \l{https://doc.qt.io/qt-6/qt-releases.html}. Similarly QWE offers the same compatibility
-    promises of source and backwards binary compatibility as Qt.
+    Starting with Qt 6.8, Qt WebEngine was provided as a separate download
+    outside of the main selection tree for Qt framework in the Qt Maintenance
+    Tool. With Qt 6.12, the Qt WebEngine source code is decoupled as a
+    sub-module from the Qt super-repository on Git, see
+    \l{https://www.qt.io/blog/qt-webengine-will-release-separate}{Qt WebEngine Separate Release}.
 
-    The QWE versioning scheme consist of major version to match the major Qt version, it
-    is compatible with, and a minor version that states the Chromium version the QWE codebase
-    was originally based on.
+    The goal for these separations is to gain more flexibility in releasing Qt
+    WebEngine, and make releases more focused on security patches in Chromium
+    and less driven by Qt Framework release cadence.
+
+    There is another Qt Extensions module which uses Chromium as a 3rd party
+    dependency: \l [QtPDF]{Qt Pdf}. Qt Pdf uses \l {https://pdfium.googlesource.com/}{PDFium},
+    which is an open-source C++ PDF rendering engine embedded directly into the
+    Chromium project. The below sections cover the releasing of \l [QtPDF]{Qt Pdf}
+    as well, even if not explicitly mentioning it.
+
+    Note that a release of Qt WebEngine also contain the Qt WebView plugin for Qt
+    WebEngine.
+
+    \section1 The main baseline and intake of security patches
+
+    Integrations of Chromium releases in Qt WebEngine follow two baselines. The
+    \l{https://www.chromium.org/developers/version-numbers/}{Major version of Chromium}
+    used as the main baseline is listed as "Based on" in the first line of
+    the file \c CHROMIUM_VERSION in the root folder of the Qt WebEngine
+    repository, for example, like here:
+
+    \badcode
+    Based on Chromium version: 140.0.7339.264
+    Patched with security patches up to Chromium version: 156.0.8078.74
+    \endcode
+
+
+    This "Based on" version brings new features and other essential changes in
+    Chromium that are important for Qt WebEngine.
+
+    According to the Chromium release scheme (see
+    \l {https://chromiumdash.appspot.com/schedule}{Chromium release schedule}),
+    the number "140" refers to the generation of Chromium releases as a main
+    branch. It is used as a reference in Qt WebEngine for the main baseline of
+    Chromium.
+
+    The "Patched with..." version on second line in the file \c CHROMIUM_VERSION
+    lists the last version of Chromium used as a source of security patches.
+    This line forms the security baseline of Chromium for Qt WebEngine, "74" in the
+    above example. This number is important for users since it marks the integration
+    point in Chromium with the most recent security patches.
+
+    Even though the goal is to integrate as many security patches as possible,
+    not all patches are taken in along a security baseline. Some of them are not
+    relevant for the Qt WebEngine API, while others have a low security ranking
+    and are safe to be taken in later, during the next main baseline upgrade of
+    Chromium.
+
+    \section1 Versioning
+
+    Like the Qt framework, Qt WebEngine uses \l{https://semver.org/}{semantic versioning}, for instance, \c {"6.140.0"}.
+
+    Major releases increment the major version number, resetting the minor
+    version to zero. This number follows the major version of the Qt framework
+    with which this Qt WebEngine is compatible. Here, it is Qt 6. Compared to the
+    Qt framework, it does not reset the minor version number. See the next section
+    for details about this.
+
+    Minor releases increment the minor version number, resetting the patch
+    version number to zero. Minor versions contain the major version of
+    Chromium as well as new functionality in Qt WebEngine. The "140" in the
+    above example stands for the major version of Chromium used as the main
+    baseline in the series of patch releases in this minor version.
+
+    Patch releases - also called maintenance releases - increment just the patch
+    version number. Patch releases consist of bug fixes in Qt WebEngine,
+    security fixes in Chromium, documentation fixes, and performance
+    improvements.
+
+    \section1 Alignment with Qt framework regular and Long-Term Support releases
+
+    Qt WebEngine is a Qt Extension Module compatible and supported with a range
+    of Qt framework releases.
+
+    Like with Qt framework releases prior to the separation in Qt 6.12.0, a
+    release of Qt WebEngine could be used with Qt until the last supported Qt
+    framework Long-Term Support release. For instance, the next Qt framework
+    LTS release will be Qt 6.16. A release of Qt WebEngine provided after the Qt
+    6.16.0 release can also be used with Qt 6.12 LTS as well as with Qt 6.15.x,
+    whereas this Qt WebEngine release will be the last for Qt 6.15.x, since Qt
+    6.15 is a regular release. A list of compatible Qt versions is provided in
+    the release notes file \c{release-note.md} in the root folder of the
+    Qt WebEngine repository
 
     \section1 Release schedules
 
-    \e{Major} releases of Qt happen rarely---Qt 4.0.0 was released in 2005, Qt 5.0.0
-    in 2012, and Qt 6.0.0 in 2020.
+    A released version of Qt WebEngine is supported and maintained for around 3
+    months, i.e., a maximum of six major versions of Chromium. After this, users
+    should upgrade to the next maintained Qt WebEngine version. This migration
+    is needed for Qt WebEngine to keep in-taking new security fixes and use new
+    features in Chromium. The support and maintenance period for a given patch
+    release of Qt WebEngine is also capped by the end of support of a Qt LTS
+    release. After this point, users should upgrade to a newer Qt WebEngine and
+    use a new Qt release.
 
-    \e{Minor} releases of QWE happen two or three times a year.
+    \section1 Pre-built binaries
 
-    For each minor release, we typically provide a \e{patch} release every four weeks ---
-    until the next minor release of QWE is out. With releases breaking schedule if new critical
-    issues actively exploit are discovered.
+    One path to use Qt WebEngine with different versions of the Qt framework is
+    to use pre-built binaries. They are provided for the main desktop platforms
+    via the Qt Maintenance Tool. They are linked in the selection tree to the
+    nodes named after the Qt framework minor release they are built with.
 
+    \section1 Making your own builds
+
+    If pre-built binaries are not available for a version of the Qt framework,
+    the user should create their own build, see \l {Qt WebEngine Platform Notes}
+    {Qt WebEngine}.
+
+    \section1 Qt Pdf in the new versioning and releasing
+
+    All principles and rules in above sections apply to Qt Pdf as well. Certainly,
+    Qt PDF is a Qt Extension on it own and brings its own API, see
+    \l [QtPDF]{Qt Pdf}
+
+    \section1 Commercial support
+
+    Terms and scope for commercial support for Qt WebEngine are the same as for
+    the Qt framework, see [link].
 */
