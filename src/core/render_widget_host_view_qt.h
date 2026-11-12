@@ -33,6 +33,9 @@ class TouchSelectionController;
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQtDelegateClient;
+#if defined(Q_OS_MACOS)
+class PointerLockEventFilter;
+#endif
 class InputEventObserverQt;
 class TouchSelectionControllerClientQt;
 class WebContentsAccessibilityQt;
@@ -213,6 +216,9 @@ private:
     WebContentsAdapterClient *m_adapterClient = nullptr;
 
     bool m_isMouseLocked = false;
+#if defined(Q_OS_MACOS)
+    std::unique_ptr<PointerLockEventFilter> m_pointerLockEventFilter;
+#endif
     bool m_visible = false;
     bool m_deferredShow = false;
     gfx::PointF m_lastScrollOffset;

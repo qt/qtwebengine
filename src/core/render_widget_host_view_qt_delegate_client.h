@@ -66,6 +66,7 @@ private:
     template<class T>
     void handlePointerEvent(T *);
     void handleMouseEvent(QMouseEvent *);
+    void handleLockedMouseMove(const QPointF &movement);
     void handleKeyEvent(QKeyEvent *);
     void handleTouchEvent(QTouchEvent *);
 #if QT_CONFIG(tabletevent)
@@ -99,6 +100,7 @@ private:
     // Mouse
     uint m_mouseButtonPressed = 0;
     QPoint m_previousMousePosition;
+    QPointF m_lastMouseLocalPosition;
     MultipleMouseClickHelper m_clickHelper;
 
     // Key

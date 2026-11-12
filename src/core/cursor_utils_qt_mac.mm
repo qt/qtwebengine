@@ -6,6 +6,7 @@
 #include "cursor_utils_qt_mac.h"
 #include "ui/base/cocoa/cursor_utils.h"
 #include <QImage>
+#include <QtCore/QCoreApplication>
 #include <AppKit/AppKit.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
@@ -47,4 +48,46 @@ ImageInfo QImageFromNSCursor(const ui::Cursor &cursor)
     return imageInfo;
 }
 
+void setCursorLocked(bool locked)
+{
+    CGAssociateMouseAndMouseCursorPosition(!locked);
+    if (locked)
+        [NSCursor hide];
+    else
+        [NSCursor unhide];
 }
+
+PointerLockEventFilter::PointerLockEventFilter(std::function<void(const QPointF &)> onMove)
+    : m_onMove(std::move(onMove))
+{
+    QCoreApplication::instance()->installNativeEventFilter(this);
+}
+
+PointerLockEventFilter::~PointerLockEventFilter()
+{
+    if (QCoreApplication *app = QCoreApplication::instance())
+        app->removeNativeEventFilter(this);
+}
+
+bool PointerLockEventFilter::nativeEventFilter(const QByteArray &eventType, void *message,
+                                               qintptr *)
+{
+    if (eventType != "mac_generic_NSEvent")
+        return false;
+
+    NSEvent *event = static_cast<NSEvent *>(message);
+    switch (event.type) {
+    case NSEventTypeMouseMoved:
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
+    case NSEventTypeOtherMouseDragged:
+        if (event.deltaX != 0 || event.deltaY != 0)
+            m_onMove(QPointF(event.deltaX, event.deltaY));
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+} // namespace QtWebEngineCore

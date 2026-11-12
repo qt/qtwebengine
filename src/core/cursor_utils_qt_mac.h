@@ -5,7 +5,10 @@
 #define CURSOR_UTILS_QT_MAC_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/QAbstractNativeEventFilter>
+#include <QtCore/QPointF>
 #include <QtGui/QImage>
+#include <functional>
 #include "ui/base/cocoa/cursor_utils.h"
 
 namespace QtWebEngineCore {
@@ -17,6 +20,23 @@ struct ImageInfo
 };
 
 ImageInfo QImageFromNSCursor(const ui::Cursor &cursor);
+
+void setCursorLocked(bool locked);
+
+// While the cursor is frozen by setCursorLocked(true) its position no longer changes, so Qt
+// drops every mouse move. This filter reads the relative movement straight from the native
+// NSEvents and passes it to the callback.
+class PointerLockEventFilter : public QAbstractNativeEventFilter
+{
+public:
+    explicit PointerLockEventFilter(std::function<void(const QPointF &)> onMove);
+    ~PointerLockEventFilter() override;
+
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result) override;
+
+private:
+    std::function<void(const QPointF &)> m_onMove;
+};
 
 } // namespace QtWebEngineCore
 

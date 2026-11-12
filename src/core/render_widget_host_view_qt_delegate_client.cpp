@@ -444,10 +444,18 @@ void RenderWidgetHostViewQtDelegateClient::handlePointerEvent(T *event)
     webEvent.movement_y = event->globalPosition().y() - m_previousMousePosition.y();
     webEvent.is_raw_movement_event = true;
 
+
+#if !defined(Q_OS_MACOS)
+    // Keep the hidden cursor at the locked position by warping it back after every move.
+    // Not on macOS: there QCursor::setPos() posts a CGEvent, which is dropped unless the
+    // application has been granted Accessibility permission. The cursor is frozen with
+    // setCursorLocked() instead and movement comes from PointerLockEventFilter.
     if (m_rwhv->IsPointerLocked())
         QCursor::setPos(m_previousMousePosition);
     else
+#endif
         m_previousMousePosition = event->globalPosition().toPoint();
+    m_lastMouseLocalPosition = event->position();
 
     if (m_imeInProgress && webEvent.GetType() == blink::WebInputEvent::Type::kMouseDown) {
         m_imeInProgress = false;
@@ -474,6 +482,23 @@ void RenderWidgetHostViewQtDelegateClient::handleMouseEvent(QMouseEvent *event)
         m_mouseButtonPressed--;
 
     handlePointerEvent<QMouseEvent>(event);
+}
+
+void RenderWidgetHostViewQtDelegateClient::handleLockedMouseMove(const QPointF &movement)
+{
+    if (!m_rwhv->IsPointerLocked())
+        return;
+
+    QMouseEvent event(QEvent::MouseMove, m_lastMouseLocalPosition, QPointF(m_previousMousePosition),
+                      Qt::NoButton, QGuiApplication::mouseButtons(),
+                      QGuiApplication::keyboardModifiers());
+    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(&event);
+    webEvent.movement_x = movement.x();
+    webEvent.movement_y = movement.y();
+    webEvent.is_raw_movement_event = true;
+
+    if (m_rwhv->host()->delegate() && m_rwhv->host()->delegate()->GetInputEventRouter())
+        m_rwhv->host()->delegate()->GetInputEventRouter()->RouteMouseEvent(m_rwhv, &webEvent, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQtDelegateClient::handleKeyEvent(QKeyEvent *event)

@@ -201,6 +201,16 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost *widget
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    // Don't leave the system cursor frozen and hidden
+    // if the view goes away while locked.
+    if (m_isMouseLocked) {
+#if defined(Q_OS_MACOS)
+        m_pointerLockEventFilter.reset();
+        setCursorLocked(false);
+#endif
+        qApp->restoreOverrideCursor();
+        m_isMouseLocked = false;
+    }
     m_gestureProvider->Shutdown();
 
     m_delegate.reset();
@@ -428,6 +438,9 @@ void RenderWidgetHostViewQt::UpdateBackgroundColor()
 // Return value indicates whether the mouse is locked successfully or not.
 blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockPointer(bool request_unadjusted_movement)
 {
+    if (m_isMouseLocked)
+        return blink::mojom::PointerLockResult::kSuccess;
+
     if (request_unadjusted_movement)
         return blink::mojom::PointerLockResult::kUnsupportedOptions;
 
@@ -435,6 +448,12 @@ blink::mojom::PointerLockResult RenderWidgetHostViewQt::LockPointer(bool request
     m_delegate->lockMouse();
     m_isMouseLocked = true;
     qApp->setOverrideCursor(Qt::BlankCursor);
+#if defined(Q_OS_MACOS)
+    setCursorLocked(true);
+    m_pointerLockEventFilter = std::make_unique<PointerLockEventFilter>([this](const QPointF &movement) {
+        delegateClient()->handleLockedMouseMove(movement);
+    });
+#endif
     return blink::mojom::PointerLockResult::kSuccess;
 }
 
@@ -447,7 +466,14 @@ blink::mojom::PointerLockResult RenderWidgetHostViewQt::ChangePointerLock(bool r
 
 void RenderWidgetHostViewQt::UnlockPointer()
 {
+    if (!m_isMouseLocked)
+        return;
+
     m_delegate->unlockMouse();
+#if defined(Q_OS_MACOS)
+    m_pointerLockEventFilter.reset();
+    setCursorLocked(false);
+#endif
     qApp->restoreOverrideCursor();
     m_isMouseLocked = false;
     host()->LostPointerLock();
