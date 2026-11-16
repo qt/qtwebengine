@@ -79,7 +79,7 @@
     \printuntil }
     \printuntil }
 
-    For the complete example, see \l{WebEngine Quick Nano Browser}.
+    For the complete example, see \l{WebEngineView in Qt Quick}.
 
     \sa WebEngineHistoryModel
 */

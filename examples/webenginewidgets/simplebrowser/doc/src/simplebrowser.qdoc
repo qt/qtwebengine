@@ -3,7 +3,7 @@
 
 /*!
     \example webenginewidgets/simplebrowser
-    \title Qt WebEngineWidget Examples - A example for a QWebEngineView in QtWidgets
+    \title QWebEngineView in QtWidgets
     \brief This example demonstrates how to use the QtWebEngineWidgets module with QtWidgets.
     \ingroup webengine-widgetexamples
     \examplecategory {Web Technologies}

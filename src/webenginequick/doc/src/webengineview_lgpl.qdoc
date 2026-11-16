@@ -583,7 +583,7 @@
 
     \snippet qtwebengine_webengineview_newviewrequested.qml 0
 
-    \sa WebEngineNewWindowRequest, {WebEngine Quick Nano Browser}
+    \sa WebEngineNewWindowRequest, {WebEngineView in Qt Quick}
 */
 
 /*!

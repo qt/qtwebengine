@@ -3,7 +3,7 @@
 
 /*!
     \example webenginequick/quicknanobrowser
-    \title Qt WebEnginQuick Examples - A example for a WebEngineView in Qt Quick
+    \title WebEngineView in Qt Quick
     \ingroup webengine-examples
     \brief This example demonstrates how to use the QtWebEngineQuick module with Qt Quick.
 

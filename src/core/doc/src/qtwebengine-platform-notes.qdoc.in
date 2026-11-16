@@ -221,7 +221,7 @@
 
     The following snippets show the manifest file's structure and how to embed it into the program.
 
-    \note These code snippets are taken from the \l {WebEngine Quick Nano Browser} example.
+    \note These code snippets are taken from the \l {WebEngineView in Qt Quick} example.
 
     The manifest file defines which Windows versions the application supports.
     \l {QWebEngineProfile::} {httpUserAgent} needs this information to report the correct Windows version.
