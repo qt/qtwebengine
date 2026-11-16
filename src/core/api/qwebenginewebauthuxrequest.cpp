@@ -19,7 +19,7 @@
     \l WebEngineView::webAuthUxRequested() signal.
 
     For more information about how to handle web engine authenticator requests, see the
-    \l{WebEngine Quick Nano Browser}{Nano Browser}.
+    \l{WebEngineView in Qt Quick} example.
 */
 
 /*!
@@ -51,7 +51,7 @@
     accordingly.
 
     For more information about how to handle web engine authenticator requests, see the
-     \l{WebEngine Widgets Simple Browser Example}{Simple Browser}.
+    \l{QWebEngineView in QtWidgets} example.
 */
 
 /*!

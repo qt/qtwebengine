@@ -44,8 +44,8 @@ qhp.QtWebEngine.subprojects.manual.title = Qt WebEngine
 qhp.QtWebEngine.subprojects.manual.indexTitle = Qt WebEngine module topics
 qhp.QtWebEngine.subprojects.manual.type = manual
 
-manifestmeta.highlighted.names += "QtWebEngine/WebEngine Widgets Simple Browser Example" \
-                "QtWebEngine/WebEngine Quick Nano Browser" \
+manifestmeta.highlighted.names += "QtWebEngine/QWebEngineView in QtWidgets" \
+                "QtWebEngine/WebEngineView in Qt Quick" \
                 "QtWebEngine/Recipe Browser"
 
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags

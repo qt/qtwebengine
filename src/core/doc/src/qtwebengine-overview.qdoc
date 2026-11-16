@@ -291,10 +291,9 @@
     page. However, when the user clicks same-site links on the page, the
     existing site instance is merely extended with more pages.
 
-    For instance, in the \l{WebEngine Widgets Simple Browser Example}{Simple
-    Browser} example, when a user opens two tabs and explicitly enters
-    \c{https://en.wikipedia.org/} into the URL bars, both tabs will have their
-    own separate OS processes (because explicitly entering a URL creates a new
+    For instance, in the \l{QWebEngineView in QtWidgets} example, when a user
+    opens two tabs and explicitly enters \c{https://en.wikipedia.org/} into the
+    URL bars, both tabs will have their own separate OS processes (because explicitly entering a URL creates a new
     site instance). However, when the user then middle-clicks some same-site
     links to open more tabs, these new tabs will share the same OS process
     (because user interaction extends the existing site instance).

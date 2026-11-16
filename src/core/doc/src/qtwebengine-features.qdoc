@@ -88,9 +88,8 @@
     command line option \c {--remote-debugging-port=[your-port]} or by setting
     the environment variable \c QTWEBENGINE_REMOTE_DEBUGGING and then using a
     Chromium-based browser or a \QWE application
-    (such as \l{WebEngine Widgets Simple Browser Example}
-    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}) to connect
-    to \c {http://localhost:[your-port]}.
+    (such as the \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} examples)
+    to connect to \c {http://localhost:[your-port]}.
 
     \note Any WebEngine command line options should be specified after the
     \c {--webEngineArgs} option, which is used to separate the user's application
@@ -170,9 +169,8 @@
 
     This feature can be tested by opening an HTML5 drag and drop demo, such as
     \l{HTML5 Demos - Drag and Drop}, \l{HTML5 Demos - Simple Drag and Drop}, or
-    \l{HTML5 Demos - Drag and Drop, Automatic Upload}, in \l{WebEngine Widgets
-    Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}
-    {Nano Browser}.
+    \l{HTML5 Demos - Drag and Drop, Automatic Upload}, in the
+    \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} examples.
 
     Dragging files into the web view is not actually part of HTML5, but it is
     supported. It can be tested by opening \l{HTML5 Demos - File API}.
@@ -244,9 +242,9 @@
     QWebEngineSettings::FullScreenSupportEnabled, and
     QWebEnginePage::fullScreenRequested.
 
-    This feature can be tested by playing a video from YouTube in \l{WebEngine
-    Widgets Video Player Example}{Video Player} or \l{WebEngine Quick Nano Browser}
-    {Nano Browser}, and clicking the full screen icon to go into fullscreen
+    This feature can be tested by playing a video from YouTube in the \l{WebEngine
+    Widgets Video Player Example}{Video Player} or \l{WebEngineView in Qt Quick}
+    examples, and clicking the full screen icon to go into fullscreen
     mode.
 
     \section1 Hardware Acceleration
@@ -461,8 +459,7 @@
     codecs, see \l{Audio and Video Codecs}.
 
     You can test this feature by playing a video from \l{castLabs} or \l{Bitmovin Player}
-    in the \l{WebEngine Widgets Simple Browser Example}{Simple Browser} or
-    \l{WebEngine Quick Nano Browser}{Nano Browser} example projects.
+    in the \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} example projects.
 
     \section1 HTML5 Geolocation
 
@@ -538,8 +535,7 @@
     and its web based
     \l[QtWebChannel]{Qt WebChannel ChatClient HTML Example}{chat client}.
     The client works out of the box in the example browsers of \QWE
-    (such as \l{WebEngine Widgets Simple Browser Example}
-    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}).
+    (such as the \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} examples).
 
     \section1 HTTP/2 Protocol
 
@@ -547,8 +543,8 @@
     protocol.
 
     This feature can be tested by opening an HTTP/2 demo, such as the
-    \l{Akamai HTTP/2 Demo}, in \l{WebEngine Widgets Simple Browser Example}
-    {Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
+    \l{Akamai HTTP/2 Demo}, in the \l{QWebEngineView in QtWidgets} or
+    \l{WebEngineView in Qt Quick} examples.
 
     \section1 Local Storage
 
@@ -614,8 +610,7 @@
 
     \QWE supports viewing PDF documents by navigating to them. This feature uses the Chromium
     extensions API and PDF viewer plugin to display the PDF documents.
-    It can be tested in \l{WebEngine Widgets Simple Browser Example}{Simple Browser} or
-    \l{WebEngine Quick Nano Browser}{Nano Browser}.
+    It can be tested in the \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} examples.
 
     This feature can be turned on (default) or off via the QWebEngineSettings::PdfViewerEnabled or
     WebEngineSettings::pdfViewerEnabled setting.
@@ -839,10 +834,10 @@
     This feature can be used from custom menus or assigned to custom events.
     For more information, see WebEngineView::WebAction, and QWebEnginePage::WebAction.
 
-    This feature can be tested by opening a web page in \l{WebEngine Widgets
-    Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}
-    {Nano Browser}, and then selecting \c{Page Source} in the context menu. The
-    \c{Page Source} context menu entry opens the source view in a new tab.
+    This feature can be tested by opening a web page in the
+    \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick} examples,
+    and then selecting \c{Page Source} in the context menu. The \c{Page Source}
+    context menu entry opens the source view in a new tab.
 
     For opening the source view in the current tab, URLs with \l{view-source URI scheme}
     are also supported. For example, you can type the following URL to the URL bar
@@ -879,8 +874,7 @@
 
     WebEngineDriver has slight modifications compared to ChromeDriver to be able to connect to
     \QWE based applications. It is compatible with \QWE example browsers, such as
-    \l {WebEngine Widgets Simple Browser Example}{Simple Browser} or
-    \l{WebEngine Quick Nano Browser}{Nano Browser}.
+    \l{QWebEngineView in QtWidgets} or \l{WebEngineView in Qt Quick}.
 
     The automation is scripted through a WebDriver client like the
     \l {https://www.selenium.dev/}{Selenium WebDriver}.
@@ -952,8 +946,8 @@
     {WebEngineView.Feature}, and QWebEnginePage::Feature.
 
     This feature can be tested by setting up a webcam or microphone and then
-    opening \c https://test.webrtc.org/ in \l{WebEngine Widgets Simple Browser
-    Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}.
+    opening \c https://test.webrtc.org/ in the \l{QWebEngineView in QtWidgets} or
+    \l{WebEngineView in Qt Quick} examples.
 
     The implementation of WebRTC support is provided by Chromium libraries.
 
