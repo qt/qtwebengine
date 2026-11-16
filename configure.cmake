@@ -362,7 +362,7 @@ qt_webengine_configure_check("ninja"
     MODULES QtWebEngine QtPdf
     CONDITION Ninja_FOUND
     MESSAGE "Ninja version ${QT_CONFIGURE_CHECK_ninja_version} or later is required."
-    DOCUMENTATION "Ninja version ${QT_CONFIGURE_CHECK_python3_version} or later."
+    DOCUMENTATION "Ninja version ${QT_CONFIGURE_CHECK_ninja_version} or later."
 )
 qt_webengine_configure_check("python3-html5lib"
     MODULES QtWebEngine
@@ -485,7 +485,7 @@ qt_webengine_configure_check("gcc"
 qt_webengine_configure_check("clang"
     MODULES QtWebEngine
     CONDITION NOT (LINUX OR MINGW) OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "CLANG" OR
-              NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_calng_version}
+              NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${QT_CONFIGURE_CHECK_clang_version}
     MESSAGE "Clang version must be at least ${QT_CONFIGURE_CHECK_clang_version}"
     DOCUMENTATION "Clang version must be at least ${QT_CONFIGURE_CHECK_clang_version} to compile QtWebEngine."
     TAGS LINUX_PLATFORM
