@@ -1,0 +1,9 @@
+# Copyright (C) 2026 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+# White list used by the coin sanity check unit test, mirrors coin.nodes format.
+#      coin-platform-id               # builds-webengine # builds-pdf #
+node-both                                     ON              ON
+node-pdf                                      OFF             ON
+# commented node
+node-none                                     OFF             OFF
