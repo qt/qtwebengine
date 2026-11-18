@@ -144,7 +144,7 @@ int QPdfSearchModel::count() const
 }
 
 /*!
-    \since 6.12
+    \since 6.140
     \enum QPdfSearchModel::Status
 
     This enum describes the current status of the search model.
@@ -157,7 +157,7 @@ int QPdfSearchModel::count() const
 */
 
 /*!
-    \since 6.12
+    \since 6.140
     \property QPdfSearchModel::status
     \brief the search status
 

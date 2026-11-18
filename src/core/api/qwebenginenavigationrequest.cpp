@@ -208,14 +208,14 @@ bool QWebEngineNavigationRequest::hasFormData() const
     \property QWebEngineNavigationRequest::userInitiated
     \brief Whether the navigation request was directly triggered as the
     result of a keyboard or mouse event.
-    \since 6.12
+    \since 6.140
 
     \note A redirect navigation that was originally triggered by a user
     gesture may also be reported as user-initiated.
 */
 /*!
     \qmlproperty bool WebEngineNavigationRequest::userInitiated
-    \since 6.12
+    \since 6.140
     \readonly
 
     Whether the navigation request was directly triggered as the

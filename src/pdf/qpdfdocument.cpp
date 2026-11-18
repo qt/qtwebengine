@@ -908,7 +908,7 @@ int QPdfDocument::pageIndexForLabel(const QString &label)
     PDF document, the page is rendered scaled, so that it covers the
     complete \a imageSize.
 
-    \note The \a format and \a fillColor arguments were added in 6.12.
+    \note The \a format and \a fillColor arguments were added in 6.140.
 */
 QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions,
                             QImage::Format format, QColor fillColor)

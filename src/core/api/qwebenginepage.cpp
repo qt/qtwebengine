@@ -2373,7 +2373,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &layo
 
     \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 
-    \note Before Qt 6.12 \a resultCallback had to be copyable.
+    \note Before Qt WebEngine 6.140 \a resultCallback had to be copyable.
 
     \warning We guarantee that the callback (\a resultCallback) is always called, but it might be done
     during page destruction. When QWebEnginePage is deleted, the callback is triggered with an invalid

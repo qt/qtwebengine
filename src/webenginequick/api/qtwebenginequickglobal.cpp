@@ -23,7 +23,7 @@ namespace QtWebEngineQuick {
 
 /*!
     \fn QtWebEngineQuick::initialize()
-    \deprecated [6.12] This function is not any longer in use.
+    \deprecated [6.140] This function is not any longer in use.
 
     Sets up an OpenGL Context that can be shared between threads. This has to be done before
     QGuiApplication is created and before window's QPlatformOpenGLContext is created.
