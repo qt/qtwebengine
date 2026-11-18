@@ -6,6 +6,8 @@ project(qtwebengine_cmake_tests)
 
 enable_testing()
 
+add_subdirectory(coin_sanity_check)
+
 find_package(Qt6Core REQUIRED)
 
 include("${_Qt6CTestMacros}")
