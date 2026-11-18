@@ -1128,7 +1128,7 @@ QWebEngineExtensionManager *QWebEngineProfile::extensionManager() const
 
     Has no effect on macOS and Windows platforms.
 
-    \since 6.12
+    \since 6.140
 */
 void QWebEngineProfile::setCryptoModulePasswordFunction(std::function<std::string(std::string, std::string, bool)> passwordFunction)
 {

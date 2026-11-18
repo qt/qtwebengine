@@ -161,7 +161,8 @@ bool QWebEngineFrame::isMainFrame() const
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
 
-    \note In Qt versions prior to 6.12, the callback had to be copyable.
+    \note In Qt WebEngine versions prior to 6.140, the callback had to be
+    copyable.
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web engine page.
     \warning We guarantee that the \a callback is always called, but it might be
@@ -175,7 +176,7 @@ bool QWebEngineFrame::isMainFrame() const
     \fn void QWebEngineFrame::runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
 
     \overload
-    \deprecated [6.12] Use QWebEngineFrame::runJavaScript without callback argument instead.
+    \deprecated [6.140] Use QWebEngineFrame::runJavaScript without callback argument instead.
 */
 
 void QWebEngineFrame::runJavaScriptImpl(const QString &script, quint32 worldId, QtPrivate::QSlotObjectBase *callback)
@@ -250,7 +251,7 @@ void QWebEngineFrame::printToPdf(const QString &filePath)
     The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was
     successful, this byte array will contain the PDF data, otherwise, the byte array will be empty.
 
-    \note Before Qt 6.12 \a resultCallback had to be copyable.
+    \note Before Qt WebEngine 6.140 \a resultCallback had to be copyable.
 
     \note The \l QWebEnginePage::Stop web action can be used to interrupt this operation.
 */

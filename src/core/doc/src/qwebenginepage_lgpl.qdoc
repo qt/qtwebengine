@@ -769,7 +769,8 @@
     example, \c{Date} and \c{ArrayBuffer}. Unsupported data types include, for
     example, \c{Function} and \c{Promise}.
 
-    \note In Qt versions prior to 6.12, the callback had to be copyable.
+    \note In Qt WebEngine versions prior to 6.140, the callback had to be
+    copyable.
 
     \warning Do not execute lengthy routines in the callback function, because it might block the
     rendering of the web engine page.
@@ -785,7 +786,7 @@
     \fn void QWebEnginePage::runJavaScript(const QString &script, quint32 worldId, std::nullptr_t)
 
     \overload
-    \deprecated [6.12] Use QWebEnginePage::runJavaScript without callback argument instead.
+    \deprecated [6.140] Use QWebEnginePage::runJavaScript without callback argument instead.
 */
 
 /*!
