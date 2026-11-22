@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qquickwebenginescriptcollection_p.h"
-#include "qquickwebenginescriptcollection_p_p.h"
 #include <QtWebEngineCore/qwebenginescriptcollection.h>
 #include <QtWebEngineCore/private/qwebenginescriptcollection_p.h>
-#include <QtQml/qqmlinfo.h>
-#include <QtQml/qqmlengine.h>
 
 /*!
     \qmltype WebEngineScriptCollection
@@ -63,52 +60,8 @@
 
 */
 
-QWebEngineScript parseScript(const QJSValue &value, bool *ok)
-{
-    QWebEngineScript s;
-    if (ok)
-        *ok = false;
-
-    if (value.isObject()) {
-
-        if (value.hasProperty(QStringLiteral("name")))
-            s.setName(value.property(QStringLiteral("name")).toString());
-
-        if (value.hasProperty(QStringLiteral("sourceUrl")))
-            s.setSourceUrl(value.property(QStringLiteral("sourceUrl")).toString());
-
-        if (value.hasProperty(QStringLiteral("injectionPoint")))
-            s.setInjectionPoint(QWebEngineScript::InjectionPoint(
-                    value.property(QStringLiteral("injectionPoint")).toUInt()));
-
-        if (value.hasProperty(QStringLiteral("sourceCode")))
-            s.setSourceCode(value.property(QStringLiteral("sourceCode")).toString());
-
-        if (value.hasProperty(QStringLiteral("worldId")))
-            s.setWorldId(QWebEngineScript::ScriptWorldId(
-                    value.property(QStringLiteral("worldId")).toUInt()));
-
-        if (value.hasProperty(QStringLiteral("runOnSubframes")))
-            s.setRunsOnSubFrames(value.property(QStringLiteral("runOnSubframes")).toBool());
-
-        if (ok)
-            *ok = true;
-    }
-    return s;
-}
-
-QQuickWebEngineScriptCollectionPrivate::QQuickWebEngineScriptCollectionPrivate(QWebEngineScriptCollectionPrivate *p)
-    : QWebEngineScriptCollection(p)
-{
-
-}
-
-QQuickWebEngineScriptCollectionPrivate::~QQuickWebEngineScriptCollectionPrivate()
-{
-}
-
-QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(QQuickWebEngineScriptCollectionPrivate *p)
-    : d(p)
+QQuickWebEngineScriptCollection::QQuickWebEngineScriptCollection(QWebEngineScriptCollection *collection)
+    : d(collection)
 {
 }
 
@@ -188,37 +141,13 @@ void QQuickWebEngineScriptCollection::clear()
     This property holds a JavaScript array of user script objects. The array can
     take webEngineScript basic type or a JavaScript dictionary as values.
 */
-QJSValue QQuickWebEngineScriptCollection::collection() const
+QList<QWebEngineScript> QQuickWebEngineScriptCollection::collection() const
 {
-    if (!d->m_qmlEngine) {
-        qmlWarning(this) << "Scripts collection doesn't have QML engine set! Undefined value is returned.";
-        return QJSValue();
-    }
-
-    const QList<QWebEngineScript> &list = d->toList();
-    QJSValue scriptArray = d->m_qmlEngine->newArray(list.size());
-    uint32_t i = 0;
-    for (const auto &val : list)
-        scriptArray.setProperty(i++, d->m_qmlEngine->toScriptValue(val));
-    return scriptArray;
+    return d->toList();
 }
 
-void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
+void QQuickWebEngineScriptCollection::setCollection(const QList<QWebEngineScript> &scriptList)
 {
-    if (!scripts.isArray())
-        return;
-
-    QList<QWebEngineScript> scriptList;
-    quint32 length = scripts.property(QStringLiteral("length")).toUInt();
-    for (quint32 i = 0; i < length; ++i) {
-        bool ok;
-        QWebEngineScript s = parseScript(scripts.property(i), &ok);
-        if (!ok) {
-            qmlWarning(this) << "Unsupported script type";
-            return;
-        }
-        scriptList.append(s);
-    }
     if (scriptList != d->toList()) {
         clear();
         insert(scriptList);
@@ -226,14 +155,4 @@ void QQuickWebEngineScriptCollection::setCollection(const QJSValue &scripts)
     }
 }
 
-QQmlEngine* QQuickWebEngineScriptCollection::qmlEngine()
-{
-    return d->m_qmlEngine;
-}
-
-void QQuickWebEngineScriptCollection::setQmlEngine(QQmlEngine *engine)
-{
-    Q_ASSERT(engine);
-    d->m_qmlEngine = engine;
-}
 #include "moc_qquickwebenginescriptcollection_p.cpp"

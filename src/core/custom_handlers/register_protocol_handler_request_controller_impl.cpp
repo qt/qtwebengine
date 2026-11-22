@@ -1,5 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
+
 #include "custom_handlers/register_protocol_handler_request_controller_impl.h"
 
 #include "components/custom_handlers/protocol_handler_registry.h"

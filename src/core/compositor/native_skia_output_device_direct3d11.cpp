@@ -83,7 +83,7 @@ QSGTexture *NativeSkiaOutputDeviceDirect3D11::texture(QQuickWindow *win, uint32_
     hr = device1->OpenSharedResource1(sharedHandle, IID_PPV_ARGS(&qtTexture));
     if (FAILED(hr)) {
         qWarning("D3D: Failed to share D3D11 texture (%ls). This will result in failed rendering. "
-                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disble-gpu",
+                 "Report the bug, and try restarting with QTWEBENGINE_CHROMIUM_FLAGS=--disable-gpu",
                  qUtf16Printable(QSystemError::windowsComString(hr)));
         ::CloseHandle(sharedHandle);
         return nullptr;

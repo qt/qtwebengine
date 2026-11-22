@@ -626,6 +626,7 @@ if(WIN32)
             TARGET QtWebEngineCoreSandbox
             OUTPUT QtWebEngineCoreSandbox.lib
             BUILDDIR ${buildDir}/${config}/${arch}
+            DEPENDS WebEngineCore_sync_headers
             MODULE core
         )
         set(sandboxLibraryPath ${buildDir}/${config}/${arch}/QtWebEngineCoreSandbox.lib)
