@@ -41,6 +41,7 @@ public:
     bool CanFireEvents() const override;
 
     QtWebEngineCore::BrowserAccessibilityInterface *interface = nullptr;
+    bool m_isBeingDestroyed = false;
 };
 
 class BrowserAccessibilityInterface
@@ -155,12 +156,15 @@ BrowserAccessibilityQt::BrowserAccessibilityQt(ui::BrowserAccessibilityManager *
 
 BrowserAccessibilityQt::~BrowserAccessibilityQt()
 {
+    m_isBeingDestroyed = true;
     if (interface)
         interface->destroy();
 }
 
 bool BrowserAccessibilityQt::isReady() const
 {
+    if (m_isBeingDestroyed)
+        return false;
     // FIXME: This is just a workaround, remove this when the commented out assert in
     //        BrowserAccessibilityManager::GetFromID(int32_t id) gets fixed.
     return manager()->GetFromID(node()->id()) != nullptr;
