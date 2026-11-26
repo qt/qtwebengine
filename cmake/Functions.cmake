@@ -102,7 +102,10 @@ function(add_linker_options target buildDir completeStatic)
     set(libs_rsp "${buildDir}/${ninjaTarget}_libs.rsp")
     set(ldir_rsp "${buildDir}/${ninjaTarget}_ldir.rsp")
     set(lflags_rsp "${buildDir}/${ninjaTarget}_lflags.rsp")
-    set_target_properties(${cmakeTarget} PROPERTIES STATIC_LIBRARY_OPTIONS "@${objects_rsp}")
+    # One entry per config; a plain set would keep only the last config's objects.
+    set_property(TARGET ${cmakeTarget} APPEND PROPERTY STATIC_LIBRARY_OPTIONS
+        "$<$<CONFIG:${config}>:@${objects_rsp}>"
+    )
     if(LINUX OR ANDROID OR OHOS)
          get_gn_arch(cpu ${TEST_architecture_arch})
 
