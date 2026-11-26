@@ -32,9 +32,17 @@ if(WIN32)
     target_link_libraries(${qtWebEngineProcessName} PRIVATE WebEngineCoreSandbox)
     set_property(TARGET ${qtWebEngineProcessName} PROPERTY WIN32_EXECUTABLE TRUE)
     # get libs rsp file, since cmake is not aware of PUBLIC libs for WebEngineCore
-    get_target_property(libs_rsp WebEngineCore LIBS_RSP)
-    get_target_property(archives_rsp WebEngineCore ARCHIVES_RSP)
-    target_link_options(${qtWebEngineProcessName} PRIVATE "@${libs_rsp}" "@${archives_rsp}" "/STACK:0x800000")
+    qt_get_cmake_configurations(rsp_configs)
+    foreach(rsp_config ${rsp_configs})
+        string(TOUPPER "${rsp_config}" rsp_cfg)
+        get_target_property(libs_rsp WebEngineCore LIBS_RSP_${rsp_cfg})
+        get_target_property(archives_rsp WebEngineCore ARCHIVES_RSP_${rsp_cfg})
+        target_link_options(${qtWebEngineProcessName} PRIVATE
+            "$<$<CONFIG:${rsp_config}>:@${libs_rsp}>"
+            "$<$<CONFIG:${rsp_config}>:@${archives_rsp}>"
+        )
+    endforeach()
+    target_link_options(${qtWebEngineProcessName} PRIVATE "/STACK:0x800000")
 endif()
 
 if(MACOS)
