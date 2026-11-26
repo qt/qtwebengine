@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs)
+    \fn bool operator!=(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs)
     \relates QPdfDocumentRenderOptions
 
     Returns \c true if the options \a lhs and \a rhs are different, otherwise
@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs)
+    \fn bool operator==(const QPdfDocumentRenderOptions &lhs, const QPdfDocumentRenderOptions &rhs)
     \relates QPdfDocumentRenderOptions
 
     Returns \c true if the options \a lhs and \a rhs are equal,
